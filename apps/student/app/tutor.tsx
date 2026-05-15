@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextWithMath } from "../components/TextWithMath";
 import { useAuth } from "../lib/auth";
-import { getConversation, sendTutorMessage } from "../lib/tutor";
+import { getConversation, streamTutorMessage } from "../lib/tutor";
 
 interface ChatMessage {
   id: string;
@@ -86,35 +86,38 @@ export default function TutorScreen() {
       if (!trimmed || sending) return;
 
       const userMsg: ChatMessage = { id: makeId(), role: "user", text: trimmed };
-      setMessages((prev) => [...prev, userMsg]);
+      const mayaId = makeId();
+      const mayaPlaceholder: ChatMessage = { id: mayaId, role: "maya", text: "" };
+
+      setMessages((prev) => [...prev, userMsg, mayaPlaceholder]);
       setInput("");
       setSending(true);
       setError(null);
 
-      try {
-        const body = await sendTutorMessage({
-          message: trimmed,
-          topicId: topicId,
-          conversationId,
-        });
-        setConversationId(body.conversationId);
-        setMessages((prev) => [
-          ...prev,
-          { id: makeId(), role: "maya", text: body.reply, validated: body.validated },
-        ]);
-      } catch (e) {
-        setError((e as Error).message);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: makeId(),
-            role: "maya",
-            text: "Sorry — I couldn't reach the tutor service. Please try again.",
+      const updateMaya = (patch: Partial<ChatMessage>) =>
+        setMessages((prev) => prev.map((m) => (m.id === mayaId ? { ...m, ...patch } : m)));
+
+      streamTutorMessage(
+        { message: trimmed, topicId, conversationId },
+        {
+          onMeta: ({ conversationId: convId }) => setConversationId(convId),
+          onDelta: (delta) =>
+            setMessages((prev) =>
+              prev.map((m) => (m.id === mayaId ? { ...m, text: m.text + delta } : m)),
+            ),
+          onDone: (final) => {
+            updateMaya({ text: final.reply, validated: final.validated });
+            setSending(false);
           },
-        ]);
-      } finally {
-        setSending(false);
-      }
+          onError: (err) => {
+            setError(err.message);
+            updateMaya({
+              text: "Sorry — I couldn't reach the tutor service. Please try again.",
+            });
+            setSending(false);
+          },
+        },
+      );
     },
     [conversationId, sending, topicId],
   );

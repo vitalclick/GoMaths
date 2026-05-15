@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Iterator, Protocol
 
 
 @dataclass(frozen=True)
@@ -47,10 +47,23 @@ class TutorReply:
     cached_tokens: int = 0
 
 
+@dataclass(frozen=True)
+class StreamChunk:
+    """One delta from a streaming response. Final chunk has done=True."""
+
+    text: str
+    done: bool = False
+    # Populated only on the final chunk.
+    final: TutorReply | None = None
+
+
 class LLMProvider(Protocol):
     name: str
 
     def complete(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> TutorReply:
+        ...
+
+    def stream(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> Iterator[StreamChunk]:
         ...
 
 
@@ -91,6 +104,15 @@ class MockProvider:
             )
 
         return TutorReply(text=text, provider=self.name, model="mock-1")
+
+    def stream(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> Iterator[StreamChunk]:
+        # Stream the canned response word-by-word so tests can verify
+        # accumulator behaviour in the consumers.
+        final = self.complete(messages, max_tokens=max_tokens)
+        words = final.text.split(" ")
+        for i, w in enumerate(words):
+            yield StreamChunk(text=w + (" " if i < len(words) - 1 else ""))
+        yield StreamChunk(text="", done=True, final=final)
 
 
 # ─── Anthropic ─────────────────────────────────────────────────────────
@@ -156,6 +178,50 @@ class AnthropicProvider:
             ),
         )
 
+    def stream(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> Iterator[StreamChunk]:
+        system_blocks, conversation = self._partition(messages)
+        with self._client.messages.stream(
+            model=self.model,
+            max_tokens=max_tokens,
+            system=system_blocks if system_blocks else None,
+            messages=conversation,
+        ) as stream:
+            for delta in stream.text_stream:
+                if delta:
+                    yield StreamChunk(text=delta)
+            final_message = stream.get_final_message()
+            text = "".join(
+                block.text for block in final_message.content if getattr(block, "type", None) == "text"
+            )
+            usage = final_message.usage
+            yield StreamChunk(
+                text="",
+                done=True,
+                final=TutorReply(
+                    text=text,
+                    provider=self.name,
+                    model=self.model,
+                    input_tokens=getattr(usage, "input_tokens", 0),
+                    output_tokens=getattr(usage, "output_tokens", 0),
+                    cached_tokens=(
+                        getattr(usage, "cache_read_input_tokens", 0)
+                        + getattr(usage, "cache_creation_input_tokens", 0)
+                    ),
+                ),
+            )
+
+    def _partition(self, messages: list[TutorMessage]) -> tuple[list[dict], list[dict]]:
+        system_blocks: list[dict] = []
+        conversation: list[dict] = []
+        for m in messages:
+            if m.role == "system":
+                system_blocks.append(
+                    {"type": "text", "text": m.content, "cache_control": {"type": "ephemeral"}}
+                )
+            else:
+                conversation.append({"role": m.role, "content": m.content})
+        return system_blocks, conversation
+
 
 # ─── OpenAI ────────────────────────────────────────────────────────────
 
@@ -199,6 +265,46 @@ class OpenAIProvider:
                 getattr(usage.prompt_tokens_details, "cached_tokens", 0)
                 if usage and getattr(usage, "prompt_tokens_details", None)
                 else 0
+            ),
+        )
+
+    def stream(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> Iterator[StreamChunk]:
+        wire_messages = [{"role": m.role, "content": m.content} for m in messages]
+        accumulated: list[str] = []
+        usage = None
+        model_used = self.model
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=wire_messages,
+            max_tokens=max_tokens,
+            stream=True,
+            stream_options={"include_usage": True},
+        )
+        for chunk in response:
+            if chunk.choices:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    accumulated.append(delta)
+                    yield StreamChunk(text=delta)
+            if getattr(chunk, "usage", None):
+                usage = chunk.usage
+            if getattr(chunk, "model", None):
+                model_used = chunk.model
+
+        yield StreamChunk(
+            text="",
+            done=True,
+            final=TutorReply(
+                text="".join(accumulated),
+                provider=self.name,
+                model=model_used,
+                input_tokens=getattr(usage, "prompt_tokens", 0) if usage else 0,
+                output_tokens=getattr(usage, "completion_tokens", 0) if usage else 0,
+                cached_tokens=(
+                    getattr(usage.prompt_tokens_details, "cached_tokens", 0)
+                    if usage and getattr(usage, "prompt_tokens_details", None)
+                    else 0
+                ),
             ),
         )
 

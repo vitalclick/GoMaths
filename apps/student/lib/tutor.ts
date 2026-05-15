@@ -50,6 +50,116 @@ export async function sendTutorMessage(input: {
   return (await res.json()) as TutorReplyBody;
 }
 
+export interface StreamCallbacks {
+  /** Called with each incremental chunk of text. */
+  onDelta: (delta: string) => void;
+  /** Called once the upstream emits `meta` (carries the conversation id). */
+  onMeta?: (info: { conversationId: string }) => void;
+  /** Called when the stream completes successfully. */
+  onDone: (final: TutorReplyBody) => void;
+  /** Called on any error (network, upstream, parse). */
+  onError: (error: Error) => void;
+}
+
+/**
+ * Stream a tutor reply over SSE.
+ *
+ * Uses `react-native-sse` (which is also EventSource-shaped on web).
+ * Returns an unsubscribe function callers should invoke on unmount.
+ */
+export function streamTutorMessage(
+  input: { message: string; topicId?: string; conversationId?: string },
+  cb: StreamCallbacks,
+): () => void {
+  let cancelled = false;
+  let cancel: (() => void) | null = null;
+
+  (async () => {
+    try {
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+
+      const { default: EventSource } = await import("react-native-sse");
+      const { getItem } = await import("./secure-storage");
+      const accessToken = await getItem("gomaths.access");
+
+      const es = new EventSource(`${apiUrl}/api/tutor/messages/stream`, {
+        method: "POST",
+        body: JSON.stringify(input),
+        headers: {
+          "content-type": "application/json",
+          ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
+        },
+        // react-native-sse fires `open` once and then events as named.
+        pollingInterval: 0,
+      });
+      if (cancelled) {
+        es.close();
+        return;
+      }
+      cancel = () => es.close();
+
+      let accumulated = "";
+      let receivedConv: string | undefined;
+      let lastValidated = false;
+
+      es.addEventListener("meta", (event) => {
+        try {
+          const data = JSON.parse((event as { data: string }).data) as {
+            conversationId: string;
+          };
+          receivedConv = data.conversationId;
+          cb.onMeta?.({ conversationId: data.conversationId });
+        } catch {
+          // tolerate malformed meta
+        }
+      });
+
+      es.addEventListener("delta", (event) => {
+        try {
+          const data = JSON.parse((event as { data: string }).data) as { text: string };
+          accumulated += data.text;
+          cb.onDelta(data.text);
+        } catch {
+          // tolerate malformed delta
+        }
+      });
+
+      es.addEventListener("done", (event) => {
+        try {
+          const data = JSON.parse((event as { data: string }).data) as {
+            reply?: string;
+            validated?: boolean;
+          };
+          lastValidated = Boolean(data.validated);
+          cb.onDone({
+            conversationId: receivedConv ?? input.conversationId ?? "",
+            reply: data.reply ?? accumulated,
+            validated: lastValidated,
+          });
+        } catch (e) {
+          cb.onError(e as Error);
+        } finally {
+          es.close();
+        }
+      });
+
+      es.addEventListener("error", (event) => {
+        const message = (event as { message?: string }).message ?? "stream error";
+        cb.onError(new Error(message));
+        es.close();
+      });
+    } catch (e) {
+      if (!cancelled) cb.onError(e as Error);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+    cancel?.();
+  };
+}
+
 export async function listConversations(): Promise<ConversationSummary[]> {
   const res = await authFetch("/api/tutor/conversations");
   if (!res.ok) throw new Error(await readError(res));

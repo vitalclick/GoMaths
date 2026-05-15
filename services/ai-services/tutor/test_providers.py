@@ -27,6 +27,18 @@ def test_mock_provider_handles_solve_request() -> None:
     assert "both sides" in reply.text.lower()
 
 
+def test_mock_provider_stream_yields_chunks_then_done() -> None:
+    p = MockProvider()
+    chunks = list(p.stream([TutorMessage(role="user", content="hello")]))
+    deltas = [c for c in chunks if not c.done]
+    final = [c for c in chunks if c.done]
+    assert len(deltas) > 0
+    assert len(final) == 1
+    assert final[0].final is not None
+    accumulated = "".join(c.text for c in deltas)
+    assert accumulated == final[0].final.text
+
+
 def test_get_provider_defaults_to_mock(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("TUTOR_PROVIDER", raising=False)
     p = get_provider()

@@ -20,7 +20,11 @@ Phase 1 should add:
 
 from __future__ import annotations
 
+import json
+from collections.abc import Iterator
+
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from .claims import extract_claims
@@ -77,8 +81,7 @@ def health() -> dict[str, str | int]:
     }
 
 
-@app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest) -> ChatResponse:
+def _build_messages(req: ChatRequest) -> list[TutorMessage]:
     messages: list[TutorMessage] = [TutorMessage(role="system", content=SYSTEM_PROMPT)]
 
     if req.topic_id and req.topic_id in _topics:
@@ -110,7 +113,12 @@ def chat(req: ChatRequest) -> ChatResponse:
         messages.append(TutorMessage(role=turn.role, content=turn.content))
 
     messages.append(TutorMessage(role="user", content=req.message))
+    return messages
 
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest) -> ChatResponse:
+    messages = _build_messages(req)
     reply = _provider.complete(messages)
 
     # Validate any mathematical claims in the reply.
@@ -128,4 +136,67 @@ def chat(req: ChatRequest) -> ChatResponse:
         input_tokens=reply.input_tokens,
         output_tokens=reply.output_tokens,
         cached_tokens=reply.cached_tokens,
+    )
+
+
+def _sse(event: str, data: dict) -> str:
+    """Format an event for the SSE stream — `event:` line + `data:` line + blank."""
+    return f"event: {event}\ndata: {json.dumps(data, separators=(',', ':'))}\n\n"
+
+
+def _stream_events(req: ChatRequest) -> Iterator[bytes]:
+    """
+    Stream the tutor reply token-by-token over SSE.
+
+    Event types:
+      - `delta`  — { "text": "<incremental string>" }   (zero or more)
+      - `done`   — { reply, validated, provider, model, extracted_claims,
+                     verified_claims, input_tokens, output_tokens,
+                     cached_tokens }
+      - `error`  — { "message": "..." }
+
+    Validation runs after the final chunk arrives — we can't meaningfully
+    validate partial mid-sentence claims. The UI shows the streamed text
+    immediately and reveals the "Maths verified" badge once `done` lands.
+    """
+    messages = _build_messages(req)
+    try:
+        accumulated: list[str] = []
+        final = None
+        for chunk in _provider.stream(messages):
+            if chunk.done:
+                final = chunk.final
+                break
+            accumulated.append(chunk.text)
+            yield _sse("delta", {"text": chunk.text}).encode()
+
+        full_text = (final.text if final else "".join(accumulated))
+        claims = extract_claims(full_text)
+        verified = sum(1 for c in claims if validate_equivalent(c.stem, c.answer).ok)
+        fully_validated = bool(claims) and verified == len(claims)
+
+        yield _sse(
+            "done",
+            {
+                "reply": full_text,
+                "validated": fully_validated,
+                "provider": final.provider if final else _provider.name,
+                "model": final.model if final else "",
+                "extracted_claims": len(claims),
+                "verified_claims": verified,
+                "input_tokens": final.input_tokens if final else 0,
+                "output_tokens": final.output_tokens if final else 0,
+                "cached_tokens": final.cached_tokens if final else 0,
+            },
+        ).encode()
+    except Exception as exc:  # noqa: BLE001 — surface failures over the wire
+        yield _sse("error", {"message": str(exc)}).encode()
+
+
+@app.post("/chat/stream")
+def chat_stream(req: ChatRequest) -> StreamingResponse:
+    return StreamingResponse(
+        _stream_events(req),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
