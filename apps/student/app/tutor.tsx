@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { TextWithMath } from "../components/TextWithMath";
 import { useAuth } from "../lib/auth";
 import { sendTutorMessage } from "../lib/tutor";
 
@@ -203,9 +204,15 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             isUser ? "rounded-br-sm bg-primary" : "rounded-bl-sm bg-card"
           }`}
         >
-          <Text className={`text-sm ${isUser ? "text-primary-foreground" : "text-foreground"}`}>
-            {message.text}
-          </Text>
+          {isUser ? (
+            <Text className="text-sm text-primary-foreground">{message.text}</Text>
+          ) : (
+            <TextWithMath
+              text={message.text}
+              fontSize={14}
+              style={{ color: "#0E1A14" }}
+            />
+          )}
         </View>
         {!isUser && message.validated !== undefined && (
           <View className="mt-1 flex-row items-center gap-1 px-2">

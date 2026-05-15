@@ -2,8 +2,8 @@ import { Button } from "@gomaths/ui";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import Markdown from "react-native-markdown-display";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LessonHtml } from "../../components/LessonHtml";
 import { getTopic, type Topic } from "../../lib/curriculum";
 import { record } from "../../lib/progress-store";
 
@@ -60,7 +60,7 @@ export default function TopicScreen() {
         )}
 
         <View className="mt-6">
-          <Markdown style={markdownStyles}>{topic.lessonMarkdown}</Markdown>
+          <LessonHtml markdown={topic.lessonMarkdown} />
         </View>
 
         <View className="mt-8 gap-3">
@@ -75,12 +75,3 @@ export default function TopicScreen() {
     </SafeAreaView>
   );
 }
-
-const markdownStyles = {
-  body: { color: "#0E1A14", fontSize: 16, lineHeight: 24 },
-  heading1: { fontSize: 24, fontWeight: "700", marginTop: 12, marginBottom: 8 },
-  heading2: { fontSize: 20, fontWeight: "700", marginTop: 16, marginBottom: 6 },
-  paragraph: { marginTop: 6, marginBottom: 6 },
-  code_inline: { fontFamily: "monospace", backgroundColor: "#F0F4F1", paddingHorizontal: 4 },
-  fence: { fontFamily: "monospace", backgroundColor: "#F0F4F1", padding: 8, borderRadius: 8 },
-} as const;
