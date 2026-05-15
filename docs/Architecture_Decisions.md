@@ -167,3 +167,108 @@ Phase 1.5 is **gated** on Phase 1 pilot showing ≥ 6pp improvement on the Grade
 - Compliance build-out: police clearance integration, Form 30 (Children's Act), session recording + POPIA retention, FSCA-aware payments via a facilitator, tax/IRP6 handling
 - Operations build-out: trust & safety team (vetting + disputes), payouts ops
 - See `docs/Tutor_Marketplace_Plan.md` for full plan.
+
+---
+
+## ADR-007 — v2 rebuild on a clean stack; preview on Fly, prod on AWS af-south-1 with ECS Fargate
+
+**Status:** Accepted
+**Date:** 2026-05
+
+### Context
+
+GoMaths v1 has been running for 10+ years and serves multiple SA
+schools under MOU today. The product owner has chosen to **rebuild on
+a new tech stack** (Expo + NestJS + AI services + SymPy validation)
+rather than refactor v1 in place. The rebuild needs three things this
+ADR pins down:
+
+1. A clean separation from v1 — so v1 keeps running undisturbed while
+   v2 is built and rolled out, school by school.
+2. A way to put v2 in front of internal stakeholders before AWS
+   production is provisioned.
+3. A production landing zone that's POPIA-defensible at the regulator
+   level and operable by a small team.
+
+### Decision
+
+**Clean slate. No migration of v1 data, infrastructure, or store
+listings.**
+
+- **Bundle IDs:** new under `co.za.gomaths.v2.*` (student, parent,
+  teacher, …). v2 ships as separate apps in both stores; v1 stays
+  installed on existing devices until each school cuts over.
+- **AWS account:** new account, separate from anything v1 uses. Same
+  region (`af-south-1`) per ADR-002.
+- **Database:** new Postgres. No v1 data is imported. Schools and
+  learners re-onboard onto v2 when they cut over.
+- **Preview hosting (now, days):** Fly.io `jnb` region. Backend +
+  three AI services as Docker apps, Postgres + Redis as Fly
+  primitives, Student web SPA on Cloudflare Pages. Runbook at
+  `infrastructure/preview/README.md`. **Internal/stakeholder demo
+  only — not a school-facing surface.**
+- **Production hosting (v2 cutover onwards):** AWS af-south-1 using
+  the Terraform modules already in `infrastructure/terraform/modules/`
+  (network/database/cache/storage/secrets) **plus** a Fargate module
+  for compute. **NOT EKS.** At rebuild scale (initially one school's
+  cohort, scaling to the v1 footprint over time) the K8s
+  ops burden is not justified — Fargate gives us the same VPC
+  attachment, IAM roles, ALB integration, and auto-scaling at a
+  fraction of the operational complexity.
+
+### Why Fargate, not EKS
+
+- v1's school footprint is large but each school's load profile is
+  bounded — this is not a cardinality problem K8s solves.
+- EKS adds ~$73/mo control plane, ALB+NAT, and meaningful weekly
+  ops burden (cluster upgrades, addon compatibility, IRSA hygiene)
+  that doesn't pay off until ~20+ services or multi-team platform
+  ownership.
+- Fargate's per-task billing aligns with the workload: backend
+  always-on, AI tutor + solver scale-to-zero overnight in dev/
+  staging.
+- Migration to EKS later is feasible if the load profile changes.
+
+### Why Fly.io for preview
+
+- Native Docker, `jnb` region (Johannesburg) keeps latency real for
+  SA stakeholder demos.
+- Postgres + Redis as first-party primitives — no extra accounts to
+  manage for a temporary preview environment.
+- ~$5–15/month at preview scale; destroy when not in use.
+- Compliance posture is fine for an internal demo with synthetic
+  data; not appropriate for real learners or POPIA-scoped data,
+  which is why the preview banner explicitly forbids real personal
+  data.
+
+### Alternatives considered
+
+- **In-place upgrade of v1.** Rejected — the new validator gate,
+  streaming tutor, and CAPS-aligned curriculum format are
+  architecturally different enough that incremental refactor would
+  cost more than a clean rebuild and ship slower.
+- **Keep v1 bundle IDs, ship v2 as an in-place update.** Rejected —
+  forces every v1 user onto v2 the day Apple/Google reviews complete,
+  with no rollback. Separate listings let each school cut over on
+  their own schedule.
+- **AWS App Runner instead of Fargate.** Rejected — too constrained
+  on VPC attachment and concurrency for the SSE-streaming tutor.
+- **Render or Railway for preview instead of Fly.** Both viable.
+  Fly chosen for the `jnb` region (no SA region on either
+  competitor today) and Docker-native multi-service deploys.
+
+### Implications
+
+- Operator must bootstrap a fresh AWS account for v2 (S3 + DynamoDB
+  for tfstate; see `infrastructure/README.md`).
+- Apple Developer + Google Play accounts may already exist for v1;
+  v2 ships under the same developer accounts but new bundle IDs.
+- EAS Build + EAS Update channels for v2 should be separate from any
+  v1 channels — `gomaths-v2-*` slug naming convention.
+- v1 → v2 cutover per school is a product/ops decision, not
+  engineering. Engineering must NOT ship v2 to a school without a
+  written cutover plan (comms, onboarding session, parallel-running
+  window, v1 sunset date).
+- The `ecs` Terraform module is the next infra deliverable. It
+  doesn't exist yet — the trigger to write it is "first signed v2
+  cutover date for a school."

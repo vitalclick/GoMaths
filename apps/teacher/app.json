@@ -1,18 +1,18 @@
 {
   "expo": {
     "name": "GoMaths · Teacher",
-    "slug": "gomaths-teacher",
-    "version": "0.0.1",
+    "slug": "gomaths-v2-teacher",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "scheme": "gomaths-teacher",
+    "scheme": "gomaths-v2-teacher",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "co.za.gomaths.teacher"
+      "bundleIdentifier": "co.za.gomaths.v2.teacher"
     },
     "android": {
-      "package": "co.za.gomaths.teacher",
+      "package": "co.za.gomaths.v2.teacher",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }

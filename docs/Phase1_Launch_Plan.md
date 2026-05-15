@@ -1,19 +1,39 @@
-# GoMaths Phase 1 Launch Plan
+# GoMaths v2 Launch Plan
 
-**Version:** 0.2 (Draft)
-**Status:** Pre-development scoping
+**Version:** 0.3 (v2 rebuild)
+**Status:** Engineering in progress
 **Owner:** TBD (Product Lead)
-**Target:** Beta launch to 4 pilot schools, end of Month 9–12
+**Target:** v2 cutover of GoMaths' existing schools, one cohort at a time
 
-> **Note:** Earlier drafts of this document framed Phase 1 as an "MVP" — a single Student app shipped in 16 weeks. The product owner has since decided to build all four user-facing apps in parallel across iOS, Android, and Web. This is a venture-scale Phase 1 commitment. The educational hypothesis below is still the primary success criterion regardless of how many surfaces ship.
+> **Context:** GoMaths v1 has been running for 10+ years and serves
+> multiple SA schools under MOU today, with apps live in both stores.
+> This plan covers the **v2 rebuild** on a clean stack: new tech
+> (Expo + NestJS + AI services + SymPy validation), new AWS account,
+> new app store listings (`co.za.gomaths.v2.*`), and a new database
+> with **no migration of v1 data**. Existing schools and learners
+> re-onboard onto v2 when each is cut over. v1 continues to run in
+> parallel until each school has migrated. See ADR-007 for the
+> clean-slate decision.
 
 ---
 
 ## 1. Hypothesis Being Tested
 
-> South African Grade 9 learners using GoMaths daily for one term show measurable improvement in CAPS-aligned mathematics assessments compared to a matched control group.
+> v2's AI-tutor-plus-validator gate produces measurably better
+> learning outcomes for GoMaths' existing school cohorts than v1, and
+> at LLM-spend per learner inside the modelled budget.
 
-This is what the pilot proves or disproves. Everything else — Parent app engagement, Teacher tooling, School license sales — is downstream of this signal.
+Two signals matter:
+
+1. **Educational lift.** v2 vs v1 outcomes inside the same school for
+   the same cohort. v1 is the natural control.
+2. **Unit economics.** Anthropic prompt-cache hit rate above the
+   budgeted ratio (the `/metrics/cache` smoke test). If LLM cost per
+   learner exceeds the modelled figure, v2 cannot scale to the full
+   v1 footprint without a pricing change.
+
+Everything else — Parent app engagement, Teacher tooling, School Admin
+features — is downstream of these two signals.
 
 ---
 
@@ -245,30 +265,49 @@ This is venture-scale. Plan funding accordingly (seed-to-Series-A range).
 
 ---
 
-## 11. Decisions Required Before Kickoff
+## 11. Decisions Required Before First School Cutover
 
-1. **Pilot grade band:** Grade 9 vs. Matric prep — _recommendation: Grade 9_
-2. **Pilot schools:** identify and sign MOUs with 6 (to land 4)
-3. **Curriculum sourcing:** in-house authoring + open-licensed supplements (recommended) vs. licensing
-4. **AI provider:** OpenAI vs. Anthropic vs. dual behind abstraction — _recommendation: abstraction, default to whichever benchmarks best on SA Grade 9 maths_
-5. **Hosting region:** AWS af-south-1 confirmed (POPIA defensibility)
-6. **Auth provider:** Auth0 (recommended) vs. Firebase vs. self-hosted
-7. **Monorepo tooling:** pnpm + Turborepo (recommended) vs. Nx
-8. **Styling approach for cross-platform:** NativeWind (recommended — matches design2's Tailwind classes) vs. Tamagui vs. StyleSheet+hand-rolled
-9. **Funding commitment:** confirm R 11.5–17.3M budget available + 12-month runway minimum
+1. **Grade band for first v2 cutover:** Grade 9 by default (only grade
+   with new-format curriculum content today); confirm with the chosen
+   school.
+2. **First cutover school:** pick from the existing v1 MOU list — the
+   one most willing to be a v2 early adopter.
+3. **Curriculum format-conversion strategy:** v1's existing content →
+   the new SymPy-validatable shape. Convert programmatically, re-
+   author with SACE specialists, or hybrid? Sizing this decision is
+   the gating item on rollout scope.
+4. **AI provider as production default:** Anthropic Haiku 4.5 by
+   default; verify cache hit rate on the live `/metrics/cache`
+   endpoint before committing to the cost model.
+5. **Hosting region:** AWS af-south-1 confirmed (POPIA defensibility).
+6. **Compute layer:** ECS Fargate per ADR-007 (not EKS).
+7. **Auth provider:** Auth0 (recommended for school SSO) vs Firebase
+   vs self-hosted. ADR-005 still open.
+8. **v1 → v2 cutover plan per school:** comms, onboarding session,
+   parallel-running window, v1 sunset date. Product/ops decision.
 
 ---
 
-## 12. Definition of Done (Phase 1)
+## 12. Definition of Done (v2 first-school cutover)
 
-Phase 1 is "done" when:
+v2 is ready to cut over the first school when:
 
-- All five apps shipped to their target platforms with feature scope met
-- App store listings live (4 consumer app pairs = 8 listings)
-- 4 pilot schools onboarded with signed agreements
-- Pre-assessment administered to pilot + control cohorts
-- Monitoring + error reporting live across all surfaces (Sentry, CloudWatch)
+- All four core apps (Student, Parent, Teacher, School Admin) shipped
+  to their target platforms with feature scope met for that school's
+  needs (which may be narrower than the full plan above).
+- New app store listings live under `co.za.gomaths.v2.*`.
+- Cutover plan signed off with the chosen school: onboarding session
+  scheduled, learner-comms drafted, support coverage for the first
+  two weeks staffed.
+- Pre-assessment administered to the cohort so the v2-vs-v1 outcomes
+  comparison has a baseline.
+- Monitoring live (Sentry + CloudWatch + the tutor `/metrics/cache`
+  endpoint dashboarded).
 - Incident response runbook exists and has been tabletop-tested
-- POPIA Data Protection Impact Assessment signed off
-- Accessibility audit (WCAG 2.1 AA) passed on student app + web school portal
-- Curriculum content frozen with all 19 Grade 9 lessons through full QA pipeline
+  against the v2 stack (not the v1 one).
+- POPIA DPIA **delta** for the new AI processing signed off by the
+  Information Officer.
+- Accessibility audit (WCAG 2.1 AA) passed on Student app + web
+  School portal.
+- Curriculum content for the chosen grade frozen and through the full
+  SymPy-validated QA pipeline.

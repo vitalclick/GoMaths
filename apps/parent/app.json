@@ -1,18 +1,18 @@
 {
   "expo": {
     "name": "GoMaths · Parent",
-    "slug": "gomaths-parent",
-    "version": "0.0.1",
+    "slug": "gomaths-v2-parent",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "scheme": "gomaths-parent",
+    "scheme": "gomaths-v2-parent",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "co.za.gomaths.parent"
+      "bundleIdentifier": "co.za.gomaths.v2.parent"
     },
     "android": {
-      "package": "co.za.gomaths.parent",
+      "package": "co.za.gomaths.v2.parent",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }
