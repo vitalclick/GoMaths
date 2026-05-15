@@ -2,6 +2,11 @@ import "../global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../lib/auth";
+import { initSentry } from "../lib/sentry";
+
+// Fire Sentry init at module load so we capture render errors that
+// happen before the AuthProvider's first effect runs.
+initSentry();
 
 export default function RootLayout() {
   return (

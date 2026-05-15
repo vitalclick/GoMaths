@@ -1,7 +1,12 @@
+// MUST be first so Sentry's instrumentation patches NodeJS internals
+// before any application code imports them.
+import "./instrument";
+
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+import * as Sentry from "@sentry/node";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
@@ -9,6 +14,14 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix("api");
+
+  // Wire Nest's exception layer into Sentry. Express's default error
+  // handler runs Sentry.setupExpressErrorHandler under the hood when DSN
+  // is set; this also captures async errors that surface through the
+  // Nest pipeline.
+  if (process.env.SENTRY_DSN) {
+    Sentry.setupExpressErrorHandler(app.getHttpAdapter().getInstance());
+  }
 
   const config = new DocumentBuilder()
     .setTitle("GoMaths Backend API")

@@ -17,6 +17,7 @@
   "dependencies": {
     "@gomaths/api-client": "workspace:*",
     "@gomaths/design-tokens": "workspace:*",
+    "@sentry/react-native": "~6.4.0",
     "@gomaths/types": "workspace:*",
     "@gomaths/ui": "workspace:*",
     "expo": "~52.0.0",
