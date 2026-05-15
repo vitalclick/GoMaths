@@ -21,6 +21,7 @@ export default function RootLayout() {
         <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
         <Stack.Screen name="tutor" options={{ title: "Maya · AI Tutor" }} />
+        <Stack.Screen name="conversations" options={{ title: "Conversations" }} />
         <Stack.Screen name="progress" options={{ title: "Progress" }} />
       </Stack>
     </AuthProvider>

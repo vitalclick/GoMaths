@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { TutorService } from "./tutor.service";
 import { CheckAnswerDto, TutorMessageDto } from "./tutor.dto";
@@ -14,6 +14,18 @@ export class TutorController {
   @ApiOperation({ summary: "Send a message to the AI tutor" })
   message(@CurrentUser() user: JwtClaims, @Body() dto: TutorMessageDto) {
     return this.service.sendMessage(user.sub, dto);
+  }
+
+  @Get("tutor/conversations")
+  @ApiOperation({ summary: "List recent conversations for the current student" })
+  listConversations(@CurrentUser() user: JwtClaims) {
+    return this.service.listConversations(user.sub);
+  }
+
+  @Get("tutor/conversations/:id")
+  @ApiOperation({ summary: "Load a conversation by id" })
+  getConversation(@CurrentUser() user: JwtClaims, @Param("id") id: string) {
+    return this.service.getConversation(user.sub, id);
   }
 
   /**

@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextWithMath } from "../components/TextWithMath";
 import { useAuth } from "../lib/auth";
-import { sendTutorMessage } from "../lib/tutor";
+import { getConversation, sendTutorMessage } from "../lib/tutor";
 
 interface ChatMessage {
   id: string;
@@ -35,15 +35,44 @@ const makeId = () => `m_${nextId++}`;
 
 export default function TutorScreen() {
   const { user } = useAuth();
-  const { topicId } = useLocalSearchParams<{ topicId?: string }>();
+  const { topicId, conversationId: initialConvId } = useLocalSearchParams<{
+    topicId?: string;
+    conversationId?: string;
+  }>();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [error, setError] = useState<string | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(Boolean(initialConvId));
 
   const scrollRef = useRef<ScrollView | null>(null);
+
+  // Load conversation history when an existing conversationId is supplied.
+  useEffect(() => {
+    if (!initialConvId) return;
+    let cancelled = false;
+    setLoadingHistory(true);
+    getConversation(initialConvId)
+      .then((conv) => {
+        if (cancelled) return;
+        setMessages(
+          conv.turns.map((t) => ({
+            id: makeId(),
+            role: t.role,
+            text: t.text,
+            validated: t.role === "maya" ? t.validated : undefined,
+          })),
+        );
+        setConversationId(conv.id);
+      })
+      .catch((e) => !cancelled && setError(e.message))
+      .finally(() => !cancelled && setLoadingHistory(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [initialConvId]);
 
   useEffect(() => {
     // Defer to next tick so the new content is laid out before scrolling.

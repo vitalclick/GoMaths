@@ -75,6 +75,9 @@ export default function HomeScreen() {
           <Link href="/tutor" asChild>
             <Button label="Chat with Maya" variant="accent" size="md" fullWidth />
           </Link>
+          <Link href="/conversations" asChild>
+            <Button label="Past conversations" variant="ghost" size="md" fullWidth />
+          </Link>
           <Link href="/progress" asChild>
             <Button label="My progress" variant="ghost" size="md" fullWidth />
           </Link>

@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CurriculumService } from "../curriculum/curriculum.service";
+import { ConversationsService, type Turn } from "./conversations.service";
 
 interface TutorUpstreamResponse {
   reply: string;
@@ -22,18 +23,56 @@ export class TutorService {
   constructor(
     config: ConfigService,
     private readonly curriculum: CurriculumService,
+    private readonly conversations: ConversationsService,
   ) {
     this.tutorUrl = config.get("TUTOR_SERVICE_URL", "http://localhost:8001");
     this.validationUrl = config.get("VALIDATION_SERVICE_URL", "http://localhost:8003");
+  }
+
+  listConversations(studentId: string) {
+    return this.conversations.list(studentId).map(({ id, topicId, createdAt, updatedAt, turns }) => ({
+      id,
+      topicId,
+      createdAt,
+      updatedAt,
+      preview: turns[turns.length - 1]?.text.slice(0, 80) ?? "",
+      turnCount: turns.length,
+    }));
+  }
+
+  getConversation(studentId: string, conversationId: string) {
+    return this.conversations.get(studentId, conversationId);
   }
 
   async sendMessage(
     studentId: string,
     input: { message: string; topicId?: string; conversationId?: string },
   ) {
-    const conversationId = input.conversationId ?? `conv_${Date.now()}`;
-    const payload = { student_id: studentId, message: input.message, topic_id: input.topicId };
+    const conv = input.conversationId
+      ? this.conversations.get(studentId, input.conversationId)
+      : this.conversations.create(studentId, input.topicId);
 
+    const userTurn: Turn = {
+      role: "user",
+      text: input.message,
+      occurredAt: new Date().toISOString(),
+    };
+    this.conversations.appendTurn(studentId, conv.id, userTurn);
+
+    const history = this.conversations
+      .recentTurns(studentId, conv.id)
+      .slice(0, -1) // exclude the just-appended user turn (sent separately as `message`)
+      .map((t) => ({ role: t.role === "maya" ? "assistant" : "user", content: t.text }));
+
+    const payload = {
+      student_id: studentId,
+      message: input.message,
+      topic_id: input.topicId ?? conv.topicId,
+      history,
+    };
+
+    let reply = "";
+    let validated = false;
     try {
       const res = await fetch(`${this.tutorUrl}/chat`, {
         method: "POST",
@@ -42,31 +81,35 @@ export class TutorService {
       });
       if (!res.ok) throw new Error(`upstream ${res.status}`);
       const body = (await res.json()) as TutorUpstreamResponse;
-      return { conversationId, reply: body.reply, validated: body.validated };
+      reply = body.reply;
+      validated = body.validated;
     } catch (err) {
       this.logger.warn(`tutor upstream unavailable: ${(err as Error).message}`);
-      return {
-        conversationId,
-        reply:
-          "(tutor service offline) Once the AI tutor is running, this would be a real response from Maya. Try again later.",
-        validated: false,
-      };
+      reply =
+        "(tutor service offline) Once the AI tutor is running, this would be a real response from Maya. Try again later.";
     }
+
+    const mayaTurn: Turn = {
+      role: "maya",
+      text: reply,
+      occurredAt: new Date().toISOString(),
+      validated,
+    };
+    this.conversations.appendTurn(studentId, conv.id, mayaTurn);
+
+    return { conversationId: conv.id, reply, validated };
   }
 
   async checkAnswer(_studentId: string, questionId: string, studentAnswer: string) {
     const question = this.curriculum.getQuestion(questionId);
     if (!question) throw new NotFoundException(`Question not found: ${questionId}`);
 
-    // Always do a quick string-equality check first — handles the common case
-    // without a network hop.
     const normalizedStudent = studentAnswer.trim().toLowerCase().replace(/\s+/g, " ");
     const normalizedRef = question.answer.trim().toLowerCase().replace(/\s+/g, " ");
     if (normalizedStudent === normalizedRef) {
       return { questionId, correct: true, validated: true, expected: question.answer };
     }
 
-    // Fall back to the SymPy validation service for symbolic equivalence.
     try {
       const res = await fetch(`${this.validationUrl}/validate`, {
         method: "POST",
@@ -83,10 +126,6 @@ export class TutorService {
       };
     } catch (err) {
       this.logger.warn(`validation upstream unavailable: ${(err as Error).message}`);
-      // Conservative: if validation service is offline, fall back to the
-      // pre-computed reference answer. This is a deliberate Phase 0 stance —
-      // we never silently mark a wrong answer correct, but we may miss
-      // mathematically-equivalent-but-string-different submissions.
       return {
         questionId,
         correct: false,

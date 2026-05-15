@@ -43,10 +43,16 @@ SYSTEM_PROMPT = (
 )
 
 
+class HistoryTurn(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
+
 class ChatRequest(BaseModel):
     student_id: str
     message: str
     topic_id: str | None = None
+    history: list[HistoryTurn] = []
 
 
 class ChatResponse(BaseModel):
@@ -95,6 +101,13 @@ def chat(req: ChatRequest) -> ChatResponse:
                 ),
             )
         )
+
+    # Prior turns from the persisted conversation. Already trimmed by the
+    # backend to a sane context window.
+    for turn in req.history:
+        if turn.role not in ("user", "assistant"):
+            continue
+        messages.append(TutorMessage(role=turn.role, content=turn.content))
 
     messages.append(TutorMessage(role="user", content=req.message))
 
