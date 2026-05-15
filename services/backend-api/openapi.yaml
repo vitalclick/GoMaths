@@ -220,7 +220,8 @@ paths:
       summary: Send a message to the AI tutor
       description: |
         Proxies to `ai-services/tutor`. The response is SymPy-validated before
-        being returned to the caller.
+        being returned to the caller. Rate-limited to 20 requests / minute
+        per student.
       requestBody:
         required: true
         content:
@@ -232,6 +233,123 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/TutorMessageResponse" }
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/tutor/messages/stream:
+    post:
+      tags: [tutor]
+      summary: Stream a tutor reply over Server-Sent Events
+      description: |
+        Returns `text/event-stream`. Event types:
+          - `meta`   `{ conversationId }`            (always first)
+          - `delta`  `{ text }`                      (zero or more)
+          - `claim`  `{ raw, stem, answer, ok }`     (zero or more — one
+                                                    per equation as soon
+                                                    as the SymPy validator
+                                                    has scored it)
+          - `done`   `{ reply, validated, provider, model, extracted_claims,
+                       verified_claims, input_tokens, output_tokens,
+                       cached_tokens }`
+          - `error`  `{ message }`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TutorMessageRequest" }
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream: {}
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/tutor/conversations:
+    get:
+      tags: [tutor]
+      summary: List recent conversations for the current student
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ConversationSummary" }
+
+  /api/tutor/conversations/{id}:
+    get:
+      tags: [tutor]
+      summary: Load a conversation by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/curriculum/check:
+    post:
+      tags: [curriculum]
+      summary: Check a student's answer to a curriculum question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questionId, answer]
+              properties:
+                questionId: { type: string }
+                answer: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [questionId, correct, validated, expected]
+                properties:
+                  questionId: { type: string }
+                  correct: { type: boolean }
+                  validated:
+                    type: boolean
+                    description: |
+                      True iff the SymPy validator was reachable AND the
+                      answer was symbolically evaluated. False means the
+                      check fell back to literal string equality.
+                  expected: { type: string }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/solver/solve:
+    post:
+      tags: [solver]
+      summary: Solve a LaTeX expression directly (no OCR)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latex]
+              properties:
+                latex: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SolverResponse" }
 
   /api/solver/scan:
     post:
@@ -299,6 +417,11 @@ components:
           schema: { $ref: "#/components/schemas/Error" }
     NotFound:
       description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    TooManyRequests:
+      description: Rate limit exceeded
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
@@ -522,3 +645,58 @@ components:
             properties:
               explanation: { type: string }
               math: { type: string }
+        detectedLatex:
+          type: string
+          nullable: true
+        ocrProvider:
+          type: string
+          description: "Which OCR backend produced the LaTeX (mock | mathpix | none)."
+        ocrConfidence:
+          type: number
+          nullable: true
+        detail:
+          type: string
+
+    ConversationSummary:
+      type: object
+      required: [id, createdAt, updatedAt, preview, turnCount]
+      properties:
+        id: { type: string }
+        topicId:
+          type: string
+          nullable: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        preview: { type: string }
+        turnCount: { type: integer }
+
+    Conversation:
+      type: object
+      required: [id, studentId, createdAt, updatedAt, turns]
+      properties:
+        id: { type: string }
+        studentId: { type: string }
+        topicId:
+          type: string
+          nullable: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        turns:
+          type: array
+          items: { $ref: "#/components/schemas/ConversationTurn" }
+
+    ConversationTurn:
+      type: object
+      required: [role, text, occurredAt]
+      properties:
+        role:
+          type: string
+          enum: [user, maya]
+        text: { type: string }
+        occurredAt: { type: string, format: date-time }
+        validated:
+          type: boolean
+          nullable: true
+          description: |
+            True iff Maya's reply was fully SymPy-verified. Only meaningful
+            when role=maya.

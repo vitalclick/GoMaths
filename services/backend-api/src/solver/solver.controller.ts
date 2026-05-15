@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { IsString } from "class-validator";
 import { SolverService } from "./solver.service";
 import { CurrentUser, type JwtClaims } from "../auth/auth.guard";
@@ -16,6 +17,8 @@ class SolveLatexDto {
 export class SolverController {
   constructor(private readonly service: SolverService) {}
 
+  /** OCR costs money — keep it on a short leash per student. */
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post("scan")
   @UseInterceptors(FileInterceptor("image", { limits: { fileSize: 8 * 1024 * 1024 } }))
   @ApiConsumes("multipart/form-data")
