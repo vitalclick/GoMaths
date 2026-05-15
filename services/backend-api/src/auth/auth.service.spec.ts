@@ -4,6 +4,7 @@ import { BadRequestException, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { ParentalConsentService } from "./parental-consent.service";
 import { UsersService } from "./users.service";
+import type { MailService } from "../mail/mail.service";
 import type { PrismaService } from "../prisma/prisma.service";
 
 function makeService() {
@@ -13,7 +14,8 @@ function makeService() {
   const config = {
     get: (_key: string, fallback: string) => fallback,
   } as unknown as ConfigService;
-  const consent = new ParentalConsentService(jwt, prismaStub, config);
+  const mailStub = { sendParentalConsentInvite: async () => undefined } as unknown as MailService;
+  const consent = new ParentalConsentService(jwt, prismaStub, mailStub, config);
   return {
     auth: new AuthService(users, jwt, prismaStub, consent, config),
     users,

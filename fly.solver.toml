@@ -1,0 +1,40 @@
+# Fly config for the FastAPI solver service.
+#
+#   fly launch -c fly.solver.toml --copy-config --no-deploy
+#   fly deploy -c fly.solver.toml --build-arg SERVICE=solver
+#
+# Secrets (when MathPix is contracted — until then the mock provider
+# returns canned LaTeX based on image length):
+#   fly secrets set -a gomaths-ai-solver \
+#     MATHPIX_APP_ID="..." \
+#     MATHPIX_APP_KEY="..." \
+#     SOLVER_OCR_PROVIDER="mathpix"
+
+app = "gomaths-ai-solver"
+primary_region = "jnb"
+
+[build]
+  dockerfile = "services/ai-services/Dockerfile"
+  [build.args]
+    SERVICE = "solver"
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

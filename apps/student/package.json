@@ -9,7 +9,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "echo \"(use EAS build)\" && exit 0",
+    "build": "echo \"(use EAS build for native; pnpm export:web for the web SPA)\" && exit 0",
+    "export:web": "expo export --platform web --output-dir dist",
     "lint": "echo \"(no lint configured)\" && exit 0",
     "typecheck": "tsc --noEmit",
     "test": "echo \"(no tests yet)\" && exit 0"

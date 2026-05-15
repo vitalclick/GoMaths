@@ -10,6 +10,7 @@ import { AuthModule } from "./auth/auth.module";
 import { JwtAuthGuard } from "./auth/auth.guard";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ThrottlingModule } from "./throttling/throttling.module";
+import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { ParentsModule } from "./parents/parents.module";
 import { SchedulerModule } from "./scheduler/scheduler.module";
@@ -18,6 +19,7 @@ import { SchedulerModule } from "./scheduler/scheduler.module";
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    MailModule,
     ThrottlingModule,
     AuthModule,
     CurriculumModule,

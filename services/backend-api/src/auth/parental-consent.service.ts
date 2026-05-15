@@ -9,6 +9,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { createHash, randomUUID } from "node:crypto";
+import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma/prisma.service";
 
 /**
@@ -58,6 +59,7 @@ export class ParentalConsentService {
   constructor(
     private readonly jwt: JwtService,
     private readonly prisma: PrismaService,
+    private readonly mail: MailService,
     config: ConfigService,
   ) {
     const fallback = config.get<string>("JWT_ACCESS_SECRET", "dev-access-secret-change-me");
@@ -109,12 +111,14 @@ export class ParentalConsentService {
 
     const inviteUrl = `${this.publicAppUrl}/parental-consent/confirm?token=${encodeURIComponent(token)}`;
 
-    // The email transport is a Phase 1 plug-in. For now we log it so a
-    // developer can copy the link out of stdout, and emit a structured
-    // breadcrumb that an ops integration can pick up.
     this.logger.log(
-      `Parental-consent invite: parent=${parentEmail} student=${studentEmail} url=${inviteUrl}`,
+      `Parental-consent invite: parent=${parentEmail} student=${studentEmail} id=${id}`,
     );
+    // MailService transparently picks Resend or the log-only fallback
+    // based on RESEND_API_KEY. Send is fire-and-forget — the consent
+    // row is already PENDING, the parent can retry /request if the
+    // mail never lands.
+    await this.mail.sendParentalConsentInvite({ parentEmail, studentEmail, inviteUrl });
 
     return { id, inviteUrl, expiresAt: expiresAt.toISOString() };
   }
