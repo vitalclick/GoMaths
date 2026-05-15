@@ -2,18 +2,17 @@ import { Module } from "@nestjs/common";
 import { ScheduleModule } from "@nestjs/schedule";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { StreakReminderTask } from "./streak-reminder.task";
+import { LeaderService } from "./leader.service";
 
 /**
- * Cron jobs and other scheduled tasks. Add new tasks as @Injectable
- * classes with @Cron methods, then list them in `providers` here.
- *
- * Phase 1: ensure only one pod runs each task in production. Either:
- *   - mark some pods as the "scheduler pod" via env (SCHEDULER_ENABLED=1)
- *   - or use Redis-backed leader election (e.g. via the Redis we already
- *     have for the throttler)
+ * Cron jobs and other scheduled tasks. Each task wraps its work in
+ * `LeaderService.runIfLeader(name, ttl, fn)` so only one backend pod
+ * actually fires per scheduled tick — relevant once the deployment
+ * is multi-replica in af-south-1.
  */
 @Module({
   imports: [ScheduleModule.forRoot(), NotificationsModule],
-  providers: [StreakReminderTask],
+  providers: [LeaderService, StreakReminderTask],
+  exports: [LeaderService],
 })
 export class SchedulerModule {}

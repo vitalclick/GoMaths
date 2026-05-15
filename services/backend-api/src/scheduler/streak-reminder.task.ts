@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { LeaderService } from "./leader.service";
 
 /**
  * Daily streak reminder.
@@ -30,6 +31,7 @@ export class StreakReminderTask {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly leader: LeaderService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_6PM, { name: "streak-reminder" })
@@ -38,7 +40,13 @@ export class StreakReminderTask {
       this.logger.warn("Skipping streak reminder — Prisma not enabled");
       return;
     }
+    // Hold the lock for 30 minutes — comfortably longer than the worst
+    // case fan-out of a few thousand pushes. Other pods that see the
+    // 6PM tick will SET NX and skip.
+    await this.leader.runIfLeader("streak-reminder", 30 * 60_000, () => this.doRun());
+  }
 
+  private async doRun(): Promise<void> {
     const cutoff = new Date(Date.now() - StreakReminderTask.QUIET_WINDOW_HOURS * 3600_000);
 
     // Students with NO progress event since `cutoff`. Selecting only the
