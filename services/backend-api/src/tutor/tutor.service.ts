@@ -29,8 +29,9 @@ export class TutorService {
     this.validationUrl = config.get("VALIDATION_SERVICE_URL", "http://localhost:8003");
   }
 
-  listConversations(studentId: string) {
-    return this.conversations.list(studentId).map(({ id, topicId, createdAt, updatedAt, turns }) => ({
+  async listConversations(studentId: string) {
+    const convs = await this.conversations.list(studentId);
+    return convs.map(({ id, topicId, createdAt, updatedAt, turns }) => ({
       id,
       topicId,
       createdAt,
@@ -49,18 +50,18 @@ export class TutorService {
     input: { message: string; topicId?: string; conversationId?: string },
   ) {
     const conv = input.conversationId
-      ? this.conversations.get(studentId, input.conversationId)
-      : this.conversations.create(studentId, input.topicId);
+      ? await this.conversations.get(studentId, input.conversationId)
+      : await this.conversations.create(studentId, input.topicId);
 
     const userTurn: Turn = {
       role: "user",
       text: input.message,
       occurredAt: new Date().toISOString(),
     };
-    this.conversations.appendTurn(studentId, conv.id, userTurn);
+    await this.conversations.appendTurn(studentId, conv.id, userTurn);
 
-    const history = this.conversations
-      .recentTurns(studentId, conv.id)
+    const recent = await this.conversations.recentTurns(studentId, conv.id);
+    const history = recent
       .slice(0, -1) // exclude the just-appended user turn (sent separately as `message`)
       .map((t) => ({ role: t.role === "maya" ? "assistant" : "user", content: t.text }));
 
@@ -95,7 +96,7 @@ export class TutorService {
       occurredAt: new Date().toISOString(),
       validated,
     };
-    this.conversations.appendTurn(studentId, conv.id, mayaTurn);
+    await this.conversations.appendTurn(studentId, conv.id, mayaTurn);
 
     return { conversationId: conv.id, reply, validated };
   }
