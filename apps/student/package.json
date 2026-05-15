@@ -4,6 +4,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
+    "postinstall": "node scripts/bundle-katex-css.mjs",
     "dev": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",

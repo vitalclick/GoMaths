@@ -1,22 +1,21 @@
 /**
  * Cross-platform math renderer.
  *
- * Renders a LaTeX string via KaTeX. On web we drop into a raw <div> with
+ * Renders a LaTeX string via KaTeX. On web we drop into a raw <span> with
  * `dangerouslySetInnerHTML` (react-native-web allows it). On native we
  * use a small WebView so iOS and Android get the same KaTeX output.
  *
- * Phase 1 notes:
- *  - Inline `<Math>` use in chat creates one WebView per math chunk on
- *    native. For long chat threads, consider rendering whole messages
- *    as a single WebView (one round-trip to JS bridge instead of N).
- *  - KaTeX CSS is loaded from a CDN in the WebView HTML for the
- *    prototype. Production should bundle katex.min.css locally.
+ * KaTeX CSS is bundled locally via the postinstall hook in
+ * `scripts/bundle-katex-css.mjs`. If the bundle is empty (the postinstall
+ * hook hasn't run yet) we fall back to the CDN at runtime — the lesson
+ * still renders but requires network connectivity.
  */
 
 import { createElement, useMemo } from "react";
 import { Platform, View } from "react-native";
 import { WebView } from "react-native-webview";
 import katex from "katex";
+import { KATEX_CSS as BUNDLED_CSS } from "../lib/katex-css";
 
 export interface MathProps {
   latex: string;
@@ -24,7 +23,14 @@ export interface MathProps {
   fontSize?: number;
 }
 
-const KATEX_CSS = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
+const CDN_FALLBACK = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
+
+/** Inline the bundled stylesheet when available; fall back to a CDN link. */
+function katexStyleBlock(): string {
+  return BUNDLED_CSS
+    ? `<style>${BUNDLED_CSS}</style>`
+    : `<link rel="stylesheet" href="${CDN_FALLBACK}">`;
+}
 
 export function Math({ latex, display = false, fontSize = 16 }: MathProps) {
   const html = useMemo(
@@ -51,7 +57,7 @@ export function Math({ latex, display = false, fontSize = 16 }: MathProps) {
 
   const wrapped = `<!DOCTYPE html><html><head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="${KATEX_CSS}">
+    ${katexStyleBlock()}
     <style>
       html, body { margin: 0; padding: 0; background: transparent; color: #0E1A14;
         font-size: ${fontSize}px; }
@@ -73,3 +79,5 @@ export function Math({ latex, display = false, fontSize = 16 }: MathProps) {
     </View>
   );
 }
+
+export { katexStyleBlock };

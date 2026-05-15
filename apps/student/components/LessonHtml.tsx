@@ -1,29 +1,30 @@
 /**
- * Render a full lesson (markdown + $...$ math) as a single WebView.
+ * Render a full lesson (markdown + $...$ math) as a single WebView (or
+ * iframe on web).
  *
- * Cheaper than rendering N math chunks plus a markdown parser separately.
- * The lesson markdown is converted to HTML in-app, then KaTeX in the
- * WebView auto-renders `$...$` and `$$...$$`.
+ * Math is rendered to HTML in-app via `katex.renderToString` before the
+ * document is built — so the WebView/iframe only needs the KaTeX *CSS*,
+ * not the KaTeX JS bundle. Combined with the bundled `katex-css.ts`,
+ * this means lessons render offline once the app is installed.
  *
  * Phase 1: ship a real markdown-it pipeline (lists, tables, code blocks
- * with proper syntax). Phase 0+ does just enough markdown — headings,
+ * with syntax). Phase 0+ does just enough markdown — headings,
  * paragraphs, bold/italic, math — to make the two existing lessons
  * render correctly.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Platform, View, type ViewStyle } from "react-native";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
+import katex from "katex";
+import { KATEX_CSS as BUNDLED_CSS } from "../lib/katex-css";
 
 interface Props {
   markdown: string;
   style?: ViewStyle;
 }
 
-const KATEX_CSS = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
-const KATEX_JS = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js";
-const AUTO_RENDER_JS =
-  "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js";
+const CDN_CSS_FALLBACK = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
 
 const PAGE_CSS = `
   html, body { margin: 0; padding: 16px 4px; background: transparent;
@@ -41,22 +42,30 @@ const PAGE_CSS = `
   .katex-display { margin: 10px 0; overflow-x: auto; overflow-y: hidden; }
 `;
 
+/** Substitute `$$...$$` and `$...$` blocks with KaTeX-rendered HTML. */
+function renderMathSubstitutions(html: string): string {
+  // Display first ($$...$$) so $$ pairs don't get partially consumed by
+  // the inline ($...$) pass.
+  return html
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) =>
+      katex.renderToString(expr, { displayMode: true, throwOnError: false, strict: "ignore" }),
+    )
+    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) =>
+      katex.renderToString(expr, { displayMode: false, throwOnError: false, strict: "ignore" }),
+    );
+}
+
 // Very small markdown → HTML converter. Phase 1 replaces with markdown-it.
 function mdToHtml(md: string): string {
-  // Escape angle brackets first to avoid HTML injection from authored text.
   let html = md.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]!);
 
-  // Block-level math: $$...$$ stays as-is (KaTeX auto-render handles it)
-  // Headings.
   html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
   html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
   html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
 
-  // Bold / italic. (Naive — fine for our authored content.)
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/(?<!\w)\*(.+?)\*(?!\w)/g, "<em>$1</em>");
 
-  // Lists: turn lines starting with `- ` into <ul><li>…</li></ul>
   html = html.replace(/(^|\n)((?:- .+(?:\n|$))+)/g, (_, lead, block) => {
     const items = block
       .trim()
@@ -66,7 +75,6 @@ function mdToHtml(md: string): string {
     return `${lead}<ul>${items}</ul>`;
   });
 
-  // Paragraphs: anything that's not already a block element.
   html = html
     .split(/\n{2,}/)
     .map((chunk) =>
@@ -76,33 +84,36 @@ function mdToHtml(md: string): string {
     )
     .join("\n");
 
-  return html;
+  return renderMathSubstitutions(html);
+}
+
+function katexCssBlock(): string {
+  return BUNDLED_CSS
+    ? `<style>${BUNDLED_CSS}</style>`
+    : `<link rel="stylesheet" href="${CDN_CSS_FALLBACK}">`;
 }
 
 function buildHtmlDoc(markdown: string): string {
   const body = mdToHtml(markdown);
+  // The only script in the document is the resize-postMessage helper —
+  // no external JS needed since math is pre-rendered.
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="${KATEX_CSS}">
-  <script defer src="${KATEX_JS}"></script>
-  <script defer src="${AUTO_RENDER_JS}"
-    onload="renderMathInElement(document.body, {
-      delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '$', right: '$', display: false }
-      ],
-      throwOnError: false
-    });
-    if (window.ReactNativeWebView) {
-      requestAnimationFrame(() =>
-        window.ReactNativeWebView.postMessage(String(document.body.scrollHeight))
-      );
-    }"></script>
+  ${katexCssBlock()}
   <style>${PAGE_CSS}</style>
 </head>
-<body>${body}</body>
+<body>
+  ${body}
+  <script>
+    if (window.ReactNativeWebView) {
+      requestAnimationFrame(function () {
+        window.ReactNativeWebView.postMessage(String(document.body.scrollHeight));
+      });
+    }
+  </script>
+</body>
 </html>`;
 }
 
@@ -111,8 +122,6 @@ export function LessonHtml({ markdown, style }: Props) {
   const [height, setHeight] = useState(800);
 
   if (Platform.OS === "web") {
-    // On web, inject the doc as an iframe srcDoc — gives us style isolation
-    // for KaTeX without polluting the app's own CSS scope.
     return (
       <iframe
         title="lesson"
@@ -124,13 +133,12 @@ export function LessonHtml({ markdown, style }: Props) {
           background: "transparent",
         }}
         onLoad={(e) => {
-          // Phase 1: switch to ResizeObserver instead of single load measurement.
           const target = e.currentTarget as HTMLIFrameElement;
           try {
             const body = target.contentDocument?.body;
             if (body) setHeight(body.scrollHeight + 16);
           } catch {
-            // cross-origin guard — shouldn't happen for srcDoc, but be safe
+            // same-origin guard — srcDoc shouldn't trip it, but be safe
           }
         }}
       />
