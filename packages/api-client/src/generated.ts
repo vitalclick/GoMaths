@@ -179,6 +179,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/parental-consent/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mail a parental-consent invite to a parent
+         * @description Parent submits their email + the minor's email. The server mints a
+         *     signed JWT, persists a PENDING ParentalConsent row, and (in
+         *     production) mails the parent a confirmation link. In dev the URL
+         *     is echoed in the response and logged so a developer can copy it.
+         *     Repeated requests for the same (parentEmail, studentEmail) pair
+         *     refresh the existing PENDING row rather than creating duplicates.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ParentalConsentRequest"];
+                };
+            };
+            responses: {
+                /** @description Invite created or refreshed */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ParentalConsentRequestAccepted"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/parental-consent/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm parental consent (parent has clicked the email link)
+         * @description Verifies the invite JWT signature + freshness, marks the consent
+         *     row CONFIRMED, and returns a short-lived receipt token. The
+         *     student app submits that receipt as `parentalConsentToken` on
+         *     /auth/register.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ParentalConsentConfirmRequest"];
+                };
+            };
+            responses: {
+                /** @description Confirmed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ParentalConsentConfirmResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                /** @description Consent record not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Consent expired or already consumed */
+                410: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/parental-consent/poll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Poll a consent record from the student app
+         * @description The student app polls this after issuing a consent request to learn
+         *     when the parent has confirmed. The first CONFIRMED response carries
+         *     a one-time `receiptToken` the app submits as `parentalConsentToken`
+         *     on /auth/register. Subsequent CONFIRMED responses omit the token.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        id: string;
+                        /** Format: email */
+                        studentEmail: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {string} */
+                            status: "PENDING" | "CONFIRMED" | "CONSUMED" | "EXPIRED";
+                            /** @description Present only on the first CONFIRMED poll. */
+                            receiptToken?: string;
+                            /** Format: date-time */
+                            expiresAt?: string;
+                        };
+                    };
+                };
+                /** @description Consent record not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/users/me": {
         parameters: {
             query?: never;
@@ -857,9 +1037,45 @@ export interface components {
             password: string;
             displayName: string;
             grade: components["schemas"]["Grade"];
+            /**
+             * @description Year of birth. Server uses this to determine whether the learner
+             *     is a minor (< 18); minors must provide `parentalConsentToken`.
+             */
+            birthYear: number;
             language?: components["schemas"]["Language"];
-            /** @description Required for under-18 sign-ups. Issued by the consent flow. */
+            /**
+             * @description Receipt token from /auth/parental-consent/confirm. REQUIRED for
+             *     sign-ups where the server-derived age is < 18; ignored otherwise.
+             */
             parentalConsentToken?: string;
+        };
+        ParentalConsentRequest: {
+            /** Format: email */
+            parentEmail: string;
+            /** Format: email */
+            studentEmail: string;
+        };
+        ParentalConsentRequestAccepted: {
+            id: string;
+            /**
+             * Format: uri
+             * @description URL containing the signed invite JWT. In production the server mails this to the parent; in dev it's echoed for testing.
+             */
+            inviteUrl: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        ParentalConsentConfirmRequest: {
+            /** @description The invite JWT extracted from the email link. */
+            token: string;
+        };
+        ParentalConsentConfirmResponse: {
+            /** Format: email */
+            studentEmail: string;
+            /** @description Short-lived receipt to submit as `parentalConsentToken` on /auth/register. */
+            receiptToken: string;
+            /** Format: date-time */
+            expiresAt: string;
         };
         LoginRequest: {
             /** Format: email */

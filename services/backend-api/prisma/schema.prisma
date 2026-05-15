@@ -372,3 +372,48 @@ model ConversationTurn {
 
   @@index([conversationId, occurredAt])
 }
+
+enum ParentalConsentStatus {
+  PENDING
+  CONFIRMED
+  CONSUMED
+  EXPIRED
+}
+
+/// POPIA + Children's Act parental-consent record for under-18 sign-ups.
+///
+/// Flow:
+///   1. Parent submits POST /api/auth/parental-consent/request with their
+///      email + the minor's email. Row is created with status=PENDING and
+///      a signed JWT is mailed to the parent.
+///   2. Parent clicks the email link. The student app calls
+///      POST /api/auth/parental-consent/confirm with that JWT. Row moves
+///      to CONFIRMED and a *consumption* token is returned to the app.
+///   3. Student app calls POST /api/auth/register with the consumption
+///      token. Row moves to CONSUMED and the new Student row's
+///      parentalConsentAt is stamped.
+///
+/// `tokenHash` is sha256(JWT) so we can revoke a leaked token without
+/// breaking signatures. `studentEmail` is lower-cased + indexed so the
+/// register endpoint can look it up.
+model ParentalConsent {
+  id            String                @id @default(cuid())
+  parentEmail   String
+  studentEmail  String
+  tokenHash     String                @unique
+  status        ParentalConsentStatus @default(PENDING)
+  expiresAt     DateTime
+  createdAt     DateTime              @default(now())
+  confirmedAt   DateTime?
+  consumedAt    DateTime?
+  /// Captured when the parent confirms (audit trail for POPIA DSARs).
+  confirmIp        String?
+  confirmUaHash    String?
+  /// Set the first time a CONFIRMED row is polled and a receipt is
+  /// issued. Subsequent polls see the same value and return without
+  /// re-issuing — the app gets exactly one chance to capture it.
+  receiptIssuedAt  DateTime?
+
+  @@index([studentEmail, status])
+  @@index([expiresAt])
+}

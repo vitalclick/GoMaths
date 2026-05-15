@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { createHash, randomBytes } from "node:crypto";
 import type { LoginDto, RegisterDto } from "./auth.dto";
+import { ParentalConsentService } from "./parental-consent.service";
 import { UsersService, type PublicUser } from "./users.service";
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -44,12 +45,22 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly jwt: JwtService,
     private readonly prisma: PrismaService,
+    private readonly consent: ParentalConsentService,
     config: ConfigService,
   ) {
     this.refreshSecret = config.get<string>("JWT_REFRESH_SECRET", "dev-refresh-secret-change-me");
   }
 
   async register(dto: RegisterDto): Promise<AuthSession> {
+    if (isMinor(dto.birthYear)) {
+      if (!dto.parentalConsentToken) {
+        throw new BadRequestException(
+          "Parental consent is required for learners under 18. Complete /auth/parental-consent/request first.",
+        );
+      }
+      // Throws if invalid / expired / not confirmed / email mismatch.
+      await this.consent.consumeForRegistration(dto.parentalConsentToken, dto.email);
+    }
     const user = await this.users.createStudent(dto);
     return this.issueSession(user);
   }
@@ -169,4 +180,14 @@ export class AuthService {
  */
 function hashRefresh(token: string): string {
   return createHash("sha256").update(token).digest("hex");
+}
+
+/**
+ * POPIA / Children's Act: under-18 ⇒ parental consent required. We use
+ * a year-only comparison (no DoB) to minimise PII; a learner born in the
+ * cutoff year is treated as a minor for the whole calendar year, which
+ * is a conservative bias that suits the regulation.
+ */
+function isMinor(birthYear: number): boolean {
+  return new Date().getUTCFullYear() - birthYear < 18;
 }

@@ -8,6 +8,8 @@ import { useAuth } from "../lib/auth";
 
 type Step = "details" | "grade" | "consent";
 
+type ConsentPhase = "collect" | "awaiting-parent" | "ready";
+
 interface FormState {
   displayName: string;
   email: string;
@@ -19,10 +21,16 @@ interface FormState {
   consentAcknowledged: boolean;
 }
 
+interface ConsentState {
+  phase: ConsentPhase;
+  consentId?: string;
+  receiptToken?: string;
+}
+
 const currentYear = new Date().getFullYear();
 
 export default function RegisterScreen() {
-  const { register } = useAuth();
+  const { register, requestParentalConsent, pollParentalConsent } = useAuth();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("details");
@@ -38,6 +46,7 @@ export default function RegisterScreen() {
   });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [consent, setConsent] = useState<ConsentState>({ phase: "collect" });
 
   const patch = (p: Partial<FormState>) => setForm((prev) => ({ ...prev, ...p }));
   const age = form.birthYear ? Math.max(0, currentYear - Number(form.birthYear)) : null;
@@ -62,24 +71,65 @@ export default function RegisterScreen() {
     return null;
   };
 
+  const sendConsentInvite = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const result = await requestParentalConsent(form.parentEmail.trim(), form.email.trim());
+      setConsent({ phase: "awaiting-parent", consentId: result.id });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const checkConsent = async () => {
+    if (!consent.consentId) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const result = await pollParentalConsent(consent.consentId, form.email.trim());
+      if (result.status === "CONFIRMED" && result.receiptToken) {
+        setConsent({
+          phase: "ready",
+          consentId: consent.consentId,
+          receiptToken: result.receiptToken,
+        });
+      } else if (result.status === "CONFIRMED") {
+        // Confirmed but receipt was already issued and lost. Re-request a
+        // fresh invite — the parent can click the new link.
+        setError(
+          "Consent was confirmed but the receipt has already been used. Asking your parent to confirm again.",
+        );
+        setConsent({ phase: "collect" });
+      } else if (result.status === "EXPIRED") {
+        setError("The consent invite expired. Please ask your parent to confirm again.");
+        setConsent({ phase: "collect" });
+      } else {
+        setError(
+          "Still waiting on your parent. Please make sure they've clicked the link in their email.",
+        );
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const submit = async () => {
     setError(null);
     setSubmitting(true);
     try {
-      // POPIA Phase 0+: we send a stub `parentalConsentToken` when the
-      // learner is a minor. Phase 1 must replace this with a real
-      // out-of-band consent flow (email the parent a confirmation link
-      // that mints a token, then submit THAT token here).
-      const parentalConsentToken = isMinor
-        ? `stub:${encodeURIComponent(form.parentEmail.trim().toLowerCase())}`
-        : undefined;
-
+      const yr = Number(form.birthYear);
       await register({
         email: form.email.trim(),
         password: form.password,
         displayName: form.displayName.trim(),
         grade: typeof form.grade === "number" ? form.grade : 1,
-        parentalConsentToken,
+        birthYear: yr,
+        parentalConsentToken: isMinor ? consent.receiptToken : undefined,
       });
       router.replace("/");
     } catch (e) {
@@ -194,7 +244,7 @@ export default function RegisterScreen() {
           </View>
         )}
 
-        {step === "consent" && (
+        {step === "consent" && consent.phase === "collect" && (
           <View className="mt-6">
             <Text className="font-display text-2xl font-bold text-foreground">
               Parent or guardian
@@ -251,7 +301,7 @@ export default function RegisterScreen() {
 
             <View className="mt-8 gap-3">
               <Button
-                label={submitting ? "Creating…" : "Create account"}
+                label={submitting ? "Sending…" : "Email my parent"}
                 variant="primary"
                 size="lg"
                 fullWidth
@@ -262,7 +312,7 @@ export default function RegisterScreen() {
                     setError(v);
                     return;
                   }
-                  submit();
+                  sendConsentInvite();
                 }}
               />
               <Button
@@ -271,6 +321,69 @@ export default function RegisterScreen() {
                 size="md"
                 fullWidth
                 onPress={() => setStep("grade")}
+              />
+            </View>
+          </View>
+        )}
+
+        {step === "consent" && consent.phase === "awaiting-parent" && (
+          <View className="mt-6">
+            <Text className="font-display text-2xl font-bold text-foreground">
+              Waiting for your parent
+            </Text>
+            <Text className="mt-1 text-sm text-muted-foreground">
+              We've emailed <Text className="font-semibold">{form.parentEmail.trim()}</Text> a
+              confirmation link. Ask them to open it from their phone or computer, then tap the
+              button below.
+            </Text>
+
+            <Card className="mt-5">
+              <Text className="text-xs text-muted-foreground">
+                The link expires after 7 days. Once your parent clicks it, this screen will let you
+                finish creating your account.
+              </Text>
+            </Card>
+
+            {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
+
+            <View className="mt-8 gap-3">
+              <Button
+                label={submitting ? "Checking…" : "I've confirmed — check now"}
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={submitting}
+                onPress={checkConsent}
+              />
+              <Button
+                label="Use a different email"
+                variant="ghost"
+                size="md"
+                fullWidth
+                disabled={submitting}
+                onPress={() => setConsent({ phase: "collect" })}
+              />
+            </View>
+          </View>
+        )}
+
+        {step === "consent" && consent.phase === "ready" && (
+          <View className="mt-6">
+            <Text className="font-display text-2xl font-bold text-foreground">All set</Text>
+            <Text className="mt-1 text-sm text-muted-foreground">
+              Your parent's confirmation is on file. Create your account to start learning.
+            </Text>
+
+            {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
+
+            <View className="mt-8 gap-3">
+              <Button
+                label={submitting ? "Creating…" : "Create account"}
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={submitting}
+                onPress={submit}
               />
             </View>
           </View>

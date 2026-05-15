@@ -44,7 +44,20 @@ export interface RegisterInput {
   password: string;
   displayName: string;
   grade: number;
+  birthYear: number;
   parentalConsentToken?: string;
+}
+
+export interface ParentalConsentRequestResult {
+  id: string;
+  inviteUrl: string;
+  expiresAt: string;
+}
+
+export interface ParentalConsentPollResult {
+  status: "PENDING" | "CONFIRMED" | "CONSUMED" | "EXPIRED";
+  receiptToken?: string;
+  expiresAt?: string;
 }
 
 export interface LoginInput {
@@ -58,6 +71,11 @@ interface AuthContextValue {
   register: (input: RegisterInput) => Promise<void>;
   login: (input: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
+  requestParentalConsent: (
+    parentEmail: string,
+    studentEmail: string,
+  ) => Promise<ParentalConsentRequestResult>;
+  pollParentalConsent: (id: string, studentEmail: string) => Promise<ParentalConsentPollResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -129,9 +147,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const requestParentalConsent = useCallback(
+    async (parentEmail: string, studentEmail: string): Promise<ParentalConsentRequestResult> => {
+      if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+      const res = await fetch(`${apiUrl}/api/auth/parental-consent/request`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ parentEmail, studentEmail }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      return (await res.json()) as ParentalConsentRequestResult;
+    },
+    [],
+  );
+
+  const pollParentalConsent = useCallback(
+    async (id: string, studentEmail: string): Promise<ParentalConsentPollResult> => {
+      if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+      const res = await fetch(`${apiUrl}/api/auth/parental-consent/poll`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id, studentEmail }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      return (await res.json()) as ParentalConsentPollResult;
+    },
+    [],
+  );
+
   const value = useMemo(
-    () => ({ user, loading, register, login, logout }),
-    [user, loading, register, login, logout],
+    () => ({
+      user,
+      loading,
+      register,
+      login,
+      logout,
+      requestParentalConsent,
+      pollParentalConsent,
+    }),
+    [user, loading, register, login, logout, requestParentalConsent, pollParentalConsent],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
