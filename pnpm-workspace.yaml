@@ -2,3 +2,4 @@ packages:
   - "apps/*"
   - "packages/*"
   - "services/backend-api"
+  - "e2e"
