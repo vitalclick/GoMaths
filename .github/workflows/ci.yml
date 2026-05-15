@@ -26,6 +26,17 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Regenerate API client + check it's committed
+        run: |
+          pnpm --filter @gomaths/api-client generate
+          if ! git diff --quiet -- packages/api-client/src/generated.ts; then
+            echo "::error::packages/api-client/src/generated.ts is stale."
+            echo "Run 'pnpm --filter @gomaths/api-client generate' and commit."
+            git --no-pager diff -- packages/api-client/src/generated.ts | head -100
+            exit 1
+          fi
+
       - run: pnpm turbo run typecheck
       - run: pnpm turbo run lint
       - run: pnpm format:check
