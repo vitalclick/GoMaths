@@ -8,44 +8,46 @@ GoMaths Parent App.
 ## Purpose
 Give parents visibility into their child's learning + actionable nudges.
 
-## Core surfaces
-- Child(ren) selector (linked accounts)
-- Weekly progress summary + strengths/weaknesses
-- Time-on-task chart
-- Recent activity feed
-- Subscription & billing
-- Push notifications (streak reminders, achievements, weekly digest)
-- Optional: read-only view of recent AI tutor conversations (parental controls per POPIA)
+## Status
+**Phase 1.5 scaffold.** This boots end-to-end:
 
-## Stack
-Same Expo + NativeWind + shared `packages/*` as student app. See `apps/student/README.md`.
+- Login screen → backend `/api/auth/login`
+- Tokens persist via `expo-secure-store` (web: localStorage), keyed
+  separately from the Student app so a parent + child sharing a device
+  can both sign in
+- Push registration with `appSlug=parent` after login — backend already
+  fans out via `NotificationsService.send({ ..., appSlug: "parent" })`
+- Dashboard is a placeholder; surfaces real content once the linked-
+  child + weekly-digest features ship in Phase 1.5
+
+```sh
+pnpm install
+EXPO_PUBLIC_API_URL=http://localhost:4000 \
+  pnpm --filter @gomaths/parent dev
+```
+
+## Architecture inheritance
+- `@gomaths/design-tokens` + `@gomaths/ui` + `@gomaths/api-client` —
+  same as Student app
+- `@sentry/react-native` is included; init landed identically to
+  Student. Phase 1.5 should set `appSlug` and `userId` on the Sentry
+  scope.
+
+## What's still to build (Phase 1.5 spec)
+- Linked-child invite flow (handshake with the Student app's consent
+  step that emits `parentalConsentToken`)
+- Per-child weekly summary view (`/api/progress/summary` per linked
+  child, fronted by a parent-scoped endpoint to be added in the
+  backend)
+- Time-on-task chart
+- Recent-activity feed
+- Subscription & billing (Stitch / Paystack — pending payments ADR)
+- Read-only AI tutor conversation viewer (POPIA: parent can see, can't
+  reply)
 
 ## Compliance notes
-- POPIA: parental consent flow for under-18 learners initiates here
-- App Store / Play Store: not a kids' app per se (parents are adults), but **the linked child experience falls under Apple Kids Category / Google Designed for Families**. Plan store metadata accordingly.
-
-## Push notifications integration
-
-The backend already exposes `/api/notifications/tokens` and ships a
-working `NotificationsService` (Expo Push API client, per-app-slug
-fan-out). When this app is scaffolded:
-
-1. Add `expo-notifications` + `expo-device` to dependencies.
-2. Copy `apps/student/lib/push.ts` over and change `APP_SLUG = "parent"`.
-3. Call `registerForPush()` from the auth provider after sign-in.
-4. Backend can then target the parent's devices via:
-   ```ts
-   notifications.send({
-     userId: parent.id,
-     title: "Weekly digest ready",
-     body: "Tap to see how Aisha did this week",
-     appSlug: "parent",
-     data: { kind: "weekly-digest" },
-   });
-   ```
-
-Streak-reminder + weekly-digest cron jobs live on the backend (Phase 2)
-and call `NotificationsService.send` with the right `appSlug`.
-
-## Status
-Not yet scaffolded.
+- POPIA: parental consent flow for under-18 learners is initiated by
+  the Student app and confirmed via email
+- App Store / Play Store: not a kids' app per se (parents are adults),
+  but the linked child experience falls under Apple Kids Category /
+  Google Designed for Families — plan store metadata accordingly.
