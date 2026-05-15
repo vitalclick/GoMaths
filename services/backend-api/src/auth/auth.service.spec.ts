@@ -3,14 +3,16 @@ import { JwtService } from "@nestjs/jwt";
 import { UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { UsersService } from "./users.service";
+import type { PrismaService } from "../prisma/prisma.service";
 
 function makeService() {
-  const users = new UsersService();
+  const prismaStub = { enabled: false } as unknown as PrismaService;
+  const users = new UsersService(prismaStub);
   const jwt = new JwtService({ secret: "test-access-secret", signOptions: { expiresIn: "15m" } });
   const config = {
     get: (_key: string, fallback: string) => fallback,
   } as unknown as ConfigService;
-  return { auth: new AuthService(users, jwt, config), users, jwt };
+  return { auth: new AuthService(users, jwt, prismaStub, config), users, jwt };
 }
 
 const VALID_REGISTRATION = {
@@ -20,7 +22,7 @@ const VALID_REGISTRATION = {
   grade: 9,
 };
 
-describe("AuthService", () => {
+describe("AuthService (in-memory)", () => {
   it("registers a student and returns a session", async () => {
     const { auth } = makeService();
     const session = await auth.register(VALID_REGISTRATION);

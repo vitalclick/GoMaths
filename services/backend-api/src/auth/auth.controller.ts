@@ -40,8 +40,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get("users/me")
   @ApiOperation({ summary: "Current user" })
-  me(@CurrentUser() claims: JwtClaims) {
-    const user = this.users.getById(claims.sub);
+  async me(@CurrentUser() claims: JwtClaims) {
+    const user = await this.users.getById(claims.sub);
     if (!user) throw new Error("User not found"); // should never happen if token is valid
     return user;
   }

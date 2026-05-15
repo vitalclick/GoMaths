@@ -6,44 +6,51 @@ committed to git and applied in order.
 ## Local dev (first time)
 
 ```sh
-# 1. Bring up a local Postgres (or point DATABASE_URL at an existing one)
-docker run --name gomaths-pg -e POSTGRES_PASSWORD=devpass \
-  -e POSTGRES_DB=gomaths -p 5432:5432 -d postgres:16
+# 1. Start Postgres (Docker)
+pnpm --filter @gomaths/backend-api db:up
 
-# 2. Set DATABASE_URL in services/backend-api/.env
-echo 'DATABASE_URL="postgresql://postgres:devpass@localhost:5432/gomaths?schema=public"' \
-  >> services/backend-api/.env
+# 2. Set DATABASE_URL
+cat >> services/backend-api/.env <<'EOF'
+DATABASE_URL="postgresql://gomaths:devpass@localhost:5432/gomaths?schema=public"
+EOF
 
-# 3. Apply migrations + generate the typed client
-pnpm --filter @gomaths/backend-api prisma:migrate:dev
+# 3. Apply migrations + generate client
+pnpm --filter @gomaths/backend-api prisma:migrate:deploy
 pnpm --filter @gomaths/backend-api prisma:generate
+
+# 4. Seed curriculum from curriculum-data/
+pnpm --filter @gomaths/backend-api prisma:seed
 ```
 
 Once `DATABASE_URL` is set the backend's `PrismaService` switches itself
-on, and `ConversationsService` starts persisting to Postgres
-automatically. With it unset, services keep using in-memory stores so
-the demo still runs.
+on, and every service that has a dual-mode store (Users, Sessions,
+Progress, Conversations) starts persisting to Postgres automatically.
+With it unset, services keep using in-memory stores so demos still run.
 
 ## Creating a new migration
 
 ```sh
 # 1. Edit schema.prisma
-# 2. Generate the SQL (Prisma compares against the DB shadow and writes
-#    the up migration)
+# 2. Generate the SQL
 pnpm --filter @gomaths/backend-api prisma migrate dev --name describe_change
 ```
 
 Prisma writes `migrations/<timestamp>_describe_change/migration.sql`.
-Review it in the PR — every column rename or drop should be examined
-for data-loss risk before merge.
+**Review every column rename or drop in the PR** — a Phase 1
+expand/contract migration is required for anything data-lossy.
 
 ## Production
 
 ```sh
 # In CI, after the image is built, before traffic shifts:
 pnpm --filter @gomaths/backend-api prisma:migrate:deploy
+pnpm --filter @gomaths/backend-api prisma:seed  # idempotent
 ```
 
-`migrate deploy` applies pending migrations in order and never drops a
-column. If the SQL would lose data, the team rolls a Phase 1
-expand/contract migration manually instead.
+## Tearing down local dev
+
+```sh
+pnpm --filter @gomaths/backend-api db:down   # stop the container
+# Volume `gomaths-pgdata` persists across `db:down` — remove with:
+docker volume rm gomaths-pgdata
+```
