@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "GoMaths · Teacher",
+    "slug": "gomaths-teacher",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "gomaths-teacher",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.za.gomaths.teacher"
+    },
+    "android": {
+      "package": "co.za.gomaths.teacher",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

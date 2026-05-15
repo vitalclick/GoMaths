@@ -396,6 +396,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/parents/me/children": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List children linked to the current parent
+         * @description Returns children whose parental-consent record was signed by the
+         *     current parent's email and has been consumed by a successful
+         *     registration. Phase 1 is read-only; Phase 1.5 adds invite-link
+         *     management and per-child progress.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LinkedChild"][];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/curriculum/grades/{grade}": {
         parameters: {
             query?: never;
@@ -1048,6 +1091,17 @@ export interface components {
              *     sign-ups where the server-derived age is < 18; ignored otherwise.
              */
             parentalConsentToken?: string;
+        };
+        LinkedChild: {
+            /** Format: email */
+            email: string;
+            displayName: string;
+            grade?: number | null;
+            /**
+             * Format: date-time
+             * @description When the parental consent was consumed (i.e. the child finished registering).
+             */
+            linkedAt: string;
         };
         ParentalConsentRequest: {
             /** Format: email */

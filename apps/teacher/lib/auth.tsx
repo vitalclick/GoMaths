@@ -1,11 +1,17 @@
 /**
- * Parent-app auth.
+ * Teacher-app auth.
  *
- * Same backend, same JWT plumbing as the Student app — but a Parent
- * account is a different `User.role` and a Parent never sees curriculum
- * directly. For Phase 1.5 we expose login + token refresh; full
- * registration (linking-to-a-child flow) lands when the Parent app has
- * a real UI to ship.
+ * Same backend, same JWT shape as the rest of the apps; storage keys
+ * are scoped to `gomaths.teacher.*` so a device shared between a
+ * teacher and a parent / student doesn't cross-pollute sessions.
+ *
+ * Phase 1 work this skeleton makes ready for:
+ *  - Roster fetch (GET /api/teachers/me/classes — not yet built)
+ *  - Per-class progress (GET /api/teachers/classes/:id/progress)
+ *  - Assignment CRUD
+ *
+ * The skeleton ships login + sign-out only; the rest lands as the
+ * curriculum / progress modules expose teacher-scoped endpoints.
  */
 
 import {
@@ -21,9 +27,9 @@ import * as storage from "./secure-storage";
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-const ACCESS_KEY = "gomaths.parent.access";
-const REFRESH_KEY = "gomaths.parent.refresh";
-const USER_KEY = "gomaths.parent.user";
+const ACCESS_KEY = "gomaths.teacher.access";
+const REFRESH_KEY = "gomaths.teacher.refresh";
+const USER_KEY = "gomaths.teacher.user";
 
 export interface PublicUser {
   id: string;
@@ -75,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       storage.setItem(USER_KEY, JSON.stringify(session.user)),
     ]);
     setUser(session.user);
-    void import("./push").then(({ registerForPush }) => registerForPush());
   }, []);
 
   const login = useCallback(
@@ -110,33 +115,6 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
   return ctx;
-}
-
-/**
- * Authenticated fetch for the parent app. Attaches the access token
- * and surfaces network errors directly — the parent surfaces are
- * narrow enough that we don't yet need the silent-refresh dance the
- * Student app does.
- */
-export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
-  const accessToken = await storage.getItem(ACCESS_KEY);
-  const headers = new Headers(init.headers ?? {});
-  if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
-  return fetch(`${apiUrl}${path}`, { ...init, headers });
-}
-
-export interface LinkedChild {
-  email: string;
-  displayName: string;
-  grade: number | null;
-  linkedAt: string;
-}
-
-export async function fetchLinkedChildren(): Promise<LinkedChild[]> {
-  const res = await authFetch("/api/parents/me/children");
-  if (!res.ok) throw new Error(await readError(res));
-  return (await res.json()) as LinkedChild[];
 }
 
 async function readError(res: Response): Promise<string> {

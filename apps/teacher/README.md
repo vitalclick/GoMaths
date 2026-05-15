@@ -30,4 +30,23 @@ Teachers will do most heavy work (assignment creation, grading) on web. Mobile i
 
 ## Status
 
-Not yet scaffolded.
+**Skeleton scaffolded.** Boots end-to-end with shared auth and the
+design tokens. No teacher-specific endpoints are wired in the backend
+yet — the index screen has placeholder cards for the surfaces above.
+
+What ships next (in rough order):
+
+1. Backend `teachers` module: `GET /api/teachers/me/classes`,
+   `GET /api/teachers/classes/:id/students`,
+   `GET /api/teachers/classes/:id/progress`.
+2. Roster import endpoint + School Admin → Teacher invite linkage.
+3. Assignment CRUD (table + endpoints; UI uses the curriculum bank).
+4. In-classroom live view (websocket; uses the existing SSE shape).
+
+## Running
+
+```sh
+EXPO_PUBLIC_API_URL=http://localhost:4000 \
+  pnpm --filter @gomaths/teacher dev
+# press `w` for web, `i` for iOS sim, `a` for Android emu
+```

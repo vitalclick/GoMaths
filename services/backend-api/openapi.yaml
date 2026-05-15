@@ -21,6 +21,7 @@ servers:
 tags:
   - name: auth
   - name: users
+  - name: parents
   - name: curriculum
   - name: progress
   - name: tutor
@@ -231,6 +232,26 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/User" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/parents/me/children:
+    get:
+      tags: [parents]
+      summary: List children linked to the current parent
+      description: |
+        Returns children whose parental-consent record was signed by the
+        current parent's email and has been consumed by a successful
+        registration. Phase 1 is read-only; Phase 1.5 adds invite-link
+        management and per-child progress.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LinkedChild" }
         "401":
           $ref: "#/components/responses/Unauthorized"
 
@@ -632,6 +653,22 @@ components:
           description: |
             Receipt token from /auth/parental-consent/confirm. REQUIRED for
             sign-ups where the server-derived age is < 18; ignored otherwise.
+
+    LinkedChild:
+      type: object
+      required: [email, displayName, linkedAt]
+      properties:
+        email: { type: string, format: email }
+        displayName: { type: string }
+        grade:
+          type: integer
+          minimum: 1
+          maximum: 12
+          nullable: true
+        linkedAt:
+          type: string
+          format: date-time
+          description: When the parental consent was consumed (i.e. the child finished registering).
 
     ParentalConsentRequest:
       type: object
