@@ -5,6 +5,7 @@ import { HealthController } from "./health/health.controller";
 import { CurriculumModule } from "./curriculum/curriculum.module";
 import { ProgressModule } from "./progress/progress.module";
 import { TutorModule } from "./tutor/tutor.module";
+import { SolverModule } from "./solver/solver.module";
 import { AuthModule } from "./auth/auth.module";
 import { JwtAuthGuard } from "./auth/auth.guard";
 
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from "./auth/auth.guard";
     CurriculumModule,
     ProgressModule,
     TutorModule,
+    SolverModule,
   ],
   controllers: [HealthController],
   providers: [
