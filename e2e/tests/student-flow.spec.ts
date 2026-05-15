@@ -12,12 +12,16 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await expect(page.getByText("GoMaths")).toBeVisible();
   await page.getByRole("button", { name: /create account/i }).click();
 
-  // Register form.
-  await page.getByText(/your name/i).click();
+  // Register: step 1 — details. 4 inputs (name, email, password, birth year).
+  // Use a birth year that makes the user an adult so we skip the consent step.
   await page.locator('input').nth(0).fill("Test Learner");
   await page.locator('input').nth(1).fill("test@example.com");
   await page.locator('input').nth(2).fill("supersecret");
-  // Grade default is 9 — leave it.
+  await page.locator('input').nth(3).fill("1995");
+  await page.getByRole("button", { name: /next: pick a grade/i }).click();
+
+  // Step 2 — grade picker. Tap Grade 9.
+  await page.getByText(/^Grade 9$/).click();
   await page.getByRole("button", { name: /^create account$/i }).click();
 
   // Dashboard appears with the user's name.
