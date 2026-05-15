@@ -72,6 +72,9 @@ export default function HomeScreen() {
           <Link href="/topics" asChild>
             <Button label="Browse topics" variant="primary" size="lg" fullWidth />
           </Link>
+          <Link href="/tutor" asChild>
+            <Button label="Chat with Maya" variant="accent" size="md" fullWidth />
+          </Link>
           <Link href="/progress" asChild>
             <Button label="My progress" variant="ghost" size="md" fullWidth />
           </Link>

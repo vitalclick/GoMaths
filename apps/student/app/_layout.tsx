@@ -20,6 +20,7 @@ export default function RootLayout() {
         <Stack.Screen name="topics" options={{ title: "Grade 9" }} />
         <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
+        <Stack.Screen name="tutor" options={{ title: "Maya · AI Tutor" }} />
         <Stack.Screen name="progress" options={{ title: "Progress" }} />
       </Stack>
     </AuthProvider>

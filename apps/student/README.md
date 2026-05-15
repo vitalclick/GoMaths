@@ -5,10 +5,12 @@ GoMaths Student App — Expo (iOS + Android + Web).
 ## Status (Phase 0+ prototype)
 
 Working end-to-end demo:
-- Home screen
+- Auth: register / login / refresh-on-401 via secure storage
+- Home dashboard (gated by auth)
 - Topics list (Grade 9) — loads from backend if `EXPO_PUBLIC_API_URL` is set, otherwise bundled fixtures
 - Topic lesson view (markdown rendering)
 - Practice quiz — submits to backend's `/api/curriculum/check`, which runs the SymPy validator
+- **Tutor chat with Maya** — real-time chat hitting `/api/tutor/messages` (backend → ai-services/tutor with the configured LLM provider). Per-message "Maths verified" badge based on the SymPy validation pipeline. Topic context auto-injected when entered from a lesson.
 - Progress screen — per-topic mastery from an in-memory store
 
 Two real Grade 9 algebra topics: Solving Linear Equations + Laws of Exponents.

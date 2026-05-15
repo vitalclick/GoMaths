@@ -63,9 +63,12 @@ export default function TopicScreen() {
           <Markdown style={markdownStyles}>{topic.lessonMarkdown}</Markdown>
         </View>
 
-        <View className="mt-8">
+        <View className="mt-8 gap-3">
           <Link href={{ pathname: "/practice/[id]", params: { id: topic.topicId } }} asChild>
             <Button label="Practice this topic" variant="primary" size="lg" fullWidth />
+          </Link>
+          <Link href={{ pathname: "/tutor", params: { topicId: topic.topicId } }} asChild>
+            <Button label="Ask Maya about this" variant="accent" size="md" fullWidth />
           </Link>
         </View>
       </ScrollView>
