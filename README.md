@@ -2,6 +2,15 @@
 
 AI-powered mathematics learning platform for South African and African learners.
 
+> ## 👋 If you've just been handed this branch
+>
+> Read [**`HANDOFF.md`**](./HANDOFF.md) first. ~15 minutes. It explains
+> what state the work is actually in, what your first day looks like,
+> and which gotchas to expect.
+>
+> The first-install checklist below is the condensed command list;
+> `HANDOFF.md` is the context around it.
+
 > **Status:** Pre-development. Planning documents, architecture decisions, and a scaffolded monorepo structure live here. Engineering begins after Phase 1 sign-off (see `docs/Phase1_Launch_Plan.md`).
 
 ---
