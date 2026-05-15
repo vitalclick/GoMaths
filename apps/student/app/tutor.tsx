@@ -21,6 +21,9 @@ interface ChatMessage {
   role: "user" | "maya";
   text: string;
   validated?: boolean;
+  streaming?: boolean;
+  verifiedClaims?: number;
+  totalClaims?: number;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -48,6 +51,7 @@ export default function TutorScreen() {
   const [loadingHistory, setLoadingHistory] = useState(Boolean(initialConvId));
 
   const scrollRef = useRef<ScrollView | null>(null);
+  const abortRef = useRef<(() => void) | null>(null);
 
   // Load conversation history when an existing conversationId is supplied.
   useEffect(() => {
@@ -87,7 +91,14 @@ export default function TutorScreen() {
 
       const userMsg: ChatMessage = { id: makeId(), role: "user", text: trimmed };
       const mayaId = makeId();
-      const mayaPlaceholder: ChatMessage = { id: mayaId, role: "maya", text: "" };
+      const mayaPlaceholder: ChatMessage = {
+        id: mayaId,
+        role: "maya",
+        text: "",
+        streaming: true,
+        verifiedClaims: 0,
+        totalClaims: 0,
+      };
 
       setMessages((prev) => [...prev, userMsg, mayaPlaceholder]);
       setInput("");
@@ -97,7 +108,7 @@ export default function TutorScreen() {
       const updateMaya = (patch: Partial<ChatMessage>) =>
         setMessages((prev) => prev.map((m) => (m.id === mayaId ? { ...m, ...patch } : m)));
 
-      streamTutorMessage(
+      const cancel = streamTutorMessage(
         { message: trimmed, topicId, conversationId },
         {
           onMeta: ({ conversationId: convId }) => setConversationId(convId),
@@ -105,22 +116,47 @@ export default function TutorScreen() {
             setMessages((prev) =>
               prev.map((m) => (m.id === mayaId ? { ...m, text: m.text + delta } : m)),
             ),
+          onClaim: (claim) =>
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === mayaId
+                  ? {
+                      ...m,
+                      totalClaims: (m.totalClaims ?? 0) + 1,
+                      verifiedClaims: (m.verifiedClaims ?? 0) + (claim.ok ? 1 : 0),
+                    }
+                  : m,
+              ),
+            ),
           onDone: (final) => {
-            updateMaya({ text: final.reply, validated: final.validated });
+            updateMaya({ text: final.reply, validated: final.validated, streaming: false });
             setSending(false);
+            abortRef.current = null;
           },
           onError: (err) => {
             setError(err.message);
             updateMaya({
               text: "Sorry — I couldn't reach the tutor service. Please try again.",
+              streaming: false,
             });
             setSending(false);
+            abortRef.current = null;
           },
         },
       );
+      abortRef.current = cancel;
     },
     [conversationId, sending, topicId],
   );
+
+  const abort = () => {
+    abortRef.current?.();
+    abortRef.current = null;
+    setMessages((prev) =>
+      prev.map((m) => (m.streaming ? { ...m, streaming: false, text: m.text + " …" } : m)),
+    );
+    setSending(false);
+  };
 
   if (!user) {
     return (
@@ -199,17 +235,25 @@ export default function TutorScreen() {
               className="flex-1 py-3 text-base text-foreground"
               autoCorrect
             />
-            <Pressable
-              accessibilityLabel="Send"
-              disabled={sending || !input.trim()}
-              onPress={() => send(input)}
-              className={`h-10 w-10 items-center justify-center rounded-full ${
-                sending || !input.trim() ? "bg-muted" : "bg-primary"
-              }`}
-            >
-              {sending ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
+            {sending ? (
+              <Pressable
+                accessibilityLabel="Stop"
+                onPress={abort}
+                className="h-10 w-10 items-center justify-center rounded-full bg-destructive"
+              >
+                <Text className="font-display text-base font-bold text-destructive-foreground">
+                  ■
+                </Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                accessibilityLabel="Send"
+                disabled={!input.trim()}
+                onPress={() => send(input)}
+                className={`h-10 w-10 items-center justify-center rounded-full ${
+                  !input.trim() ? "bg-muted" : "bg-primary"
+                }`}
+              >
                 <Text
                   className={`font-display text-lg font-bold ${
                     !input.trim() ? "text-muted-foreground" : "text-primary-foreground"
@@ -217,8 +261,8 @@ export default function TutorScreen() {
                 >
                   ↑
                 </Text>
-              )}
-            </Pressable>
+              </Pressable>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -239,14 +283,29 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           {isUser ? (
             <Text className="text-sm text-primary-foreground">{message.text}</Text>
           ) : (
-            <TextWithMath
-              text={message.text}
-              fontSize={14}
-              style={{ color: "#0E1A14" }}
-            />
+            <View className="flex-row flex-wrap items-baseline">
+              <TextWithMath
+                text={message.text || (message.streaming ? "" : " ")}
+                fontSize={14}
+                style={{ color: "#0E1A14" }}
+              />
+              {message.streaming && (
+                <Text className="font-display text-base text-primary" accessibilityLabel="typing">
+                  ▋
+                </Text>
+              )}
+            </View>
           )}
         </View>
-        {!isUser && message.validated !== undefined && (
+        {!isUser && message.streaming && (message.totalClaims ?? 0) > 0 && (
+          <View className="mt-1 flex-row items-center gap-1 px-2">
+            <View className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <Text className="text-[10px] text-muted-foreground">
+              Verifying maths: {message.verifiedClaims}/{message.totalClaims}
+            </Text>
+          </View>
+        )}
+        {!isUser && !message.streaming && message.validated !== undefined && (
           <View className="mt-1 flex-row items-center gap-1 px-2">
             <View
               className={`h-1.5 w-1.5 rounded-full ${

@@ -149,31 +149,66 @@ def _stream_events(req: ChatRequest) -> Iterator[bytes]:
     Stream the tutor reply token-by-token over SSE.
 
     Event types:
-      - `delta`  — { "text": "<incremental string>" }   (zero or more)
-      - `done`   — { reply, validated, provider, model, extracted_claims,
-                     verified_claims, input_tokens, output_tokens,
-                     cached_tokens }
-      - `error`  — { "message": "..." }
+      - `delta`        — { text }                       (zero or more)
+      - `claim`        — { raw, stem, answer, ok }      (zero or more, as
+                         the validator confirms or rejects an equation
+                         that just finished streaming)
+      - `done`         — { reply, validated, provider, model,
+                          extracted_claims, verified_claims, tokens... }
+      - `error`        — { message }
 
-    Validation runs after the final chunk arrives — we can't meaningfully
-    validate partial mid-sentence claims. The UI shows the streamed text
-    immediately and reveals the "Maths verified" badge once `done` lands.
+    Incremental validation: every time the accumulated text crosses an
+    equation boundary we haven't seen yet, we run the SymPy validator on
+    it and emit a `claim` event so the UI can show inline ticks as Maya
+    "shows her working". The summary `done` event still arrives last.
     """
     messages = _build_messages(req)
     try:
-        accumulated: list[str] = []
+        accumulated = ""
         final = None
+        seen_claims: set[str] = set()
+        verified_count = 0
+        total_claims = 0
+
         for chunk in _provider.stream(messages):
             if chunk.done:
                 final = chunk.final
                 break
-            accumulated.append(chunk.text)
+            accumulated += chunk.text
             yield _sse("delta", {"text": chunk.text}).encode()
 
-        full_text = (final.text if final else "".join(accumulated))
-        claims = extract_claims(full_text)
-        verified = sum(1 for c in claims if validate_equivalent(c.stem, c.answer).ok)
-        fully_validated = bool(claims) and verified == len(claims)
+            # Re-extract on every chunk; cheap (regex). Anything new gets
+            # validated and emitted as a `claim` event exactly once.
+            for c in extract_claims(accumulated):
+                if c.raw in seen_claims:
+                    continue
+                seen_claims.add(c.raw)
+                total_claims += 1
+                ok = validate_equivalent(c.stem, c.answer).ok
+                if ok:
+                    verified_count += 1
+                yield _sse(
+                    "claim",
+                    {"raw": c.raw, "stem": c.stem, "answer": c.answer, "ok": ok},
+                ).encode()
+
+        # Re-scan the full final text for anything the chunk loop missed
+        # (it can happen when a delimiter straddles two chunks).
+        full_text = final.text if final else accumulated
+        for c in extract_claims(full_text):
+            if c.raw in seen_claims:
+                continue
+            seen_claims.add(c.raw)
+            total_claims += 1
+            ok = validate_equivalent(c.stem, c.answer).ok
+            if ok:
+                verified_count += 1
+            yield _sse(
+                "claim",
+                {"raw": c.raw, "stem": c.stem, "answer": c.answer, "ok": ok},
+            ).encode()
+
+        fully_validated = bool(total_claims) and verified_count == total_claims
 
         yield _sse(
             "done",
@@ -182,8 +217,8 @@ def _stream_events(req: ChatRequest) -> Iterator[bytes]:
                 "validated": fully_validated,
                 "provider": final.provider if final else _provider.name,
                 "model": final.model if final else "",
-                "extracted_claims": len(claims),
-                "verified_claims": verified,
+                "extracted_claims": total_claims,
+                "verified_claims": verified_count,
                 "input_tokens": final.input_tokens if final else 0,
                 "output_tokens": final.output_tokens if final else 0,
                 "cached_tokens": final.cached_tokens if final else 0,

@@ -50,11 +50,20 @@ export async function sendTutorMessage(input: {
   return (await res.json()) as TutorReplyBody;
 }
 
+export interface VerifiedClaim {
+  raw: string;
+  stem: string;
+  answer: string;
+  ok: boolean;
+}
+
 export interface StreamCallbacks {
   /** Called with each incremental chunk of text. */
   onDelta: (delta: string) => void;
   /** Called once the upstream emits `meta` (carries the conversation id). */
   onMeta?: (info: { conversationId: string }) => void;
+  /** Called every time a mathematical claim in Maya's reply is validated. */
+  onClaim?: (claim: VerifiedClaim) => void;
   /** Called when the stream completes successfully. */
   onDone: (final: TutorReplyBody) => void;
   /** Called on any error (network, upstream, parse). */
@@ -123,6 +132,14 @@ export function streamTutorMessage(
         } catch {
           // tolerate malformed delta
         }
+      });
+
+      es.addEventListener("claim", (event) => {
+        try {
+          const data = JSON.parse((event as { data: string }).data) as VerifiedClaim;
+          cb.onClaim?.(data);
+        } catch {
+          // tolerate malformed claim
       });
 
       es.addEventListener("done", (event) => {
