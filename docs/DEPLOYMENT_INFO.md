@@ -275,14 +275,19 @@ Deploy gates:
 
 ---
 
-## 14. Runbooks (TODO — Phase 1)
+## 14. Runbooks
 
-To be created — link them here as they land:
-- `runbooks/incident-response.md` — on-call procedure, escalation, comms
-- `runbooks/tutor-outage.md` — failover when an LLM provider degrades
-- `runbooks/popia-dsr.md` — handling a data subject request end-to-end
-- `runbooks/curriculum-rollback.md` — reverting a bad lesson published to prod
-- `runbooks/payment-dispute.md` — Phase 1.5
+Live in `runbooks/` at the repo root. See [`runbooks/README.md`](../runbooks/README.md) for the index.
+
+- [`runbooks/incident-response.md`](../runbooks/incident-response.md) — severity rubric, on-call procedure, escalation, comms templates, postmortem template
+- [`runbooks/tutor-outage.md`](../runbooks/tutor-outage.md) — failover when an LLM provider degrades; provider-swap commands; wrong-maths mitigation
+- [`runbooks/popia-dsr.md`](../runbooks/popia-dsr.md) — handling a data subject request end-to-end, with the actual SQL
+- [`runbooks/curriculum-rollback.md`](../runbooks/curriculum-rollback.md) — reverting a bad lesson, fast path (PR) and hot path (DB) both documented
+- [`runbooks/payment-dispute.md`](../runbooks/payment-dispute.md) — Phase 1.5 marketplace dispute handling (chargeback / in-app / safety-critical paths)
+
+Pending — to land before pilot or as each feature ships:
+- `runbooks/school-onboarding.md` — when a new school joins the pilot
+- `runbooks/migration-rollback.md` — Prisma migrate-down for a bad schema change
 
 ---
 
