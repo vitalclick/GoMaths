@@ -1,0 +1,524 @@
+openapi: 3.1.0
+info:
+  title: GoMaths Backend API
+  description: |
+    Core REST API for GoMaths. This file is the source of truth — `@gomaths/api-client`
+    is generated from it via `openapi-typescript`.
+
+    Versioning policy: breaking changes bump the major version path (e.g. `/api/v2/...`).
+    Phase 1 ships as v1, served at the `/api` prefix.
+  version: 0.1.0
+  contact:
+    name: GoMaths Engineering
+servers:
+  - url: https://api.gomaths.co.za
+    description: Production (af-south-1)
+  - url: https://api.staging.gomaths.co.za
+    description: Staging
+  - url: http://localhost:4000
+    description: Local
+
+tags:
+  - name: auth
+  - name: users
+  - name: curriculum
+  - name: progress
+  - name: tutor
+  - name: solver
+  - name: health
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/health:
+    get:
+      tags: [health]
+      summary: Liveness probe
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new student account
+      description: |
+        Phase 1 only supports student self-registration. Parent linking happens later
+        via an invite flow. Under-18 sign-ups require parental consent — the API records
+        a consent token captured during onboarding.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Exchange credentials for tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh an access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthSession" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/users/me:
+    get:
+      tags: [users]
+      summary: Current user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/curriculum/grades/{grade}:
+    get:
+      tags: [curriculum]
+      summary: List topics for a grade
+      parameters:
+        - $ref: "#/components/parameters/Grade"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TopicSummary" }
+
+  /api/curriculum/topics/{topicId}:
+    get:
+      tags: [curriculum]
+      summary: Get a topic with its lesson content
+      parameters:
+        - $ref: "#/components/parameters/TopicId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Topic" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/curriculum/topics/{topicId}/questions:
+    get:
+      tags: [curriculum]
+      summary: List practice questions for a topic
+      parameters:
+        - $ref: "#/components/parameters/TopicId"
+        - in: query
+          name: difficulty
+          schema: { $ref: "#/components/schemas/Difficulty" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Question" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/progress/events:
+    post:
+      tags: [progress]
+      summary: Record a learner event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProgressEventInput" }
+      responses:
+        "202":
+          description: Accepted (event is queued)
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/progress/summary:
+    get:
+      tags: [progress]
+      summary: Per-topic mastery summary for the current student
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [studentId, generatedAt, mastery]
+                properties:
+                  studentId: { type: string }
+                  generatedAt: { type: string, format: date-time }
+                  mastery:
+                    type: array
+                    items: { $ref: "#/components/schemas/TopicMastery" }
+
+  /api/tutor/messages:
+    post:
+      tags: [tutor]
+      summary: Send a message to the AI tutor
+      description: |
+        Proxies to `ai-services/tutor`. The response is SymPy-validated before
+        being returned to the caller.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TutorMessageRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TutorMessageResponse" }
+
+  /api/solver/scan:
+    post:
+      tags: [solver]
+      summary: Solve a captured equation
+      description: |
+        Multipart upload of a still image of a printed equation. Pipeline:
+        OCR → LaTeX → SymPy → step-wise solution. Rejects unparseable input.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SolverResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          description: Image could not be parsed as an equation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Grade:
+      name: grade
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Grade" }
+    TopicId:
+      name: topicId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: g9.alg.linear-eq
+
+  responses:
+    BadRequest:
+      description: Malformed request
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status, service, time]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        service: { type: string }
+        time: { type: string, format: date-time }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+
+    Grade:
+      oneOf:
+        - { type: string, enum: ["R"] }
+        - { type: integer, minimum: 1, maximum: 12 }
+
+    Language:
+      type: string
+      enum: [en, af, zu, st, xh]
+
+    UserRole:
+      type: string
+      enum: [student, parent, teacher, school_admin, tutor, internal_admin]
+
+    Difficulty:
+      type: string
+      enum: [easy, medium, hard]
+
+    ContentArea:
+      type: string
+      enum:
+        - numbers
+        - patterns_functions_algebra
+        - space_and_shape
+        - measurement
+        - data_handling
+
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName, grade]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        displayName: { type: string, minLength: 1, maxLength: 80 }
+        grade: { $ref: "#/components/schemas/Grade" }
+        language: { $ref: "#/components/schemas/Language" }
+        parentalConsentToken:
+          type: string
+          description: Required for under-18 sign-ups. Issued by the consent flow.
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    AuthSession:
+      type: object
+      required: [accessToken, refreshToken, expiresAt, user]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresAt: { type: string, format: date-time }
+        user: { $ref: "#/components/schemas/User" }
+
+    User:
+      type: object
+      required: [id, email, role, language, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        role: { $ref: "#/components/schemas/UserRole" }
+        language: { $ref: "#/components/schemas/Language" }
+        displayName: { type: string }
+        grade:
+          $ref: "#/components/schemas/Grade"
+          description: Present when role=student
+        schoolId:
+          type: string
+          nullable: true
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    TopicSummary:
+      type: object
+      required: [topicId, title, grade, contentArea, estimatedMinutes]
+      properties:
+        topicId: { type: string, example: g9.alg.linear-eq }
+        title: { type: string }
+        grade: { $ref: "#/components/schemas/Grade" }
+        contentArea: { $ref: "#/components/schemas/ContentArea" }
+        capsReference: { type: string }
+        estimatedMinutes: { type: integer, minimum: 1 }
+
+    Topic:
+      allOf:
+        - $ref: "#/components/schemas/TopicSummary"
+        - type: object
+          required: [prerequisites, learningOutcomes, lessonMarkdown]
+          properties:
+            prerequisites:
+              type: array
+              items: { type: string }
+            learningOutcomes:
+              type: array
+              items: { type: string }
+            lessonMarkdown:
+              type: string
+              description: Lesson body in CommonMark; math via `$...$` and `$$...$$`.
+
+    Question:
+      type: object
+      required:
+        - id
+        - topicId
+        - difficulty
+        - stem
+        - answer
+        - answerLatex
+        - solutionSteps
+        - tags
+      properties:
+        id: { type: string, example: g9.alg.linear-eq.q001 }
+        topicId: { type: string }
+        difficulty: { $ref: "#/components/schemas/Difficulty" }
+        stem: { type: string }
+        answer: { type: string }
+        answerLatex: { type: string }
+        solutionSteps:
+          type: array
+          items: { type: string }
+        commonMistakes:
+          type: array
+          items: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+
+    ProgressEventType:
+      type: string
+      enum:
+        - lesson_started
+        - lesson_completed
+        - question_attempted
+        - question_correct
+        - question_incorrect
+        - tutor_message_sent
+        - solver_scan_performed
+
+    ProgressEventInput:
+      type: object
+      required: [type]
+      properties:
+        type: { $ref: "#/components/schemas/ProgressEventType" }
+        topicId: { type: string, nullable: true }
+        questionId: { type: string, nullable: true }
+        meta:
+          type: object
+          additionalProperties: true
+
+    TopicMastery:
+      type: object
+      required: [topicId, masteryScore, attempts, correctCount, lastInteractionAt]
+      properties:
+        topicId: { type: string }
+        masteryScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        attempts: { type: integer, minimum: 0 }
+        correctCount: { type: integer, minimum: 0 }
+        lastInteractionAt: { type: string, format: date-time }
+
+    TutorMessageRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+        topicId: { type: string, nullable: true }
+        conversationId:
+          type: string
+          nullable: true
+          description: Omit to start a new conversation.
+
+    TutorMessageResponse:
+      type: object
+      required: [conversationId, reply, validated]
+      properties:
+        conversationId: { type: string }
+        reply: { type: string }
+        validated:
+          type: boolean
+          description: |
+            True iff every numeric/algebraic claim in `reply` passed SymPy
+            validation. False means the response is best-effort prose only.
+
+    SolverResponse:
+      type: object
+      required: [accepted, steps]
+      properties:
+        accepted: { type: boolean }
+        finalAnswer:
+          type: string
+          nullable: true
+        steps:
+          type: array
+          items:
+            type: object
+            required: [explanation, math]
+            properties:
+              explanation: { type: string }
+              math: { type: string }

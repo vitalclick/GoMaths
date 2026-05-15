@@ -112,17 +112,22 @@ def _compare_expressions(a: str, b: str) -> ValidationResult:
 
 def validate_question_answer(stem: str, answer: str) -> ValidationResult:
     """
-    Verify that `answer` is a correct solution to the equation in `stem`.
+    Verify that `answer` is correct for `stem`.
 
-    Expected stem form: an equation like "2x + 5 = 13" or "x^2 + 5x + 6 = 0".
-    Expected answer form: "x = 4" or "x = -2 or x = -3" (the curriculum
-    authoring spec uses this shape).
+    Two question shapes are handled:
 
-    Returns NOT_VERIFIED for stems we can't parse; never silently accepts.
+      1. **Equation-solving** — stem contains "=", e.g. "2x + 5 = 13".
+         Answer is "x = 4" or "x = -2 or x = -3".
+
+      2. **Expression simplification** — stem has no "=", e.g. "2^3 * 2^4"
+         or "(x^3)^2". Answer is the simplified expression, optionally
+         prefixed with "=" (e.g. "= 128", "2^7", "x^6").
+
+    Returns NOT_VERIFIED for unparseable inputs; never silently accepts.
     """
     cleaned_stem = stem.replace("^", "**")
     if "=" not in cleaned_stem:
-        return ValidationResult(ValidationStatus.NOT_VERIFIED, "stem has no '='")
+        return _validate_expression_simplification(cleaned_stem, answer)
 
     lhs_str, _, rhs_str = cleaned_stem.partition("=")
     lhs = _parse(lhs_str)
@@ -186,6 +191,40 @@ def validate_question_answer(stem: str, answer: str) -> ValidationResult:
     return ValidationResult(
         ValidationStatus.NOT_EQUIVALENT,
         f"claimed {parsed_claimed} != true {sorted(true_set, key=str)}",
+    )
+
+
+def _validate_expression_simplification(stem: str, answer: str) -> ValidationResult:
+    """
+    Verify that `answer` is a simplified form of the expression `stem`.
+
+    `stem` and `answer` are treated as expressions (no "="). The answer may
+    optionally be written as "= 128" — the leading "=" is stripped.
+    """
+    cleaned_answer = answer.replace("^", "**").strip()
+    if cleaned_answer.startswith("="):
+        cleaned_answer = cleaned_answer[1:].strip()
+
+    stem_expr = _parse(stem)
+    answer_expr = _parse(cleaned_answer)
+    if stem_expr is None or answer_expr is None:
+        return ValidationResult(ValidationStatus.NOT_VERIFIED, "parse failed")
+
+    try:
+        if simplify(stem_expr - answer_expr) == 0:
+            return ValidationResult(ValidationStatus.EQUIVALENT, "simplify diff = 0")
+    except (TypeError, ValueError):
+        pass
+
+    try:
+        if stem_expr.equals(answer_expr):
+            return ValidationResult(ValidationStatus.EQUIVALENT, "equals()")
+    except (TypeError, ValueError, AttributeError):
+        pass
+
+    return ValidationResult(
+        ValidationStatus.NOT_EQUIVALENT,
+        f"{stem_expr} != {answer_expr}",
     )
 
 

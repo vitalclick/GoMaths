@@ -20,15 +20,19 @@ This is a hand-off note for the team picking up Phase 1. Phase 0 scaffolding set
 - **`apps/parent/`, `apps/teacher/`, `apps/tutor/`, `apps/school/`, `apps/admin/`** — README stubs only. Scaffolded by the respective app's pod when started.
 
 ### Services (`services/`)
-- **`backend-api/`** — NestJS skeleton with `/api/health` endpoint, Swagger setup, global validation pipe, config module. Boilerplate ready for domain modules.
+- **`backend-api/`** — NestJS skeleton with `/api/health` endpoint, Swagger setup, global validation pipe, config module.
+  - **`openapi.yaml`** — full API spec (auth, users, curriculum, progress, tutor, solver). Source of truth for `@gomaths/api-client` codegen.
+  - **`prisma/schema.prisma`** — full data model (User, Student, Parent, Teacher, School, Class, Topic, Question, ProgressEvent, TopicMastery). Mirrors `@gomaths/types`.
 - **`ai-services/`** — Python project (`pyproject.toml`) with three sub-services:
-  - `validation/` — **working** SymPy-based answer validator (`sympy_validator.py`), with 9 passing tests. The contract every other AI response will validate against.
+  - `validation/` — **working** SymPy-based answer validator (`sympy_validator.py`), with **16 passing tests** covering equation solving AND expression simplification. The contract every other AI response will validate against.
   - `tutor/` — FastAPI shell with `/health` and stub `/chat`.
   - `solver/` — FastAPI shell with `/health` and stub `/solve`.
 
 ### Curriculum (`curriculum-data/`)
-- One fully-authored example topic: `grade-9/algebra/solving-linear-equations/` with `metadata.json`, `questions.json`, `lesson.md`.
-- `scripts/validate_curriculum.py` — runs every authored answer through the SymPy validator. **Verified working** against the example.
+- **Two** fully-authored example topics demonstrating the workflow scales:
+  - `grade-9/algebra/solving-linear-equations/` — equation-solving questions
+  - `grade-9/algebra/laws-of-exponents/` — mix of expression simplification and exponential equations
+- `scripts/validate_curriculum.py` — runs every authored answer through the SymPy validator. **Verified working**: 7/7 questions pass across both topics.
 
 ### Infrastructure (`infrastructure/terraform/`)
 - `environments/dev/` skeleton with AWS provider pinned to `af-south-1` per ADR-002. `terraform init` is the next step for whoever owns DevOps.

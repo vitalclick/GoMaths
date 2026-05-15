@@ -1,0 +1,306 @@
+// GoMaths backend — Prisma schema.
+//
+// Models reflect the shared types in `packages/types/src/`. When you change a
+// field here, regenerate Prisma client AND check whether the corresponding
+// type in `@gomaths/types` needs to move with it.
+//
+// Conventions:
+//  - Surrogate IDs are CUIDs (collision-resistant, sortable, URL-safe).
+//  - Curriculum IDs (`Topic.id`, `Question.id`) are content-addressable
+//    strings like "g9.alg.linear-eq" / "g9.alg.linear-eq.q001" so the file
+//    layout in `curriculum-data/` and the DB stay in sync.
+//  - All timestamps are stored UTC; the app layer is responsible for
+//    formatting to the learner's locale.
+//  - Cascading deletes are intentional only on owning relationships
+//    (e.g. delete a User → delete their Student record). Curriculum
+//    references never cascade-delete a student.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  STUDENT
+  PARENT
+  TEACHER
+  SCHOOL_ADMIN
+  TUTOR
+  INTERNAL_ADMIN
+}
+
+enum Language {
+  EN
+  AF
+  ZU
+  ST
+  XH
+}
+
+enum ContentArea {
+  NUMBERS
+  PATTERNS_FUNCTIONS_ALGEBRA
+  SPACE_AND_SHAPE
+  MEASUREMENT
+  DATA_HANDLING
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProgressEventType {
+  LESSON_STARTED
+  LESSON_COMPLETED
+  QUESTION_ATTEMPTED
+  QUESTION_CORRECT
+  QUESTION_INCORRECT
+  TUTOR_MESSAGE_SENT
+  SOLVER_SCAN_PERFORMED
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identity
+// ─────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  language     Language @default(EN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  /// Refresh-token sessions for this user.
+  sessions Session[]
+
+  // Role-specific profile (exactly one of these is non-null based on `role`).
+  student Student?
+  parent  Parent?
+  teacher Teacher?
+
+  @@index([role])
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String   @unique
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  revokedAt        DateTime?
+
+  @@index([userId])
+}
+
+model Student {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName       String
+  grade             Int
+  schoolId          String?
+  school            School?   @relation(fields: [schoolId], references: [id])
+  /// Required for under-18 sign-ups (POPIA). Captured during onboarding.
+  parentalConsentAt DateTime?
+
+  parents          StudentParent[]
+  classEnrollments ClassEnrollment[]
+  progressEvents   ProgressEvent[]
+  topicMastery     TopicMastery[]
+
+  @@index([grade])
+  @@index([schoolId])
+}
+
+model Parent {
+  id          String          @id @default(cuid())
+  userId      String          @unique
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String
+
+  students StudentParent[]
+}
+
+model StudentParent {
+  studentId String
+  parentId  String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent    Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([studentId, parentId])
+  @@index([parentId])
+}
+
+model Teacher {
+  id          String         @id @default(cuid())
+  userId      String         @unique
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String
+  saceNumber  String         @unique
+  schoolId    String
+  school      School         @relation(fields: [schoolId], references: [id])
+
+  classes TeacherClass[]
+
+  @@index([schoolId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Schools & classes
+// ─────────────────────────────────────────────────────────────────────────
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  province  String
+  createdAt DateTime @default(now())
+
+  students Student[]
+  teachers Teacher[]
+  classes  Class[]
+}
+
+model Class {
+  id        String         @id @default(cuid())
+  name      String
+  grade     Int
+  schoolId  String
+  school    School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  teachers    TeacherClass[]
+  enrollments ClassEnrollment[]
+
+  @@index([schoolId])
+  @@index([grade])
+}
+
+model TeacherClass {
+  teacherId String
+  classId   String
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, classId])
+  @@index([classId])
+}
+
+model ClassEnrollment {
+  studentId  String
+  classId    String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class      Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  enrolledAt DateTime @default(now())
+
+  @@id([studentId, classId])
+  @@index([classId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Curriculum (loaded from `curriculum-data/` at deploy time)
+// ─────────────────────────────────────────────────────────────────────────
+
+model Topic {
+  /// Content-addressable ID, e.g. "g9.alg.linear-eq". Matches metadata.json.
+  id               String      @id
+  title            String
+  grade            Int
+  contentArea      ContentArea
+  capsReference    String
+  learningOutcomes String[]
+  estimatedMinutes Int
+  /// Lesson body in CommonMark. Sourced from lesson.md.
+  lessonMarkdown   String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  prerequisites  TopicPrerequisite[] @relation("TopicPrerequisites")
+  prerequisiteOf TopicPrerequisite[] @relation("TopicPrerequisiteOf")
+
+  questions      Question[]
+  progressEvents ProgressEvent[]
+  topicMastery   TopicMastery[]
+
+  @@index([grade, contentArea])
+}
+
+model TopicPrerequisite {
+  topicId        String
+  prerequisiteId String
+  topic          Topic  @relation("TopicPrerequisites", fields: [topicId], references: [id], onDelete: Cascade)
+  prerequisite   Topic  @relation("TopicPrerequisiteOf", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, prerequisiteId])
+  @@index([prerequisiteId])
+}
+
+model Question {
+  /// Content-addressable, e.g. "g9.alg.linear-eq.q001". Matches questions.json.
+  id              String     @id
+  topicId         String
+  topic           Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  difficulty      Difficulty
+  /// The mathematical form of the question (e.g., "2*x + 5 = 13"). Validated by SymPy.
+  stem            String
+  answer          String
+  answerLatex     String
+  solutionSteps   String[]
+  commonMistakes  String[]
+  tags            String[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  progressEvents ProgressEvent[]
+
+  @@index([topicId, difficulty])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Progress & mastery
+// ─────────────────────────────────────────────────────────────────────────
+
+model ProgressEvent {
+  id         String            @id @default(cuid())
+  studentId  String
+  student    Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type       ProgressEventType
+  topicId    String?
+  topic      Topic?            @relation(fields: [topicId], references: [id])
+  questionId String?
+  question   Question?         @relation(fields: [questionId], references: [id])
+  occurredAt DateTime          @default(now())
+  /// Free-form details — exact shape varies by event type. Validate at the API boundary.
+  meta       Json?
+
+  @@index([studentId, occurredAt])
+  @@index([topicId])
+}
+
+model TopicMastery {
+  studentId         String
+  topicId           String
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  topic             Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  /// 0.0–1.0. Derived from recent question performance; recomputed by a background job.
+  masteryScore      Float
+  attempts          Int      @default(0)
+  correctCount      Int      @default(0)
+  lastInteractionAt DateTime @default(now())
+
+  @@id([studentId, topicId])
+  @@index([studentId])
+}

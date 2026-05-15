@@ -46,3 +46,41 @@ def test_quadratic_two_roots_wrong_one_root() -> None:
 def test_unparseable_stem_is_not_verified() -> None:
     r = validate_question_answer("Solve for x: ???", "x = 1")
     assert r.status == ValidationStatus.NOT_VERIFIED
+
+
+# Expression simplification (no "=" in stem) ──────────────────────────────
+
+
+def test_product_of_powers_simplifies_to_numeric() -> None:
+    r = validate_question_answer("2**3 * 2**4", "128")
+    assert r.status == ValidationStatus.EQUIVALENT, r.detail
+
+
+def test_product_of_powers_simplifies_to_power_form() -> None:
+    r = validate_question_answer("2^3 * 2^4", "2^7")
+    assert r.status == ValidationStatus.EQUIVALENT, r.detail
+
+
+def test_power_of_a_power() -> None:
+    r = validate_question_answer("(x^3)^2", "x^6")
+    assert r.status == ValidationStatus.EQUIVALENT, r.detail
+
+
+def test_quotient_of_powers() -> None:
+    r = validate_question_answer("x^5 / x^2", "x^3")
+    assert r.status == ValidationStatus.EQUIVALENT, r.detail
+
+
+def test_answer_with_leading_equals_is_accepted() -> None:
+    r = validate_question_answer("2^3 * 2^4", "= 128")
+    assert r.status == ValidationStatus.EQUIVALENT, r.detail
+
+
+def test_wrong_simplification_is_caught() -> None:
+    r = validate_question_answer("2^3 * 2^4", "2^12")
+    assert r.status == ValidationStatus.NOT_EQUIVALENT, r.detail
+
+
+def test_unparseable_simplification_is_not_verified() -> None:
+    r = validate_question_answer("simplify this please", "42")
+    assert r.status == ValidationStatus.NOT_VERIFIED
