@@ -351,6 +351,44 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/SolverResponse" }
 
+  /api/notifications/tokens:
+    post:
+      tags: [notifications]
+      summary: Register or refresh an Expo push token for the current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform, appSlug]
+              properties:
+                token:
+                  type: string
+                  example: "ExponentPushToken[xxx-xxx]"
+                platform:
+                  type: string
+                  enum: [ios, android, web]
+                appSlug:
+                  type: string
+                  enum: [student, parent, teacher]
+                deviceName:
+                  type: string
+      responses:
+        "204": { description: Registered }
+
+  /api/notifications/tokens/{token}:
+    delete:
+      tags: [notifications]
+      summary: Revoke a previously registered push token
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        "204": { description: Revoked }
+
   /api/solver/scan:
     post:
       tags: [solver]

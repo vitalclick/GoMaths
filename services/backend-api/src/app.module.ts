@@ -10,6 +10,7 @@ import { AuthModule } from "./auth/auth.module";
 import { JwtAuthGuard } from "./auth/auth.guard";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ThrottlingModule } from "./throttling/throttling.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ThrottlingModule } from "./throttling/throttling.module";
     ProgressModule,
     TutorModule,
     SolverModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [

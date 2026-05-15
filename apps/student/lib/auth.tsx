@@ -83,6 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       storage.setItem(USER_KEY, JSON.stringify(session.user)),
     ]);
     setUser(session.user);
+
+    // Best-effort push registration. Skipped on simulator / web; never blocks
+    // sign-in.
+    void import("./push").then(({ registerForPush }) => registerForPush());
   }, []);
 
   const register = useCallback(
