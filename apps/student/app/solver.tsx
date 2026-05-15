@@ -6,6 +6,7 @@ import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Math as MathView } from "../components/Math";
 import { useAuth } from "../lib/auth";
+import { prepareImageForOcr } from "../lib/image-prep";
 import { scanImage, solveLatex, type SolverResponse } from "../lib/solver";
 
 type Mode = "scan" | "type";
@@ -62,10 +63,19 @@ export default function SolverScreen() {
     setBusy(true);
     setResult(null);
     try {
-      const r = await scanImage({
+      // Auto-rotate from EXIF, resize to a sane upload size, re-encode as
+      // JPEG. Strips metadata (no GPS coords sent to OCR).
+      const prepared = await prepareImageForOcr({
         uri: asset.uri,
-        mimeType: asset.mimeType ?? "image/jpeg",
-        fileName: asset.fileName ?? undefined,
+        width: asset.width,
+        height: asset.height,
+      });
+      // Show the preprocessed image (correctly rotated) in the preview too.
+      setPreviewUri(prepared.uri);
+      const r = await scanImage({
+        uri: prepared.uri,
+        mimeType: prepared.mimeType,
+        fileName: prepared.fileName,
       });
       setResult(r);
     } catch (e) {
