@@ -1,6 +1,8 @@
 """Tests for the LLM provider abstraction."""
 
-import os
+from types import SimpleNamespace
+from typing import Any
+
 import pytest
 
 from tutor.providers import (
@@ -31,6 +33,13 @@ def test_get_provider_defaults_to_mock(monkeypatch: pytest.MonkeyPatch) -> None:
     assert p.name == "mock"
 
 
+def test_get_provider_anthropic_requires_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TUTOR_PROVIDER", "anthropic")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        get_provider()
+
+
 def test_get_provider_openai_requires_key(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TUTOR_PROVIDER", "openai")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
@@ -38,20 +47,115 @@ def test_get_provider_openai_requires_key(monkeypatch: pytest.MonkeyPatch) -> No
         get_provider()
 
 
-def test_get_provider_openai_returns_provider_when_keyed(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TUTOR_PROVIDER", "openai")
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
-    p = get_provider()
-    assert isinstance(p, OpenAIProvider)
+# ─── Anthropic provider (with the SDK monkeypatched) ──────────────────
 
 
-def test_openai_provider_complete_is_unimplemented() -> None:
-    p = OpenAIProvider(api_key="sk-test")
-    with pytest.raises(NotImplementedError):
-        p.complete([TutorMessage(role="user", content="hi")])
+class _FakeAnthropicMessages:
+    def __init__(self, response: Any) -> None:
+        self._response = response
+        self.last_kwargs: dict[str, Any] | None = None
+
+    def create(self, **kwargs: Any) -> Any:
+        self.last_kwargs = kwargs
+        return self._response
 
 
-def test_anthropic_provider_complete_is_unimplemented() -> None:
-    p = AnthropicProvider(api_key="key")
-    with pytest.raises(NotImplementedError):
-        p.complete([TutorMessage(role="user", content="hi")])
+class _FakeAnthropic:
+    def __init__(self, response: Any) -> None:
+        self.messages = _FakeAnthropicMessages(response)
+
+
+def test_anthropic_provider_sends_cached_system_blocks(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_response = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="Hi! Let's solve it together.")],
+        usage=SimpleNamespace(
+            input_tokens=12,
+            output_tokens=8,
+            cache_read_input_tokens=100,
+            cache_creation_input_tokens=0,
+        ),
+    )
+    fake_client = _FakeAnthropic(fake_response)
+
+    import anthropic
+
+    monkeypatch.setattr(anthropic, "Anthropic", lambda **_: fake_client)
+
+    p = AnthropicProvider(api_key="sk-test", model="claude-haiku-4-5")
+    reply = p.complete(
+        [
+            TutorMessage(role="system", content="You are Maya."),
+            TutorMessage(role="system", content="Topic context: linear equations."),
+            TutorMessage(role="user", content="What is 2x + 5 = 13?"),
+        ]
+    )
+
+    assert reply.text == "Hi! Let's solve it together."
+    assert reply.input_tokens == 12
+    assert reply.output_tokens == 8
+    assert reply.cached_tokens == 100
+
+    sent = fake_client.messages.last_kwargs
+    assert sent is not None
+    assert sent["system"] == [
+        {"type": "text", "text": "You are Maya.", "cache_control": {"type": "ephemeral"}},
+        {
+            "type": "text",
+            "text": "Topic context: linear equations.",
+            "cache_control": {"type": "ephemeral"},
+        },
+    ]
+    assert sent["messages"] == [{"role": "user", "content": "What is 2x + 5 = 13?"}]
+
+
+# ─── OpenAI provider (with the SDK monkeypatched) ─────────────────────
+
+
+class _FakeOpenAIChatCompletions:
+    def __init__(self, response: Any) -> None:
+        self._response = response
+        self.last_kwargs: dict[str, Any] | None = None
+
+    def create(self, **kwargs: Any) -> Any:
+        self.last_kwargs = kwargs
+        return self._response
+
+
+class _FakeOpenAI:
+    def __init__(self, response: Any) -> None:
+        self.chat = SimpleNamespace(completions=_FakeOpenAIChatCompletions(response))
+
+
+def test_openai_provider_flattens_messages(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content="OpenAI reply"))],
+        usage=SimpleNamespace(
+            prompt_tokens=20,
+            completion_tokens=5,
+            prompt_tokens_details=SimpleNamespace(cached_tokens=15),
+        ),
+    )
+    fake_client = _FakeOpenAI(fake_response)
+
+    import openai
+
+    monkeypatch.setattr(openai, "OpenAI", lambda **_: fake_client)
+
+    p = OpenAIProvider(api_key="sk-test", model="gpt-4o-mini")
+    reply = p.complete(
+        [
+            TutorMessage(role="system", content="You are Maya."),
+            TutorMessage(role="user", content="Hello"),
+        ]
+    )
+
+    assert reply.text == "OpenAI reply"
+    assert reply.input_tokens == 20
+    assert reply.output_tokens == 5
+    assert reply.cached_tokens == 15
+    sent = fake_client.chat.completions.last_kwargs
+    assert sent is not None
+    assert sent["messages"] == [
+        {"role": "system", "content": "You are Maya."},
+        {"role": "user", "content": "Hello"},
+    ]

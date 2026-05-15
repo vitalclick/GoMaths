@@ -1,18 +1,27 @@
 """
 LLM provider abstraction.
 
-ADR-005 leaves the production provider open (OpenAI / Anthropic / dual).
-This module is the seam between the tutor service and whichever LLM(s) we
-end up using. Phase 1 wiring should:
+Three implementations:
 
-  1. Pick a provider via env (`TUTOR_PROVIDER=openai|anthropic|mock`).
-  2. Implement the chosen provider in this file (real API calls).
-  3. Keep the `LLMProvider` protocol stable so the rest of the service
-     doesn't need to change.
+  - MockProvider — deterministic, no network. Used in tests and as the
+    fallback when no API key is configured. Keyword-driven canned replies.
+  - AnthropicProvider — production. Uses prompt caching on the system
+    prompt + curriculum context for cost efficiency.
+  - OpenAIProvider — alternative production path. Same interface.
 
-The MockProvider returned for `TUTOR_PROVIDER=mock` (the default in dev)
-is deterministic — it does not call any external service and is safe to
-use in CI and on local machines without API keys.
+Choose via env:
+    TUTOR_PROVIDER=anthropic   (recommended)
+    TUTOR_PROVIDER=openai
+    TUTOR_PROVIDER=mock        (default; no API key required)
+
+Production keys:
+    ANTHROPIC_API_KEY=sk-ant-...
+    OPENAI_API_KEY=sk-...
+
+The provider abstraction is intentionally narrow: a `complete(messages)`
+call that returns text. Streaming, tool use, and multi-turn caching state
+belong in a Phase 1 expansion of this interface — keep it small until we
+have a concrete need.
 """
 
 from __future__ import annotations
@@ -33,6 +42,9 @@ class TutorReply:
     text: str
     provider: str
     model: str
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cached_tokens: int = 0
 
 
 class LLMProvider(Protocol):
@@ -42,11 +54,11 @@ class LLMProvider(Protocol):
         ...
 
 
+# ─── Mock ──────────────────────────────────────────────────────────────
+
+
 class MockProvider:
-    """
-    Deterministic stand-in for a real LLM. Returns canned responses based on
-    keywords in the most recent user message. Used in dev and CI.
-    """
+    """Deterministic stand-in for tests/dev. No external calls."""
 
     name = "mock"
 
@@ -81,53 +93,133 @@ class MockProvider:
         return TutorReply(text=text, provider=self.name, model="mock-1")
 
 
-class OpenAIProvider:
-    """
-    Production OpenAI provider. NOT WIRED YET — Phase 1 must add the
-    `openai` SDK to dependencies and implement `complete`.
-    """
-
-    name = "openai"
-
-    def __init__(self, api_key: str, model: str = "gpt-4o-mini") -> None:
-        self.api_key = api_key
-        self.model = model
-
-    def complete(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> TutorReply:
-        raise NotImplementedError(
-            "OpenAIProvider is a stub. Phase 1: add openai SDK, implement, then remove this."
-        )
+# ─── Anthropic ─────────────────────────────────────────────────────────
 
 
 class AnthropicProvider:
     """
-    Production Anthropic provider. NOT WIRED YET — Phase 1 must add the
-    `anthropic` SDK to dependencies and implement `complete`.
+    Production Anthropic provider.
+
+    Prompt caching is enabled on the system block (the persona + curriculum
+    context). System content longer than ~1024 tokens hits the cache after
+    the first request; subsequent requests with the same prefix are billed
+    at 10% of normal input cost. See:
+    https://docs.anthropic.com/claude/docs/prompt-caching
+
+    Default model: claude-haiku-4-5 — strong at maths reasoning, cheap and
+    fast enough for the tutor use case. Override with TUTOR_MODEL.
     """
 
     name = "anthropic"
 
-    def __init__(self, api_key: str, model: str = "claude-haiku-4-5") -> None:
-        self.api_key = api_key
-        self.model = model
+    def __init__(self, api_key: str, model: str | None = None) -> None:
+        # Imported lazily so MockProvider works without the anthropic SDK installed.
+        from anthropic import Anthropic
+
+        self._client = Anthropic(api_key=api_key)
+        self.model = model or os.environ.get("TUTOR_MODEL", "claude-haiku-4-5")
 
     def complete(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> TutorReply:
-        raise NotImplementedError(
-            "AnthropicProvider is a stub. Phase 1: add anthropic SDK, implement, then remove this."
+        system_blocks = []
+        conversation = []
+
+        for m in messages:
+            if m.role == "system":
+                # Mark every system block as cacheable. Anthropic caches the
+                # longest prefix that's identical to a recent request.
+                system_blocks.append(
+                    {"type": "text", "text": m.content, "cache_control": {"type": "ephemeral"}}
+                )
+            else:
+                conversation.append({"role": m.role, "content": m.content})
+
+        response = self._client.messages.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            system=system_blocks if system_blocks else None,
+            messages=conversation,
         )
+
+        text = "".join(
+            block.text for block in response.content if getattr(block, "type", None) == "text"
+        )
+        usage = response.usage
+        return TutorReply(
+            text=text,
+            provider=self.name,
+            model=self.model,
+            input_tokens=getattr(usage, "input_tokens", 0),
+            output_tokens=getattr(usage, "output_tokens", 0),
+            cached_tokens=(
+                getattr(usage, "cache_read_input_tokens", 0)
+                + getattr(usage, "cache_creation_input_tokens", 0)
+            ),
+        )
+
+
+# ─── OpenAI ────────────────────────────────────────────────────────────
+
+
+class OpenAIProvider:
+    """
+    Production OpenAI provider.
+
+    Default model: gpt-4o-mini. OpenAI's prompt caching is automatic for
+    requests above 1024 tokens of identical prefix — no `cache_control`
+    needed. Override model with TUTOR_MODEL.
+    """
+
+    name = "openai"
+
+    def __init__(self, api_key: str, model: str | None = None) -> None:
+        from openai import OpenAI
+
+        self._client = OpenAI(api_key=api_key)
+        self.model = model or os.environ.get("TUTOR_MODEL", "gpt-4o-mini")
+
+    def complete(self, messages: list[TutorMessage], *, max_tokens: int = 600) -> TutorReply:
+        # OpenAI uses a flat messages array (no separate `system=` arg).
+        wire_messages = [{"role": m.role, "content": m.content} for m in messages]
+
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=wire_messages,
+            max_tokens=max_tokens,
+        )
+
+        text = response.choices[0].message.content or ""
+        usage = response.usage
+        return TutorReply(
+            text=text,
+            provider=self.name,
+            model=self.model,
+            input_tokens=getattr(usage, "prompt_tokens", 0) if usage else 0,
+            output_tokens=getattr(usage, "completion_tokens", 0) if usage else 0,
+            cached_tokens=(
+                getattr(usage.prompt_tokens_details, "cached_tokens", 0)
+                if usage and getattr(usage, "prompt_tokens_details", None)
+                else 0
+            ),
+        )
+
+
+# ─── Selection ─────────────────────────────────────────────────────────
 
 
 def get_provider() -> LLMProvider:
     """Return the configured provider. Defaults to MockProvider."""
     choice = os.environ.get("TUTOR_PROVIDER", "mock").lower()
-    if choice == "openai":
-        key = os.environ.get("OPENAI_API_KEY")
-        if not key:
-            raise RuntimeError("TUTOR_PROVIDER=openai requires OPENAI_API_KEY")
-        return OpenAIProvider(api_key=key)
+
     if choice == "anthropic":
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
             raise RuntimeError("TUTOR_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
         return AnthropicProvider(api_key=key)
+
+    if choice == "openai":
+        key = os.environ.get("OPENAI_API_KEY")
+        if not key:
+            raise RuntimeError("TUTOR_PROVIDER=openai requires OPENAI_API_KEY")
+        return OpenAIProvider(api_key=key)
+
     return MockProvider()
