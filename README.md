@@ -2,39 +2,65 @@
 
 AI-powered mathematics learning platform for South African and African learners.
 
-> **Status:** Pre-MVP. This repository currently contains planning documents and a scaffolded directory structure. Implementation begins after MVP scope sign-off.
+> **Status:** Pre-development. Planning documents, architecture decisions, and a scaffolded monorepo structure live here. Engineering begins after Phase 1 sign-off (see `docs/Phase1_Launch_Plan.md`).
 
 ---
 
 ## Repository layout
 
+Monorepo, managed with **pnpm + Turborepo** (see `docs/Architecture_Decisions.md` ADR-001).
+
 ```
 gomaths/
-├── mobile-app/          # React Native — Student app (MVP)
-├── admin-portal/        # Next.js — internal admin & curriculum mgmt (Phase 2)
-├── backend-api/         # NestJS — core REST/GraphQL API
-├── ai-services/         # Python FastAPI — solver, tutor, validation
-├── game-engine/         # Unity — RPG/gamification (Phase 4)
-├── infrastructure/      # Terraform + k8s manifests, CI/CD config
-├── curriculum-data/     # Lesson content, question banks, metadata
-└── docs/                # Planning, architecture, and strategy docs
+├── apps/
+│   ├── student/         Expo — iOS + Android + Web
+│   ├── parent/          Expo — iOS + Android + Web
+│   ├── teacher/         Expo — iOS + Android + Web
+│   ├── school/          Web (Next.js, primary) + Expo companion (iOS + Android)
+│   └── admin/           Next.js — Web only (internal ops)
+├── packages/
+│   ├── ui/              Shared component library (NativeWind, RN + RN-Web)
+│   ├── design-tokens/   Brand tokens — palette, type, spacing, radius
+│   ├── api-client/      Typed API client generated from OpenAPI
+│   ├── types/           Shared domain types
+│   └── auth/            Shared auth flows (POPIA-compliant)
+├── services/
+│   ├── backend-api/     NestJS — core REST/GraphQL API
+│   └── ai-services/     Python FastAPI — solver, tutor, validation
+├── infrastructure/      Terraform + k8s + CI/CD
+├── curriculum-data/     Lesson content, question banks
+├── UI/                  Designer mockups (design1, design2) — visual reference only
+└── docs/                Planning, architecture, strategy
 ```
 
-Each top-level directory has its own `README.md` describing scope, status, and how to work inside it.
+Each top-level directory has its own `README.md` describing scope, stack, and status.
 
 ---
 
 ## Documentation
 
-Start here, in this order:
+Read in this order:
 
 1. [`docs/Preamble.md`](docs/Preamble.md) — original product vision
 2. [`docs/Development_Strategy.md`](docs/Development_Strategy.md) — full technical strategy
-3. [`docs/MVP_Spec.md`](docs/MVP_Spec.md) — **scoped, executable MVP plan**
-4. [`docs/Curriculum_Content_Plan.md`](docs/Curriculum_Content_Plan.md) — how content gets written
+3. [`docs/Phase1_Launch_Plan.md`](docs/Phase1_Launch_Plan.md) — **executable Phase 1 build plan** (4 apps × 3 platforms, 9–12 months)
+4. [`docs/Curriculum_Content_Plan.md`](docs/Curriculum_Content_Plan.md) — how content gets authored
+5. [`docs/Architecture_Decisions.md`](docs/Architecture_Decisions.md) — running ADR log
+
+---
+
+## Platforms shipping in Phase 1
+
+| App | iOS | Android | Web |
+|---|:-:|:-:|:-:|
+| Student | ✓ | ✓ | ✓ |
+| Parent | ✓ | ✓ | ✓ |
+| Teacher | ✓ | ✓ | ✓ |
+| School Admin | companion | companion | primary |
+| Internal Admin | — | — | ✓ |
 
 ---
 
 ## Current phase
 
-**Pre-development.** Awaiting decisions listed in `docs/MVP_Spec.md §9` and `docs/Curriculum_Content_Plan.md §11`.
+**Pre-development.** Awaiting decisions in `docs/Phase1_Launch_Plan.md §11` and funding commitment (R 11.5–17.3M, 12-month runway).
