@@ -40,9 +40,9 @@ export class StreakReminderTask {
       this.logger.warn("Skipping streak reminder — Prisma not enabled");
       return;
     }
-    // Hold the lock for 30 minutes — comfortably longer than the worst
-    // case fan-out of a few thousand pushes. Other pods that see the
-    // 6PM tick will SET NX and skip.
+    // Initial 30-minute lock; LeaderService heartbeats every 10 minutes
+    // (ttlMs/3) so a slow fan-out across hundreds of thousands of
+    // students cannot let another pod claim the lock mid-run.
     await this.leader.runIfLeader("streak-reminder", 30 * 60_000, () => this.doRun());
   }
 
