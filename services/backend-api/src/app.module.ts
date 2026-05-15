@@ -11,6 +11,7 @@ import { JwtAuthGuard } from "./auth/auth.guard";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ThrottlingModule } from "./throttling/throttling.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { SchedulerModule } from "./scheduler/scheduler.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     TutorModule,
     SolverModule,
     NotificationsModule,
+    SchedulerModule,
   ],
   controllers: [HealthController],
   providers: [
