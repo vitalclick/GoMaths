@@ -48,6 +48,7 @@ Read in this order:
 4. [`docs/Curriculum_Content_Plan.md`](docs/Curriculum_Content_Plan.md) — how content gets authored
 5. [`docs/Tutor_Marketplace_Plan.md`](docs/Tutor_Marketplace_Plan.md) — Phase 1.5 marketplace plan (gated on Phase 1 signal)
 6. [`docs/Architecture_Decisions.md`](docs/Architecture_Decisions.md) — running ADR log
+7. [`docs/Phase0_Foundation_Notes.md`](docs/Phase0_Foundation_Notes.md) — hand-off note: what's scaffolded and what comes next
 
 ---
 
