@@ -1,4 +1,10 @@
-export type UserRole = "student" | "parent" | "teacher" | "school_admin" | "tutor" | "internal_admin";
+export type UserRole =
+  | "student"
+  | "parent"
+  | "teacher"
+  | "school_admin"
+  | "tutor"
+  | "internal_admin";
 
 export type Grade = "R" | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 

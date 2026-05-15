@@ -20,11 +20,7 @@
  * crop, page-edge detection. Out of scope for Phase 0+.
  */
 
-import {
-  manipulateAsync,
-  SaveFormat,
-  type ImageResult,
-} from "expo-image-manipulator";
+import { manipulateAsync, SaveFormat, type ImageResult } from "expo-image-manipulator";
 
 const MAX_DIMENSION = 1600;
 const QUALITY = 0.85;
@@ -37,9 +33,11 @@ export interface PreparedImage {
   height: number;
 }
 
-export async function prepareImageForOcr(
-  input: { uri: string; width?: number; height?: number },
-): Promise<PreparedImage> {
+export async function prepareImageForOcr(input: {
+  uri: string;
+  width?: number;
+  height?: number;
+}): Promise<PreparedImage> {
   const actions = [];
 
   if (input.width && input.height) {

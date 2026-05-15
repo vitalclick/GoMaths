@@ -18,16 +18,17 @@ A working app with weak lessons fails. A weak app with strong lessons can be res
 
 The CAPS Grade 9 Mathematics curriculum is organised into 5 content areas. The MVP covers **all of them at a minimum viable depth**.
 
-| # | Content area | Topics (approx.) | Lessons | Practice Qs |
-|---|---|---|---|---|
-| 1 | Numbers, Operations & Relationships | 4 | 4 | 60 |
-| 2 | Patterns, Functions & Algebra | 5 | 5 | 75 |
-| 3 | Space & Shape (Geometry) | 4 | 4 | 60 |
-| 4 | Measurement | 3 | 3 | 45 |
-| 5 | Data Handling & Probability | 3 | 3 | 45 |
-| | **Total** | **~19** | **~19** | **~285** |
+| #   | Content area                        | Topics (approx.) | Lessons | Practice Qs |
+| --- | ----------------------------------- | ---------------- | ------- | ----------- |
+| 1   | Numbers, Operations & Relationships | 4                | 4       | 60          |
+| 2   | Patterns, Functions & Algebra       | 5                | 5       | 75          |
+| 3   | Space & Shape (Geometry)            | 4                | 4       | 60          |
+| 4   | Measurement                         | 3                | 3       | 45          |
+| 5   | Data Handling & Probability         | 3                | 3       | 45          |
+|     | **Total**                           | **~19**          | **~19** | **~285**    |
 
 Each topic produces:
+
 - **1 lesson page** (explanation + 2–3 worked examples)
 - **15 practice questions** at three difficulty tiers (5 easy / 7 medium / 3 hard)
 - **Full worked solution** for every practice question
@@ -81,10 +82,7 @@ curriculum-data/
       "stem": "Solve for x: 2x + 5 = 13",
       "answer": "x = 4",
       "answer_latex": "x = 4",
-      "solution_steps": [
-        "Subtract 5 from both sides: 2x = 8",
-        "Divide both sides by 2: x = 4"
-      ],
+      "solution_steps": ["Subtract 5 from both sides: 2x = 8", "Divide both sides by 2: x = 4"],
       "common_mistakes": [
         "Forgetting to apply the operation to both sides",
         "Sign errors when moving terms"
@@ -96,6 +94,7 @@ curriculum-data/
 ```
 
 ### 3.4 Quality bar (every asset)
+
 - Mathematically verified by a second curriculum specialist (4-eye rule)
 - Solution steps re-checked by SymPy where computable
 - Language: clear, Grade 9 reading level, neutral South African English
@@ -107,6 +106,7 @@ curriculum-data/
 ## 4. Team & Workflow
 
 ### 4.1 People
+
 - **2 Curriculum Specialists** (SACE-registered, Grade 9+ Mathematics teaching experience, ≥ 5 years)
 - **1 Mathematics Editor** (part-time, weeks 6–14) — final quality pass
 - **1 Curriculum Lead** (the PM or a senior teacher) — owns delivery
@@ -130,6 +130,7 @@ Merged to main branch → loaded into platform
 Each lesson is one PR. Reviewed like code.
 
 ### 4.3 Throughput target
+
 - Sustainable rate per specialist: **2 lessons/week** (incl. 15 Qs + solutions)
 - 2 specialists × 2 lessons/week × 12 weeks = **48 lessons** capacity
 - MVP needs **~19** → buffer for revisions, illustrations, and edge cases
@@ -138,17 +139,17 @@ Each lesson is one PR. Reviewed like code.
 
 ## 5. Schedule (aligned to MVP 16-week timeline)
 
-| Week | Curriculum milestone |
-|---|---|
-| 0 | Specialists hired, content templates finalised |
-| 1 | First 2 lessons drafted (Numbers content area) — exercise full pipeline end-to-end |
-| 2 | Pipeline locked; full authoring kicks off |
-| 3–6 | Numbers + Algebra complete (9 lessons) |
-| 7–10 | Geometry + Measurement complete (7 lessons) |
-| 11–12 | Data Handling + buffer/revisions (3 lessons + fixes) |
-| 13 | Editor final pass complete; all 19 lessons signed off |
-| 14 | Content frozen for beta |
-| 15–16 | Hot-fix only |
+| Week  | Curriculum milestone                                                               |
+| ----- | ---------------------------------------------------------------------------------- |
+| 0     | Specialists hired, content templates finalised                                     |
+| 1     | First 2 lessons drafted (Numbers content area) — exercise full pipeline end-to-end |
+| 2     | Pipeline locked; full authoring kicks off                                          |
+| 3–6   | Numbers + Algebra complete (9 lessons)                                             |
+| 7–10  | Geometry + Measurement complete (7 lessons)                                        |
+| 11–12 | Data Handling + buffer/revisions (3 lessons + fixes)                               |
+| 13    | Editor final pass complete; all 19 lessons signed off                              |
+| 14    | Content frozen for beta                                                            |
+| 15–16 | Hot-fix only                                                                       |
 
 ---
 
@@ -157,16 +158,19 @@ Each lesson is one PR. Reviewed like code.
 Three options, ranked:
 
 ### Option A (Recommended): In-house authoring + open-licensed supplements
+
 - **Pros:** Quality control, SA voice, no IP issues, builds long-term content team
 - **Cons:** Slower, requires hiring
 - **Cost (MVP):** ~R 280–420K (2 specialists × 16 weeks)
 
 ### Option B: License existing CAPS-aligned content
+
 - **Pros:** Fast
 - **Cons:** Generic, often poorly digitised, ongoing royalties, locks competitive moat away
 - **Cost:** R 150–500K + per-user royalties
 
 ### Option C: AI-generated content with human review
+
 - **Pros:** Cheap, fast
 - **Cons:** Quality is uneven; AI gets maths wrong in subtle ways; risks the whole brand
 - **Verdict:** Use for **question generation drafts only**, never for lesson explanations or final published solutions. Always human-reviewed.
@@ -178,16 +182,19 @@ Three options, ranked:
 ## 7. Content Operations (Beyond MVP)
 
 ### Phase 2 expansion
+
 - Grades 8 and 10 (adjacent grades, same content team scales)
 - Multilingual: lessons translated to Afrikaans, isiZulu first (highest-impact languages by speaker count in SA schools)
 - Past-paper question banks (publicly available Department of Basic Education papers)
 
 ### Phase 3+
+
 - Foundation Phase (R–3) — different pedagogy, separate specialist hires
 - FET phase (Grades 10–12) — Matric prep premium tier
 - Adaptive content: questions tagged with skill graph nodes for the recommendation engine
 
 ### Content CMS
+
 - MVP: Git-based. Lessons are files. Engineering ingests at build/deploy time.
 - Phase 2: Build an internal **Curriculum Management Portal** (per strategy doc §2) so specialists author without git.
 - This is non-negotiable for scaling content beyond 50 lessons.
@@ -206,17 +213,20 @@ Three options, ranked:
 ## 9. Quality Assurance
 
 ### 9.1 Pre-publish gates (automated)
+
 - SymPy verifies every computable answer
 - LaTeX renders without errors
 - Schema validation on `metadata.json` and `questions.json`
 - Spell-check + reading-level check
 
 ### 9.2 Pre-publish gates (manual)
+
 - Peer review (specialist B)
 - Editor pass
 - Curriculum Lead sign-off
 
 ### 9.3 Post-publish monitoring
+
 - Track per-question error rate (student answer correctness) — anomalies flag bad questions
 - Tutor conversation review: weekly sample of 50, scored by a specialist
 - Quarterly full curriculum audit
@@ -225,13 +235,13 @@ Three options, ranked:
 
 ## 10. Risks
 
-| Risk | Mitigation |
-|---|---|
-| Specialists can't be hired in time | Start hiring **Week –4** (before engineering kickoff). Have a network of freelance SA maths teachers as backup. |
-| Authoring slower than 2 lessons/week | Buffer in schedule; option to bring in a third specialist on contract |
-| Quality inconsistency between authors | Editor role, style guide, peer review |
-| Content goes stale (curriculum updates) | Annual review cycle aligned to DBE updates |
-| AI-assisted question generation produces wrong maths | SymPy gate + specialist review; never publish unverified |
+| Risk                                                 | Mitigation                                                                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Specialists can't be hired in time                   | Start hiring **Week –4** (before engineering kickoff). Have a network of freelance SA maths teachers as backup. |
+| Authoring slower than 2 lessons/week                 | Buffer in schedule; option to bring in a third specialist on contract                                           |
+| Quality inconsistency between authors                | Editor role, style guide, peer review                                                                           |
+| Content goes stale (curriculum updates)              | Annual review cycle aligned to DBE updates                                                                      |
+| AI-assisted question generation produces wrong maths | SymPy gate + specialist review; never publish unverified                                                        |
 
 ---
 
@@ -246,6 +256,6 @@ Three options, ranked:
 
 ## 12. Why This Matters
 
-The strategy doc says: *"The biggest moat will be localized educational intelligence, learning data, and personalized AI-driven mathematics mastery for African learners."*
+The strategy doc says: _"The biggest moat will be localized educational intelligence, learning data, and personalized AI-driven mathematics mastery for African learners."_
 
 That moat is built one lesson at a time. The plan above is how it starts.

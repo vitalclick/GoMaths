@@ -205,11 +205,12 @@ Get an Anthropic key (cheapest model: `claude-haiku-4-5`). Set
 service env. Restart `uvicorn tutor.main:app`.
 
 Send one message to Maya through the Student app. Confirm:
+
 1. The reply streams in via SSE.
 2. The "Verifying maths: x/y" indicator appears mid-stream.
 3. The final "Maths verified" badge lights up.
 4. Looking at the tutor service logs, the `cached_tokens` field is
-   non-zero on the *second* message to the same topic (proves prompt
+   non-zero on the _second_ message to the same topic (proves prompt
    caching).
 
 This is the single highest-value smoke test before anything else
@@ -237,6 +238,7 @@ lessons render fast enough not to feel broken.
 ### Friday: hire decisions
 
 By end of week 1 you should have a clearer read on:
+
 - What's actually broken vs. what's working
 - Whether the architecture holds up under real use
 - What needs to go on the Phase 1 hiring spec (probably more than the
@@ -293,13 +295,13 @@ These are open in `docs/Architecture_Decisions.md` and
 `docs/Phase1_Launch_Plan.md §11`. None of them are blocking week-one
 work, but they shape week 3 onwards:
 
-| Decision | Why it matters |
-|---|---|
-| Auth provider — self-hosted JWT vs Auth0 | School SSO will need SAML/OIDC; Auth0 has it, self-hosted doesn't (yet) |
-| LLM provider as production default | Phase 1 budget depends on Anthropic Haiku 4.5 cache hit rate; verify, then choose |
-| Pilot school grade band | Plan recommends Grade 9; talk to the schools, confirm |
-| Payment facilitator (Phase 1.5) | Stitch / PayFast / Paystack-SA — only matters when the marketplace builds |
-| Funding commitment | R 11.5–17.3M, 12-month runway. Don't start hiring against this without it confirmed |
+| Decision                                 | Why it matters                                                                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- |
+| Auth provider — self-hosted JWT vs Auth0 | School SSO will need SAML/OIDC; Auth0 has it, self-hosted doesn't (yet)             |
+| LLM provider as production default       | Phase 1 budget depends on Anthropic Haiku 4.5 cache hit rate; verify, then choose   |
+| Pilot school grade band                  | Plan recommends Grade 9; talk to the schools, confirm                               |
+| Payment facilitator (Phase 1.5)          | Stitch / PayFast / Paystack-SA — only matters when the marketplace builds           |
+| Funding commitment                       | R 11.5–17.3M, 12-month runway. Don't start hiring against this without it confirmed |
 
 ---
 
@@ -307,15 +309,15 @@ work, but they shape week 3 onwards:
 
 The branch assumes these roles exist; today they don't:
 
-| Role | Why before pilot |
-|---|---|
-| **Information Officer** (POPIA) | Required to sign off on every data-subject request; also fronts the consent flow |
-| **Head of Curriculum** | Curriculum is the critical path; without this hire, topics #3–19 don't happen |
-| **2 SACE-registered Curriculum Specialists** | Topic throughput is 2/week per specialist per `docs/Curriculum_Content_Plan.md` |
-| **DevOps Engineer** | AWS af-south-1 provisioning, Terraform expansion, EAS setup |
-| **Senior Expo/RN Engineer** | Day-1 install fixes; ongoing UI work |
-| **Backend Engineer** | NestJS + Prisma; takes over from this branch |
-| **Curriculum Editor** (part-time) | Final quality pass before any lesson reaches production |
+| Role                                         | Why before pilot                                                                 |
+| -------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Information Officer** (POPIA)              | Required to sign off on every data-subject request; also fronts the consent flow |
+| **Head of Curriculum**                       | Curriculum is the critical path; without this hire, topics #3–19 don't happen    |
+| **2 SACE-registered Curriculum Specialists** | Topic throughput is 2/week per specialist per `docs/Curriculum_Content_Plan.md`  |
+| **DevOps Engineer**                          | AWS af-south-1 provisioning, Terraform expansion, EAS setup                      |
+| **Senior Expo/RN Engineer**                  | Day-1 install fixes; ongoing UI work                                             |
+| **Backend Engineer**                         | NestJS + Prisma; takes over from this branch                                     |
+| **Curriculum Editor** (part-time)            | Final quality pass before any lesson reaches production                          |
 
 Hire the **Curriculum Lead + 2 Specialists FIRST** — they have the
 longest ramp + are the critical path. Engineering can run in parallel.

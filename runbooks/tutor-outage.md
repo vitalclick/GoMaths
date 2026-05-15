@@ -64,6 +64,7 @@ TUTOR_PROVIDER=mock
 ```
 
 Then:
+
 1. Pull a sample of the bad replies from `Conversation` rows (`role=MAYA`, `validated=false`, recent).
 2. Identify the pattern — a specific topic? A specific question shape? A model regression?
 3. Decide: tighten the system prompt, switch model, or block traffic on the affected topic.

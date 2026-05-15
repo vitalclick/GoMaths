@@ -27,7 +27,10 @@ export class CurriculumService implements OnModuleInit {
   listByGrade(grade: number): TopicSummary[] {
     return [...this.topicsById.values()]
       .filter((t) => t.grade === grade)
-      .map(({ lessonMarkdown: _ignored, prerequisites: _p, learningOutcomes: _o, ...summary }) => summary);
+      .map(
+        ({ lessonMarkdown: _ignored, prerequisites: _p, learningOutcomes: _o, ...summary }) =>
+          summary,
+      );
   }
 
   getTopic(topicId: string): Topic {

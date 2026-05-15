@@ -170,11 +170,16 @@ export class TutorService {
         while (split >= 0) {
           const rawEvent = buffer.slice(0, split);
           buffer = buffer.slice(split + 2);
-          this.handleSseFrame(rawEvent, res, (delta) => {
-            accumulated += delta;
-          }, (final) => {
-            validated = final.validated;
-          });
+          this.handleSseFrame(
+            rawEvent,
+            res,
+            (delta) => {
+              accumulated += delta;
+            },
+            (final) => {
+              validated = final.validated;
+            },
+          );
           split = buffer.indexOf("\n\n");
         }
       }

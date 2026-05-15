@@ -119,9 +119,7 @@ export class NotificationsService {
     }
     const mine = this.fallback.get(userId);
     if (!mine) return [];
-    return [...mine.values()]
-      .filter((t) => !appSlug || t.appSlug === appSlug)
-      .map((t) => t.token);
+    return [...mine.values()].filter((t) => !appSlug || t.appSlug === appSlug).map((t) => t.token);
   }
 }
 

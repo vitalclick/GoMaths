@@ -43,14 +43,11 @@ export async function scanImage(asset: ScanAsset): Promise<SolverResponse> {
 
   const form = new FormData();
   // FormData on RN accepts the { uri, name, type } trio directly.
-  form.append(
-    "image",
-    {
-      uri: asset.uri,
-      name: asset.fileName ?? "scan.jpg",
-      type: asset.mimeType ?? "image/jpeg",
-    } as unknown as Blob,
-  );
+  form.append("image", {
+    uri: asset.uri,
+    name: asset.fileName ?? "scan.jpg",
+    type: asset.mimeType ?? "image/jpeg",
+  } as unknown as Blob);
 
   const res = await fetch(`${apiUrl}/api/solver/scan`, {
     method: "POST",

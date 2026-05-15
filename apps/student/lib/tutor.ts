@@ -98,7 +98,8 @@ export function streamTutorMessage(
       const { getItem } = await import("./secure-storage");
       const accessToken = await getItem("gomaths.access");
 
-      const es = new EventSource(`${apiUrl}/api/tutor/messages/stream`, {
+      type StreamEvent = "meta" | "delta" | "claim" | "done";
+      const es = new EventSource<StreamEvent>(`${apiUrl}/api/tutor/messages/stream`, {
         method: "POST",
         body: JSON.stringify(input),
         headers: {
@@ -146,6 +147,7 @@ export function streamTutorMessage(
           cb.onClaim?.(data);
         } catch {
           // tolerate malformed claim
+        }
       });
 
       es.addEventListener("done", (event) => {

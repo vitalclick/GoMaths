@@ -96,13 +96,19 @@ export default function RegisterScreen() {
 
         {step === "details" && (
           <View className="mt-6">
-            <Text className="font-display text-2xl font-bold text-foreground">Create your account</Text>
+            <Text className="font-display text-2xl font-bold text-foreground">
+              Create your account
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
               We just need a few details to set up your profile.
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field label="Your name" value={form.displayName} onChange={(v) => patch({ displayName: v })} />
+              <Field
+                label="Your name"
+                value={form.displayName}
+                onChange={(v) => patch({ displayName: v })}
+              />
               <Field
                 label="Email"
                 value={form.email}
@@ -150,7 +156,9 @@ export default function RegisterScreen() {
 
         {step === "grade" && (
           <View className="mt-6">
-            <Text className="font-display text-2xl font-bold text-foreground">Which grade are you in?</Text>
+            <Text className="font-display text-2xl font-bold text-foreground">
+              Which grade are you in?
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
               We use this to pick the right lessons.
             </Text>
@@ -188,10 +196,12 @@ export default function RegisterScreen() {
 
         {step === "consent" && (
           <View className="mt-6">
-            <Text className="font-display text-2xl font-bold text-foreground">Parent or guardian</Text>
+            <Text className="font-display text-2xl font-bold text-foreground">
+              Parent or guardian
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
-              You're under 18, so South African law (POPIA) needs a parent or guardian
-              to give permission before we can keep your data.
+              You're under 18, so South African law (POPIA) needs a parent or guardian to give
+              permission before we can keep your data.
             </Text>
 
             <View className="mt-6 gap-4">
@@ -231,9 +241,9 @@ export default function RegisterScreen() {
 
             <Card className="mt-5">
               <Text className="text-xs text-muted-foreground">
-                We'll email your parent or guardian a confirmation link. Your account
-                stays in a limited state until they confirm — you can still browse
-                lessons but progress data won't be stored.
+                We'll email your parent or guardian a confirmation link. Your account stays in a
+                limited state until they confirm — you can still browse lessons but progress data
+                won't be stored.
               </Text>
             </Card>
 

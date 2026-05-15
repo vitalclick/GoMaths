@@ -194,9 +194,7 @@ export default function TutorScreen() {
       >
         {topicId ? (
           <View className="border-b border-border bg-primary-soft px-5 py-2">
-            <Text className="text-xs font-semibold text-primary">
-              Topic context: {topicId}
-            </Text>
+            <Text className="text-xs font-semibold text-primary">Topic context: {topicId}</Text>
           </View>
         ) : null}
 
@@ -215,9 +213,7 @@ export default function TutorScreen() {
           {sending && <TypingBubble />}
         </ScrollView>
 
-        {error && (
-          <Text className="px-5 py-1 text-xs text-destructive">{error}</Text>
-        )}
+        {error && <Text className="px-5 py-1 text-xs text-destructive">{error}</Text>}
 
         {messages.length === 0 && !sending && (
           <View className="border-t border-border bg-background">
@@ -337,8 +333,8 @@ function MessageBubble({ message, debug }: { message: ChatMessage; debug: boolea
           <Text className="mt-0.5 px-2 text-[10px] font-mono text-muted-foreground">
             {message.provider}/{message.model}
             {" · "}
-            in {message.inputTokens} (cached {message.cachedTokens ?? 0})
-            {" · out "}{message.outputTokens}
+            in {message.inputTokens} (cached {message.cachedTokens ?? 0}){" · out "}
+            {message.outputTokens}
           </Text>
         )}
       </View>

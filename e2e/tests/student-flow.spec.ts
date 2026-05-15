@@ -14,10 +14,10 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
 
   // Register: step 1 — details. 4 inputs (name, email, password, birth year).
   // Use a birth year that makes the user an adult so we skip the consent step.
-  await page.locator('input').nth(0).fill("Test Learner");
-  await page.locator('input').nth(1).fill("test@example.com");
-  await page.locator('input').nth(2).fill("supersecret");
-  await page.locator('input').nth(3).fill("1995");
+  await page.locator("input").nth(0).fill("Test Learner");
+  await page.locator("input").nth(1).fill("test@example.com");
+  await page.locator("input").nth(2).fill("supersecret");
+  await page.locator("input").nth(3).fill("1995");
   await page.getByRole("button", { name: /next: pick a grade/i }).click();
 
   // Step 2 — grade picker. Tap Grade 9.

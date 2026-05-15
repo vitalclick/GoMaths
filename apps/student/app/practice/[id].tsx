@@ -140,7 +140,9 @@ export default function PracticeScreen() {
               </Text>
             )}
             <Text className="mt-2 text-xs text-muted-foreground">
-              {feedback.validated ? "Verified by SymPy." : "Quick string check only — backend offline."}
+              {feedback.validated
+                ? "Verified by SymPy."
+                : "Quick string check only — backend offline."}
             </Text>
             {q.solutionSteps.length > 0 && (
               <View className="mt-3">

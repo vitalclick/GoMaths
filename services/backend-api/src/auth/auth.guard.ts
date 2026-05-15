@@ -55,10 +55,12 @@ export class JwtAuthGuard implements CanActivate {
   }
 }
 
-export const CurrentUser = createParamDecorator((_data: unknown, ctx: ExecutionContext): JwtClaims => {
-  const req = ctx.switchToHttp().getRequest<Request & { user: JwtClaims }>();
-  return req.user;
-});
+export const CurrentUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): JwtClaims => {
+    const req = ctx.switchToHttp().getRequest<Request & { user: JwtClaims }>();
+    return req.user;
+  },
+);
 
 function extractBearer(req: Request): string | null {
   const header = req.headers.authorization;

@@ -20,10 +20,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Install the test dependencies directly rather than `pip install -e .`
-      # (the latter would also need a hatch packages config). pytest picks up
-      # `tutor/`, `solver/`, `validation/` via sys.path when run from the
-      # service root.
       - name: Install dependencies
         working-directory: services/ai-services
         run: |
@@ -51,48 +47,47 @@ jobs:
         run: python curriculum-data/scripts/validate_curriculum.py
 
   node:
-    name: Node — package.json sanity
+    name: Node — typecheck, format, codegen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-
-      # Without a committed pnpm-lock.yaml we can't make `pnpm install`
-      # reliable in CI (every transitive dep version is unconstrained).
-      # Until the first real install happens on a dev machine and the
-      # lockfile is committed, the Node job verifies what it can: every
-      # package.json parses as valid JSON.
-      - name: Validate every package.json
-        run: |
-          set -e
-          fail=0
-          while IFS= read -r f; do
-            if ! node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"; then
-              echo "::error file=$f::invalid JSON"
-              fail=1
-            fi
-          done < <(find . -name package.json -not -path '*/node_modules/*' -not -path './UI/*')
-          exit $fail
-
-      # Informational install + format/typecheck — runs after the lockfile
-      # lands. Until then they're scoped out so the PR doesn't show red.
-      - name: pnpm install (informational, will run once lockfile is committed)
-        if: ${{ false }}
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.12.0
 
-  # The Playwright E2E suite needs a working monorepo install + an Expo Web
-  # build that actually boots in CI. Both are gated on the first lockfile
-  # commit. Keeping the job in the workflow (not deleted) so the runbook is
-  # discoverable; switch `if:` to `${{ true }}` once unblocked.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @gomaths/backend-api prisma:generate
+
+      - name: Regenerate API client and check no drift
+        run: |
+          pnpm --filter @gomaths/api-client generate
+          if ! git diff --quiet -- packages/api-client/src/generated.ts; then
+            echo "::error::packages/api-client/src/generated.ts is out of sync with openapi.yaml — run 'pnpm --filter @gomaths/api-client generate' and commit"
+            git --no-pager diff -- packages/api-client/src/generated.ts | head -40
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
   e2e:
     name: E2E — Student app (Playwright on web)
     runs-on: ubuntu-latest
-    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -102,7 +97,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - name: Install Playwright browsers
         run: pnpm --filter @gomaths/e2e exec playwright install --with-deps chromium
       - name: Run Playwright suite

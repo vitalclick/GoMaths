@@ -1,6 +1,7 @@
 # Incident response
 
 > **Severity rule of thumb**
+>
 > - **SEV-1** — Learners can't sign in, lessons don't load, or wrong maths is being shown at scale. Wake people up.
 > - **SEV-2** — A pilot school is affected; or a single critical feature (tutor / solver) is degraded for >15 min. Business hours response, but treat as urgent.
 > - **SEV-3** — Bug with a workaround; non-critical feature offline. Next-day.
@@ -13,6 +14,7 @@
 ## 1. Detect
 
 Common detection paths (set up before pilot launch — Phase 1 TODO):
+
 - **Sentry alert** — error rate exceeds baseline in `backend-api` or the Expo app
 - **CloudWatch alarm** — RDS connections saturated, EKS pod restart loop, ALB 5xx > 1%
 - **Pilot teacher / parent ping** in the shared Slack channel
@@ -28,6 +30,7 @@ Common detection paths (set up before pilot launch — Phase 1 TODO):
 ## 3. Investigate
 
 Quick checks in roughly this order:
+
 ```sh
 # 1. Is the backend up?
 curl -fsS https://api.gomaths.co.za/api/health
@@ -52,6 +55,7 @@ If the cause looks like a recent deploy: **roll back first, diagnose after**. Ro
 ## 4. Mitigate
 
 Common mitigations:
+
 - **Roll back the last deploy** (GitHub Actions → re-run a previous green workflow's deploy job, or `kubectl rollout undo`).
 - **Disable a broken feature via env** — e.g., `TUTOR_PROVIDER=mock` to bypass a misbehaving LLM. See `tutor-outage.md`.
 - **Tighten rate limits** if a runaway client is the cause. Edit `throttling.module.ts` limits and ship a hotfix.
@@ -77,24 +81,31 @@ Open a `docs/postmortems/YYYY-MM-DD-<slug>.md` PR with this template:
 **Status:** draft | review | published
 
 ## Summary
+
 2–3 sentences. What broke, who was affected, how it ended.
 
 ## Timeline
+
 Use UTC. Every meaningful action.
 
 ## Impact
+
 Who saw what, for how long. Real numbers (DAU lost, requests failed, tutor messages dropped).
 
 ## Root cause
-The actual cause. Not "X happened" — *why was X possible*.
+
+The actual cause. Not "X happened" — _why was X possible_.
 
 ## What went well
+
 At least three items. Worth writing down what works.
 
 ## What didn't
+
 At least three items. No blame; describe systems and incentives, not people.
 
 ## Action items
+
 Bulleted, each with owner + due date + GitHub issue link. Numbered priorities. Don't write more than 5 — it's discipline; pick what matters.
 ```
 

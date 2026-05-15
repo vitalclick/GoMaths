@@ -94,14 +94,12 @@ export async function installBackendMocks(page: Page) {
       body: JSON.stringify(TOPIC_DETAIL),
     }),
   );
-  await page.route(
-    `${BASE}/api/curriculum/topics/g9.alg.linear-eq/questions`,
-    (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(QUESTIONS),
-      }),
+  await page.route(`${BASE}/api/curriculum/topics/g9.alg.linear-eq/questions`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(QUESTIONS),
+    }),
   );
 
   // Answer check.
@@ -150,7 +148,11 @@ export async function installBackendMocks(page: Page) {
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ studentId: "stu-test-1", generatedAt: new Date().toISOString(), mastery: [] }),
+      body: JSON.stringify({
+        studentId: "stu-test-1",
+        generatedAt: new Date().toISOString(),
+        mastery: [],
+      }),
     }),
   );
 }

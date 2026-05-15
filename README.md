@@ -63,14 +63,14 @@ Read in this order:
 
 ## Platforms shipping in Phase 1
 
-| App | iOS | Android | Web | Phase |
-|---|:-:|:-:|:-:|---|
-| Student | ✓ | ✓ | ✓ | 1 |
-| Parent | ✓ | ✓ | ✓ | 1 |
-| Teacher | ✓ | ✓ | ✓ | 1 |
-| School Admin | companion | companion | primary | 1 |
-| Internal Admin | — | — | ✓ | 1 (incremental) |
-| **Tutor** | ✓ | ✓ | ✓ | **1.5 (gated on Phase 1 signal)** |
+| App            |    iOS    |  Android  |   Web   | Phase                             |
+| -------------- | :-------: | :-------: | :-----: | --------------------------------- |
+| Student        |     ✓     |     ✓     |    ✓    | 1                                 |
+| Parent         |     ✓     |     ✓     |    ✓    | 1                                 |
+| Teacher        |     ✓     |     ✓     |    ✓    | 1                                 |
+| School Admin   | companion | companion | primary | 1                                 |
+| Internal Admin |     —     |     —     |    ✓    | 1 (incremental)                   |
+| **Tutor**      |     ✓     |     ✓     |    ✓    | **1.5 (gated on Phase 1 signal)** |
 
 ---
 

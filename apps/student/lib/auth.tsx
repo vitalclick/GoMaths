@@ -44,6 +44,7 @@ export interface RegisterInput {
   password: string;
   displayName: string;
   grade: number;
+  parentalConsentToken?: string;
 }
 
 export interface LoginInput {

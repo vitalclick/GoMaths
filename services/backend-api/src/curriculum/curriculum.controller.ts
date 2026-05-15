@@ -32,10 +32,7 @@ export class CurriculumController {
   @Get("topics/:topicId/questions")
   @ApiOperation({ summary: "List practice questions for a topic" })
   @ApiQuery({ name: "difficulty", required: false, enum: ["easy", "medium", "hard"] })
-  listQuestions(
-    @Param("topicId") topicId: string,
-    @Query("difficulty") difficulty?: Difficulty,
-  ) {
+  listQuestions(@Param("topicId") topicId: string, @Query("difficulty") difficulty?: Difficulty) {
     return this.service.listQuestions(topicId, difficulty);
   }
 }

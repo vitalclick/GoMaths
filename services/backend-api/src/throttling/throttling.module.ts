@@ -24,6 +24,15 @@ import type { JwtClaims } from "../auth/auth.guard";
  *   - In-process otherwise (local dev / demos) — quota is per pod,
  *     which is fine when there's only one.
  */
+class IdentityThrottlerGuard extends ThrottlerGuard {
+  protected override async getTracker(req: Record<string, unknown>): Promise<string> {
+    const r = req as unknown as Request & { user?: JwtClaims };
+    if (r.user?.sub) return `u:${r.user.sub}`;
+    const ip = (r.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim() || r.ip;
+    return `ip:${ip ?? "unknown"}`;
+  }
+}
+
 @Module({
   imports: [
     ThrottlerModule.forRootAsync({
@@ -52,15 +61,6 @@ import type { JwtClaims } from "../auth/auth.guard";
   providers: [{ provide: APP_GUARD, useClass: IdentityThrottlerGuard }],
 })
 export class ThrottlingModule {}
-
-class IdentityThrottlerGuard extends ThrottlerGuard {
-  protected override async getTracker(req: Record<string, unknown>): Promise<string> {
-    const r = req as Request & { user?: JwtClaims };
-    if (r.user?.sub) return `u:${r.user.sub}`;
-    const ip = (r.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim() || r.ip;
-    return `ip:${ip ?? "unknown"}`;
-  }
-}
 
 /** Redact the password from a Redis URL for safe logging. */
 function redacted(url: string): string {

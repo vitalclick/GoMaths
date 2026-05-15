@@ -42,7 +42,7 @@ export class ExpoPushClient {
       const res = await fetch(EXPO_PUSH_URL, {
         method: "POST",
         headers: {
-          "accept": "application/json",
+          accept: "application/json",
           "accept-encoding": "gzip, deflate",
           "content-type": "application/json",
         },

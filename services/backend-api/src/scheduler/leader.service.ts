@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { hostname, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
+import { hostname } from "node:os";
 import Redis from "ioredis";
 
 /**

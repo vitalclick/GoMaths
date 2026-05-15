@@ -24,11 +24,7 @@
       "stem": "x^5 / x^2",
       "answer": "x^3",
       "answerLatex": "x^{3}",
-      "solutionSteps": [
-        "Same base, division: subtract the exponents.",
-        "5 - 2 = 3",
-        "Answer: x^3"
-      ],
+      "solutionSteps": ["Same base, division: subtract the exponents.", "5 - 2 = 3", "Answer: x^3"],
       "commonMistakes": [
         "Dividing the exponents instead of subtracting",
         "Subtracting in the wrong order"
@@ -41,11 +37,7 @@
       "stem": "(x^3)^2",
       "answer": "x^6",
       "answerLatex": "x^{6}",
-      "solutionSteps": [
-        "Power of a power: multiply the exponents.",
-        "3 * 2 = 6",
-        "Answer: x^6"
-      ],
+      "solutionSteps": ["Power of a power: multiply the exponents.", "3 * 2 = 6", "Answer: x^6"],
       "commonMistakes": [
         "Adding the exponents instead of multiplying",
         "Forgetting that the inner exponent applies to the whole base"
@@ -80,10 +72,7 @@
         "So 3^x = 3^4",
         "Equal bases means equal exponents: x = 4"
       ],
-      "commonMistakes": [
-        "Computing 81 / 3 = 27 and stopping there",
-        "Confusing 3^4 with 4^3"
-      ],
+      "commonMistakes": ["Computing 81 / 3 = 27 and stopping there", "Confusing 3^4 with 4^3"],
       "tags": ["exponential-equation"]
     }
   ]

@@ -32,9 +32,8 @@ export default function HomeScreen() {
               Phase 1.5 scaffold
             </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
-              This app is the entry point for parents. Full features —
-              weekly progress digests, push reminders, linked-child view —
-              ship when Phase 1.5 begins.
+              This app is the entry point for parents. Full features — weekly progress digests, push
+              reminders, linked-child view — ship when Phase 1.5 begins.
             </Text>
           </Card>
 
@@ -61,8 +60,8 @@ export default function HomeScreen() {
             Linked children
           </Text>
           <Text className="mt-1 text-sm text-muted-foreground">
-            No children linked yet. Phase 1.5 brings invite links from the
-            Student app's consent flow.
+            No children linked yet. Phase 1.5 brings invite links from the Student app's consent
+            flow.
           </Text>
         </Card>
 
@@ -71,8 +70,7 @@ export default function HomeScreen() {
             This week's summary
           </Text>
           <Text className="mt-1 text-sm text-muted-foreground">
-            Once a child is linked, you'll see their topics, mastery, and
-            time on task here.
+            Once a child is linked, you'll see their topics, mastery, and time on task here.
           </Text>
         </Card>
 
