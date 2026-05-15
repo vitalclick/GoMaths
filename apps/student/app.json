@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "GoMaths",
+    "slug": "gomaths-student",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "gomaths",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.za.gomaths.student"
+    },
+    "android": {
+      "package": "co.za.gomaths.student",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

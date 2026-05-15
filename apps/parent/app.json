@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "GoMaths · Parent",
+    "slug": "gomaths-parent",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "gomaths-parent",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.za.gomaths.parent"
+    },
+    "android": {
+      "package": "co.za.gomaths.parent",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

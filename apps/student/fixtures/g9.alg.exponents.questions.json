@@ -1,0 +1,90 @@
+{
+  "topicId": "g9.alg.exponents",
+  "questions": [
+    {
+      "id": "g9.alg.exponents.q001",
+      "difficulty": "easy",
+      "stem": "2^3 * 2^4",
+      "answer": "2^7",
+      "answerLatex": "2^{7}",
+      "solutionSteps": [
+        "Same base, multiplication: add the exponents.",
+        "3 + 4 = 7",
+        "Answer: 2^7 (which equals 128)"
+      ],
+      "commonMistakes": [
+        "Multiplying the exponents instead of adding them",
+        "Multiplying the bases (e.g. writing 4^7)"
+      ],
+      "tags": ["product-law"]
+    },
+    {
+      "id": "g9.alg.exponents.q002",
+      "difficulty": "easy",
+      "stem": "x^5 / x^2",
+      "answer": "x^3",
+      "answerLatex": "x^{3}",
+      "solutionSteps": [
+        "Same base, division: subtract the exponents.",
+        "5 - 2 = 3",
+        "Answer: x^3"
+      ],
+      "commonMistakes": [
+        "Dividing the exponents instead of subtracting",
+        "Subtracting in the wrong order"
+      ],
+      "tags": ["quotient-law"]
+    },
+    {
+      "id": "g9.alg.exponents.q003",
+      "difficulty": "medium",
+      "stem": "(x^3)^2",
+      "answer": "x^6",
+      "answerLatex": "x^{6}",
+      "solutionSteps": [
+        "Power of a power: multiply the exponents.",
+        "3 * 2 = 6",
+        "Answer: x^6"
+      ],
+      "commonMistakes": [
+        "Adding the exponents instead of multiplying",
+        "Forgetting that the inner exponent applies to the whole base"
+      ],
+      "tags": ["power-of-power"]
+    },
+    {
+      "id": "g9.alg.exponents.q004",
+      "difficulty": "medium",
+      "stem": "2^x = 32",
+      "answer": "x = 5",
+      "answerLatex": "x = 5",
+      "solutionSteps": [
+        "Rewrite 32 as a power of 2: 32 = 2^5",
+        "So 2^x = 2^5",
+        "Since the bases are equal, the exponents must be equal: x = 5"
+      ],
+      "commonMistakes": [
+        "Trying to divide rather than rewriting with the same base",
+        "Mistaking 32 for 2^4"
+      ],
+      "tags": ["exponential-equation"]
+    },
+    {
+      "id": "g9.alg.exponents.q005",
+      "difficulty": "hard",
+      "stem": "3^x = 81",
+      "answer": "x = 4",
+      "answerLatex": "x = 4",
+      "solutionSteps": [
+        "Rewrite 81 as a power of 3: 81 = 3 * 3 * 3 * 3 = 3^4",
+        "So 3^x = 3^4",
+        "Equal bases means equal exponents: x = 4"
+      ],
+      "commonMistakes": [
+        "Computing 81 / 3 = 27 and stopping there",
+        "Confusing 3^4 with 4^3"
+      ],
+      "tags": ["exponential-equation"]
+    }
+  ]
+}

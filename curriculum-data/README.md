@@ -34,8 +34,17 @@ One topic = one PR. Required checks (see `.github/workflows/curriculum-validate.
 - Two specialist reviewers
 - Curriculum Lead sign-off
 
+## Validating answers locally
+
+```sh
+pip install sympy
+python curriculum-data/scripts/validate_curriculum.py
+```
+
+Runs every `questions.json` answer through the SymPy validator in `services/ai-services/validation/`. Wired into CI via `.github/workflows/ci.yml`.
+
 ## Status
-Empty. Authoring begins Week 1 of MVP build (see `docs/MVP_Spec.md §6`).
+One example topic scaffolded: `grade-9/algebra/solving-linear-equations/`. Authoring at scale begins Week 1 of Phase 1 build (see `docs/Phase1_Launch_Plan.md §6`).
 
 ## Licensing
 All content here is GoMaths IP unless explicitly noted in `LICENSES.md`. Do not import copyrighted textbook material verbatim.
