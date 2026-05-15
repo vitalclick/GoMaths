@@ -1,10 +1,11 @@
 # GoMaths Tutor Marketplace — Phase 1.5 Plan
 
-**Version:** 0.1 (Draft)
-**Status:** Planned — gated on Phase 1 pilot signal
+**Version:** 0.2 (Draft)
+**Status:** Planned — gated on v2 launch outcome signal
 **Owner:** TBD
-**Target start:** Month 10 of project (after Phase 1 ships to pilot schools)
-**Target launch:** Month 16–18
+**Target start:** After v2 has cut over its first school and the
+learning-outcome metric beats the v1 control by the threshold in §1.
+**Target launch:** ~6 months after Phase 1.5 kickoff.
 
 ---
 
@@ -18,9 +19,9 @@ The Tutor Marketplace is a different product from the school-affiliated GoMaths 
 - Different operations (vetting, dispute resolution, payouts)
 - A different unit economics question (CAC for parents finding tutors vs. CAC for schools)
 
-It is the _right_ second business for GoMaths — but **only if Phase 1 proves the learning hypothesis**. The marketplace amplifies whatever the core product does. If the core product doesn't move outcomes, the marketplace amplifies nothing.
+It is the _right_ second business for GoMaths — but **only if v2 proves the learning hypothesis vs v1**. The marketplace amplifies whatever the core product does. If v2 doesn't move outcomes against v1, the marketplace amplifies nothing.
 
-**Gating condition:** Phase 1 pilot achieves ≥ 6 percentage-point improvement on the Grade 9 CAPS assessment (lowered from the Phase 1 target of 8 to allow earlier go-decision). If the gate is missed, Phase 1.5 pauses, money is redirected to fixing the learning loop.
+**Gating condition:** v2's first-cutover school shows ≥ 6 percentage-point improvement on the Grade 9 CAPS assessment over the v1 control cohort (lowered from the Phase 1 internal target of 8 to allow an earlier go-decision). If the gate is missed, Phase 1.5 pauses, money is redirected to fixing the v2 learning loop.
 
 ---
 
@@ -141,7 +142,7 @@ The marketplace surfaces inside the Student app must not target children directl
 
 ## 5. Team & Timeline
 
-### Team (added on top of Phase 1 team)
+### Team (added on top of the v2 team)
 
 | Role                          | Count | Notes                                                  |
 | ----------------------------- | ----- | ------------------------------------------------------ |
@@ -158,17 +159,20 @@ The marketplace surfaces inside the Student app must not target children directl
 
 ### Timeline (≈ 6–8 months from kickoff)
 
-| Month | Work                                                                                              |
-| ----- | ------------------------------------------------------------------------------------------------- |
-| 10    | Kickoff (gated on Phase 1 signal). Hire vetting ops. Engage legal + tax. Decide payment provider. |
-| 11    | Tutor verification flow + admin vetting queue. Tutor app profile + availability.                  |
-| 12    | Booking flow in Parent app. Calendar + scheduling backend.                                        |
-| 13    | Video + in-session tooling (third-party SDK; LiveKit recommended).                                |
-| 14    | Payments integrated. Payout flow. Tax forms.                                                      |
-| 15    | Reviews, ratings, disputes. Trust & safety tooling.                                               |
-| 16    | Closed beta — 5–10 hand-picked tutors, 20 parent accounts.                                        |
-| 17    | Expand vetted tutor pool to ~50. Public launch in pilot cities.                                   |
-| 18    | Stabilise; measure unit economics; decide Phase 2 (group classes, subscriptions).                 |
+Months are relative to Phase 1.5 kickoff (which is gated on the v2
+launch outcome signal — see §1).
+
+| Month | Work                                                                                                 |
+| ----- | ---------------------------------------------------------------------------------------------------- |
+| 0     | Kickoff (gated on v2 outcome signal). Hire vetting ops. Engage legal + tax. Decide payment provider. |
+| 1     | Tutor verification flow + admin vetting queue. Tutor app profile + availability.                     |
+| 2     | Booking flow in Parent app. Calendar + scheduling backend.                                           |
+| 3     | Video + in-session tooling (third-party SDK; LiveKit recommended).                                   |
+| 4     | Payments integrated. Payout flow. Tax forms.                                                         |
+| 5     | Reviews, ratings, disputes. Trust & safety tooling.                                                  |
+| 6     | Closed beta — 5–10 hand-picked tutors, 20 parent accounts.                                           |
+| 7     | Expand vetted tutor pool to ~50. Public launch in initial cities.                                    |
+| 8     | Stabilise; measure unit economics; decide what comes next.                                           |
 
 ---
 
@@ -188,7 +192,9 @@ The marketplace surfaces inside the Student app must not target children directl
 | Contingency (20% — higher than Phase 1, more unknowns)                | R 750K      | R 1.2M    |
 | **Total**                                                             | **~R 4.4M** | **~R 7M** |
 
-This is **on top of** Phase 1's R 11.5–17.3M.
+This is **incremental** spend on top of GoMaths' existing operating
+budget — v1 plus the v2 rebuild lines in
+`docs/Phase1_Launch_Plan.md §9`.
 
 ---
 
@@ -222,7 +228,7 @@ This is **on top of** Phase 1's R 11.5–17.3M.
 | Risk                                   | Severity     | Mitigation                                                                               |
 | -------------------------------------- | ------------ | ---------------------------------------------------------------------------------------- |
 | Trust incident (tutor misconduct)      | **Critical** | Strict vetting; recording + retention; tabletop incident drills; liability insurance     |
-| Phase 1 pilot fails the gate           | High         | Marketplace doesn't ship; money is redirected — that's the point of the gate             |
+| v2 outcome gate fails vs v1            | High         | Marketplace doesn't ship; money is redirected — that's the point of the gate             |
 | Tutor supply doesn't scale             | High         | Recruit in Months 11–13 in parallel with build; aim for 100+ vetted by launch            |
 | Parent demand doesn't materialise      | High         | Soft-pilot with 20 invited parents at Month 16 before public launch                      |
 | Payments fraud                         | Medium       | Use facilitator's fraud tooling; cap first-time-customer transaction size                |

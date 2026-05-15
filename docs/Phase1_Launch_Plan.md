@@ -188,34 +188,45 @@ Grades 8 and 10 follow in Phase 2.
 
 ## 8. Team & Timeline
 
-### Team (~16–17 FTE for the duration)
+### Team
 
-| Role                           | Count | Notes                                                                 |
-| ------------------------------ | ----- | --------------------------------------------------------------------- |
-| Product Manager                | 1     |                                                                       |
-| EdTech / Pedagogy Specialist   | 1     |                                                                       |
-| Product Designer               | 2     | One mobile-leaning, one web-leaning                                   |
-| Expo / RN Engineers            | 5     | 2 senior (own `packages/ui` + cross-cutting); 3 building app features |
-| Next.js Engineer               | 1     | Web admin + school portal web                                         |
-| Backend Engineer (NestJS)      | 2     |                                                                       |
-| AI Engineer (Python / FastAPI) | 1.5   | Solver + Tutor + validation                                           |
-| DevOps Engineer                | 1     | EAS, AWS af-south-1, CI/CD                                            |
-| QA Engineer                    | 2     | Cross-platform matrix is large                                        |
-| Curriculum Specialists         | 2     | SACE-registered, Grade 9 maths                                        |
-| Curriculum Editor              | 0.5   | Part-time, weeks 8–32                                                 |
+This is the team v2 needs to ship and onboard the first cutover
+school. Anything already covered by the v1 organisation doesn't need
+to be re-hired — count what's missing, not the full list. Roles
+marked **(net new)** are the ones the v1 team is least likely to
+already have for a rebuild of this shape.
 
-### Timeline (9–12 months to pilot launch)
+| Role                           | Count | Notes                                                                                  |
+| ------------------------------ | ----- | -------------------------------------------------------------------------------------- |
+| Product Manager                | 1     | Owns the v1→v2 cutover plan per school.                                                |
+| EdTech / Pedagogy Specialist   | 1     | Validates the v2 learning loop against v1 outcomes.                                    |
+| Product Designer               | 1–2   | Brand carries over; needed for v2-specific UI work.                                    |
+| Expo / RN Engineers            | 2–3   | One senior owning `packages/ui` + cross-cutting; the rest building app features.       |
+| Next.js Engineer **(net new)** | 1     | School Admin + Internal Admin web.                                                     |
+| Backend Engineer (NestJS)      | 1–2   |                                                                                        |
+| AI Engineer (Python / FastAPI) | 1     | Owns the validator + tutor + solver services and the prompt-cache observability story. |
+| DevOps Engineer **(net new)**  | 1     | New AWS account, Fargate per ADR-007, EAS for the new bundle IDs.                      |
+| QA Engineer                    | 1–2   | Cross-platform matrix.                                                                 |
+| Curriculum Specialists         | 1–2   | SACE-registered. Sized to the conversion-vs-re-authoring decision.                     |
+| Curriculum Editor              | 0.5   | Part-time; final quality pass.                                                         |
+| Information Officer (POPIA)    | —     | Likely already exists at v1; signs off the DPIA delta for v2.                          |
 
-| Phase                 | Weeks | What ships                                                                                                           |
-| --------------------- | ----- | -------------------------------------------------------------------------------------------------------------------- |
-| 0 — Foundation        | 1–4   | Monorepo, design tokens, packages scaffolded, infra in af-south-1, design system locked, content templates finalised |
-| 1 — Core student loop | 5–16  | Student app on iOS+Android+Web with auth, curriculum browse, lesson view, basic quiz, progress                       |
-| 2 — AI services       | 12–22 | Tutor + Solver behind validation layer, integrated into student app                                                  |
-| 3 — Parent + Teacher  | 16–32 | Both apps shipped on iOS+Android+Web                                                                                 |
-| 4 — School portal     | 24–36 | Web primary + mobile companion                                                                                       |
-| 5 — Hardening         | 36–44 | App store submissions, accessibility audit, security review, POPIA DPIA, content freeze                              |
-| 6 — Closed beta       | 44–48 | 1 pilot school, ~30 students                                                                                         |
-| 7 — Pilot launch      | 48+   | 4 schools, 12-week measurement period                                                                                |
+### Timeline (indicative)
+
+Faster than a greenfield build because the v1 organisation, brand,
+schools, and app store accounts already exist. The biggest unknown is
+how much curriculum content lands in week 1 vs week 12.
+
+| Phase                       | Weeks | What ships                                                                                                                          |
+| --------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — Foundation              | done  | Monorepo + design tokens + backend + AI services + Student app + Parent dashboard + Terraform modules + preview deploy scaffolding. |
+| 1 — Live preview            | 1–2   | Operator runs the Fly.io preview runbook; real Anthropic key in tutor; `/metrics/cache` verified `> 0`; MathPix wired.              |
+| 2 — Curriculum conversion   | 1–8   | Conversion strategy chosen (programmatic / re-author / hybrid); enough Grade-9 content in the new format for one school.            |
+| 3 — AWS production          | 2–6   | New AWS account bootstrapped; Terraform modules applied + Fargate module added; backend + AI services deployed in af-south-1.       |
+| 4 — Teacher + School Admin  | 4–10  | Teacher-scoped backend endpoints; Teacher app fleshed out; School Admin web (Next.js) built.                                        |
+| 5 — App store re-submission | 6–10  | New bundle IDs reviewed under same developer accounts; kid-app policies; EAS Update channels for v2.                                |
+| 6 — Hardening               | 8–12  | Accessibility audit, security review, POPIA DPIA delta signed off, first-school cutover plan finalised.                             |
+| 7 — First-school cutover    | 12+   | One existing school re-onboarded onto v2; pre-/post-assessment vs v1 cohort.                                                        |
 
 ### Critical path
 
@@ -225,43 +236,48 @@ Grades 8 and 10 follow in Phase 2.
 
 ## 9. Budget Envelope (Indicative, ZAR)
 
-| Line item                                                        | Low          | High         |
-| ---------------------------------------------------------------- | ------------ | ------------ |
-| Engineering (16 FTE × 10 months avg, mixed seniority)            | R 7.5M       | R 11M        |
-| Design (2 FTE × 10 months)                                       | R 1.6M       | R 2.4M       |
-| Curriculum content (2 specialists + 0.5 editor, 6 months)        | R 350K       | R 520K       |
-| AI API costs (pilot scale, multi-app)                            | R 80K        | R 150K       |
-| MathPix OCR                                                      | R 50K        | R 100K       |
-| Cloud infra (AWS af-south-1, multi-app)                          | R 150K       | R 280K       |
-| Auth0 / monitoring / tooling SaaS                                | R 100K       | R 180K       |
-| App Store + Play Store fees, kid-app reviews                     | R 30K        | R 60K        |
-| Legal (POPIA DPIA, B2B contracts, ToS x4 apps, kid-app policies) | R 150K       | R 280K       |
-| Contingency (15%)                                                | R 1.5M       | R 2.3M       |
-| **Total**                                                        | **~R 11.5M** | **~R 17.3M** |
+The numbers below are **incremental v2-rebuild cost** on top of the
+existing operating budget for v1. Lines that are already funded as
+part of running v1 (e.g. core engineering salaries that are simply
+redirected onto v2) shouldn't be double-counted here — but every
+finance team frames this differently, so treat this as a planning
+template, not a quote. The right exercise is to sit down with finance
+and split each line into "already in the v1 run-rate" vs "new for v2."
 
-This is a **5–7× increase** over the original mobile-only MVP envelope. The increase is driven by:
+| Line item                                                                 | Low       | High      | Notes                                                                                            |
+| ------------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------------------------------------------ |
+| Net new engineering (delta over v1 team's current capacity, 6–9 months)   | R 2.0M    | R 4.0M    | Sized to whatever's missing from your current v1 engineering — adjust to fit.                    |
+| Design (UI/UX work specific to v2)                                        | R 0.4M    | R 0.8M    | Smaller than greenfield because the design system + brand carry over.                            |
+| Curriculum format conversion (v1 content → new SymPy-validatable shape)   | R 0.3M    | R 0.6M    | Lower bound assumes mostly programmatic conversion; upper bound assumes specialist re-authoring. |
+| AI API costs during rebuild + first-school cohort                         | R 0.1M    | R 0.2M    | Anthropic Haiku 4.5 with prompt caching; verify ratio before signing this number off.            |
+| MathPix OCR (contract + usage)                                            | R 0.05M   | R 0.1M    |                                                                                                  |
+| AWS af-south-1 infra (new account, runs in parallel with v1 for a window) | R 0.15M   | R 0.3M    | Fargate + RDS + ElastiCache + S3 + CloudFront, sized for the first cutover cohort.               |
+| Auth0 / Sentry / monitoring / tooling SaaS                                | R 0.1M    | R 0.2M    |                                                                                                  |
+| New app store listings (review fees + kid-app policy submissions)         | R 0.03M   | R 0.06M   | Same developer accounts as v1, new bundle IDs.                                                   |
+| Legal (POPIA DPIA **delta** for new AI processing, updated ToS for v2)    | R 0.1M    | R 0.2M    | Lower than greenfield because v1 already has the base DPIA and ToS templates.                    |
+| Contingency (15%)                                                         | R 0.5M    | R 1.0M    |                                                                                                  |
+| **Total incremental v2-rebuild cost**                                     | **~R 4M** | **~R 8M** | Excludes v1 operating cost. The wide range is mostly the curriculum-conversion question.         |
 
-- 4× app count (not 4× cost due to shared packages — but ~2.5× engineering)
-- Web platform added (responsive layouts, browser matrix, ChromeOS testing)
-- Larger ongoing app store / compliance surface
-- Larger design effort (4 personas, 3 platforms each)
-
-This is venture-scale. Plan funding accordingly (seed-to-Series-A range).
+The biggest cost variable is the curriculum-conversion strategy (see
+ADR-007 + the "Decisions" section below). If most v1 topics can be
+converted programmatically into the SymPy-validatable shape, the
+content line stays small. If they need to be re-authored from scratch
+by SACE specialists, it grows.
 
 ---
 
-## 10. Key Risks (Phase 1)
+## 10. Key Risks (v2 Rebuild)
 
-| Risk                                               | Severity     | Mitigation                                                                                                                               |
-| -------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Educational hypothesis fails after building 4 apps | **Critical** | Instrument outcomes from day 1. Run a 30-student closed beta at week 44 _before_ the 4-school pilot to catch learning-loop issues early. |
-| AI tutor produces wrong maths                      | High         | SymPy validation layer + human spot-check + curriculum-grounded prompts                                                                  |
-| Scope creep across 4 apps                          | High         | Strict feature-locking per app at week 4; PM owns scope discipline ruthlessly                                                            |
-| App store rejections (kid-app policies)            | Medium       | Engage Apple/Google compliance reviewers by week 8; don't wait until submission                                                          |
-| Curriculum content slips (still critical path)     | High         | Specialists hired week –4; weekly throughput tracked                                                                                     |
-| Cross-platform regressions                         | Medium       | E2E test matrix per app (iOS sim + Android emu + Chrome + ChromeOS) in CI                                                                |
-| Team coordination overhead at 17 FTE               | Medium       | Clear app ownership per pod; weekly cross-pod sync only                                                                                  |
-| Budget overrun                                     | High         | Quarterly burn review; explicit gating decisions at month 4, 7, 10                                                                       |
+| Risk                                                                    | Severity     | Mitigation                                                                                                                                                                |
+| ----------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v2's educational lift vs v1 is statistically indistinguishable          | **Critical** | Instrument outcomes from the first cutover. Pre-/post-assessment for the first school, with v1 cohorts as the natural control. Don't promote v2 wider until lift is real. |
+| Anthropic prompt-cache assumption fails in production                   | **Critical** | `/metrics/cache` smoke test on every deploy; alert if `cache_hit_ratio < 0.5` for >1h. **Verify before quoting any per-learner cost to a school.**                        |
+| AI tutor produces wrong maths                                           | High         | SymPy validation layer is the moat. CI runs the validator on every authored answer; human spot-check on a sampled %.                                                      |
+| New app store listings rejected (kid-app policies under new bundle IDs) | Medium       | Re-use the v1 policy artefacts where possible; engage Apple/Google compliance reviewers before submission, not after.                                                     |
+| Curriculum conversion slips                                             | High         | Size the conversion strategy in week 1 (programmatic vs re-author). Don't ship v2 to a school until the conversion is done for that school's grade.                       |
+| v1 → v2 cutover plan is missing for the chosen first school             | High         | Block onboarding until the written cutover plan exists (comms, parallel-running window, v1 sunset).                                                                       |
+| Cross-platform regressions in the new stack                             | Medium       | E2E test matrix per app (iOS sim + Android emu + Chrome) in CI. Today: web only; add iOS + Android once EAS is wired.                                                     |
+| Budget overrun on the curriculum line                                   | High         | Gating decision at week 4: programmatic conversion proven, OR re-authoring rate confirmed against curriculum specialist throughput.                                       |
 
 ---
 

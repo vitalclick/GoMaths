@@ -40,14 +40,19 @@ Rotation cadence:
 
 ## 2. Cloud Infrastructure (AWS)
 
-| Field                       | Value                                                       |
-| --------------------------- | ----------------------------------------------------------- |
-| Primary region              | `af-south-1` (Cape Town) — POPIA defensibility, see ADR-002 |
-| Secondary region            | `eu-west-1` (DR / backup only)                              |
-| AWS account ID (production) | `(see 1Password — AWS Production)`                          |
-| AWS account ID (staging)    | `(see 1Password — AWS Staging)`                             |
-| AWS Organisations payer     | `(see 1Password)`                                           |
-| Root account email          | `(see 1Password)`                                           |
+v2 uses a **new AWS account** kept fully separate from any account v1
+runs in, per ADR-007. Don't share IAM roles, VPCs, or tfstate buckets
+across the two.
+
+| Field                          | Value                                                       |
+| ------------------------------ | ----------------------------------------------------------- |
+| Primary region                 | `af-south-1` (Cape Town) — POPIA defensibility, see ADR-002 |
+| Secondary region               | `eu-west-1` (DR / backup only)                              |
+| AWS account ID (v2 production) | `(see 1Password — AWS v2 Production)`                       |
+| AWS account ID (v2 staging)    | `(see 1Password — AWS v2 Staging)`                          |
+| AWS Organisations payer        | `(see 1Password)`                                           |
+| Root account email             | `(see 1Password)`                                           |
+| Compute layer                  | ECS Fargate (per ADR-007). EKS deferred.                    |
 
 **Console access:** SSO via AWS IAM Identity Center. Direct IAM users are forbidden for humans (DevOps may create them for CI machine roles only).
 
@@ -59,25 +64,32 @@ Rotation cadence:
 
 ### Apple
 
-| Field                               | Value                                                                        |
-| ----------------------------------- | ---------------------------------------------------------------------------- |
-| Apple Developer Team ID             | `(fill in)`                                                                  |
-| Apple Developer Program enrollment  | `(fill in — typically a 12-month renewal)`                                   |
-| Bundle identifier — Student app     | `co.za.gomaths.student`                                                      |
-| Bundle identifier — Parent app      | `co.za.gomaths.parent` (Phase 1.5+)                                          |
-| Bundle identifier — Teacher app     | `co.za.gomaths.teacher` (Phase 1.5+)                                         |
-| App Store Connect admin contact     | `(fill in)`                                                                  |
-| Apple Family / Kids category status | Required for the Student app — see Apple's "Kids Category" review guidelines |
+v2 ships under the **same Apple Developer Team** as v1, with **new
+bundle IDs** (`co.za.gomaths.v2.*`) so v2 lives as separate listings
+in the App Store alongside v1. Existing v1 listings stay published
+until each school's cutover is complete.
+
+| Field                                | Value                                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| Apple Developer Team ID              | `(fill in — same team as v1)`                                                |
+| Apple Developer Program enrollment   | `(fill in — typically a 12-month renewal)`                                   |
+| Bundle identifier — Student app (v2) | `co.za.gomaths.v2.student`                                                   |
+| Bundle identifier — Parent app (v2)  | `co.za.gomaths.v2.parent`                                                    |
+| Bundle identifier — Teacher app (v2) | `co.za.gomaths.v2.teacher`                                                   |
+| App Store Connect admin contact      | `(fill in)`                                                                  |
+| Apple Family / Kids category status  | Required for the Student app — see Apple's "Kids Category" review guidelines |
 
 ### Google
 
-| Field                            | Value                                                     |
-| -------------------------------- | --------------------------------------------------------- |
-| Play Console account             | `(fill in)`                                               |
-| Package — Student app            | `co.za.gomaths.student`                                   |
-| Designed for Families enrollment | Required for the Student app                              |
-| Play Console admin contact       | `(fill in)`                                               |
-| Upload key keystore              | `(see AWS Secrets Manager: gomaths/play/upload-keystore)` |
+| Field                            | Value                                                        |
+| -------------------------------- | ------------------------------------------------------------ |
+| Play Console account             | `(fill in — same account as v1)`                             |
+| Package — Student app (v2)       | `co.za.gomaths.v2.student`                                   |
+| Package — Parent app (v2)        | `co.za.gomaths.v2.parent`                                    |
+| Package — Teacher app (v2)       | `co.za.gomaths.v2.teacher`                                   |
+| Designed for Families enrollment | Required for the Student app                                 |
+| Play Console admin contact       | `(fill in)`                                                  |
+| Upload key keystore              | `(see AWS Secrets Manager: gomaths-v2/play/upload-keystore)` |
 
 ### EAS (Expo Application Services)
 
@@ -255,16 +267,23 @@ Content workflow lives in `docs/Curriculum_Content_Plan.md`.
 
 ---
 
-## 12. Pilot Schools (Phase 1 launch target)
+## 12. v2 Cutover Schedule
 
-| School      | Province    | MOU status  | Primary contact | Pilot cohort size |
-| ----------- | ----------- | ----------- | --------------- | ----------------- |
-| `(fill in)` | `(fill in)` | `(fill in)` | `(fill in)`     | `(fill in)`       |
-| `(fill in)` | `(fill in)` | `(fill in)` | `(fill in)`     | `(fill in)`       |
-| `(fill in)` | `(fill in)` | `(fill in)` | `(fill in)`     | `(fill in)`       |
-| `(fill in)` | `(fill in)` | `(fill in)` | `(fill in)`     | `(fill in)`       |
+Existing GoMaths schools cut over to v2 one at a time. Track the
+schedule below; each row should also have a cutover-plan doc (comms,
+parallel-running window, v1 sunset date — write the first one, then
+reuse the template).
 
-Target: 6 signed MOUs to land 4 active pilot schools.
+| School      | Province    | Current v1 cohort | Target cutover date | Cutover plan doc | Status      |
+| ----------- | ----------- | ----------------- | ------------------- | ---------------- | ----------- |
+| `(fill in)` | `(fill in)` | `(fill in)`       | `(fill in)`         | `(link)`         | `(fill in)` |
+| `(fill in)` | `(fill in)` | `(fill in)`       | `(fill in)`         | `(link)`         | `(fill in)` |
+| `(fill in)` | `(fill in)` | `(fill in)`       | `(fill in)`         | `(link)`         | `(fill in)` |
+
+The first cutover is the one that matters most — it sets the
+operational pattern for everything that follows. Don't onboard school
+#2 until school #1 has run on v2 for at least one term and the
+outcomes comparison vs the v1 cohort is in.
 
 ---
 
@@ -299,16 +318,19 @@ Live in `runbooks/` at the repo root. See [`runbooks/README.md`](../runbooks/REA
 - [`runbooks/curriculum-rollback.md`](../runbooks/curriculum-rollback.md) — reverting a bad lesson, fast path (PR) and hot path (DB) both documented
 - [`runbooks/payment-dispute.md`](../runbooks/payment-dispute.md) — Phase 1.5 marketplace dispute handling (chargeback / in-app / safety-critical paths)
 
-Pending — to land before pilot or as each feature ships:
+Pending — to land before the first v2 cutover or as each feature ships:
 
-- `runbooks/school-onboarding.md` — when a new school joins the pilot
+- `runbooks/v2-cutover.md` — per-school cutover steps (comms, parallel-running window, v1 sunset, rollback procedure)
 - `runbooks/migration-rollback.md` — Prisma migrate-down for a bad schema change
 
 ---
 
 ## 15. Phase Gating
 
-Phase progression is gated on the criteria in `docs/Phase1_Launch_Plan.md §12` (Phase 1 Definition of Done) and `docs/Tutor_Marketplace_Plan.md §1` (Phase 1.5 gate). Do not start Phase 1.5 spend without explicit sign-off referencing those gates.
+The first v2 cutover is gated on the criteria in
+`docs/Phase1_Launch_Plan.md §12` (Definition of Done). The Tutor
+Marketplace (Phase 1.5) is gated on `docs/Tutor_Marketplace_Plan.md §1`
+and only starts after v2's learning-outcome metric is proven against v1.
 
 ---
 

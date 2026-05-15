@@ -1,4 +1,13 @@
-Building “GoMaths” into a single unified platform is a very large-scale EdTech + AI project. What you’re describing combines the core functionality of multiple world-class platforms:
+> **Note:** This document is the original product-vision Preamble that
+> shaped GoMaths v1 and continues to shape the v2 rebuild. Treat it as
+> historical + directional context — it's aspirational and pre-dates
+> the v2 architectural decisions in `docs/Architecture_Decisions.md`.
+> Specific scope, phasing, and budget numbers in here have been
+> superseded by `docs/Phase1_Launch_Plan.md` for v2.
+
+---
+
+Building "GoMaths" into a single unified platform is a very large-scale EdTech + AI project. What you're describing combines the core functionality of multiple world-class platforms:
 
 - [Photomath](https://photomath.com?utm_source=chatgpt.com)
 - [Prodigy Math](https://www.prodigygame.com?utm_source=chatgpt.com)
