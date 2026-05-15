@@ -6,7 +6,19 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: "oklch(0.99 0.005 130)" as unknown as string },
+          headerTitleStyle: { fontWeight: "700" },
+          headerShadowVisible: false,
+        }}
+      >
+        <Stack.Screen name="index" options={{ title: "GoMaths" }} />
+        <Stack.Screen name="topics" options={{ title: "Grade 9" }} />
+        <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
+        <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
+        <Stack.Screen name="progress" options={{ title: "Progress" }} />
+      </Stack>
     </>
   );
 }

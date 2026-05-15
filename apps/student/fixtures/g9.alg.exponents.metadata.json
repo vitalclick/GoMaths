@@ -1,0 +1,15 @@
+{
+  "topicId": "g9.alg.exponents",
+  "title": "Laws of Exponents",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 1, Topic 1.4",
+  "prerequisites": ["g9.alg.expressions"],
+  "learningOutcomes": [
+    "Apply the product law: a^m * a^n = a^(m+n)",
+    "Apply the quotient law: a^m / a^n = a^(m-n)",
+    "Apply the power-of-a-power law: (a^m)^n = a^(mn)",
+    "Solve simple exponential equations where bases are equal"
+  ],
+  "estimatedMinutes": 30
+}

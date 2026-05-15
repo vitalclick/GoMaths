@@ -1,34 +1,50 @@
 # student
 
-GoMaths Student App — the primary learner-facing application.
+GoMaths Student App — Expo (iOS + Android + Web).
 
-## Platforms
-- **iOS** (14+)
-- **Android** (8+, target entry-level devices, 2GB RAM)
-- **Web** (evergreen browsers; ChromeOS priority for SA school computers)
+## Status (Phase 0+ prototype)
 
-Single Expo codebase across all three platforms via React Native Web.
+Working end-to-end demo:
+- Home screen
+- Topics list (Grade 9) — loads from backend if `EXPO_PUBLIC_API_URL` is set, otherwise bundled fixtures
+- Topic lesson view (markdown rendering)
+- Practice quiz — submits to backend's `/api/curriculum/check`, which runs the SymPy validator
+- Progress screen — per-topic mastery from an in-memory store
+
+Two real Grade 9 algebra topics: Solving Linear Equations + Laws of Exponents.
+
+## Running
+
+```sh
+pnpm install                              # at the repo root
+pnpm --filter @gomaths/student dev        # starts Expo dev server
+```
+
+Targets:
+- iOS simulator: press `i`
+- Android emulator: press `a`
+- Web: press `w`
+
+By default the app uses bundled fixtures so it runs without a backend. To wire to the real backend:
+
+```sh
+EXPO_PUBLIC_API_URL=http://localhost:4000 pnpm --filter @gomaths/student dev
+```
+
+Then run `services/backend-api` and `services/ai-services/validation` alongside.
 
 ## Stack
-- Expo SDK (latest stable)
-- Expo Router (file-based routing)
-- TypeScript
-- NativeWind (Tailwind for React Native; matches `design2` visual tokens)
-- Zustand (state)
-- React Query (data fetching)
-- Reanimated + Moti (animations)
-- KaTeX (math rendering — web) / react-native-katex equivalent (mobile)
-- SQLite via Expo (offline cache)
+- Expo SDK 52 + Expo Router + TypeScript
+- NativeWind (Tailwind v3 for RN)
+- Markdown rendering: `react-native-markdown-display`
+- Math rendering: TODO Phase 1 (KaTeX on web, react-native-katex on native)
+- State: minimal in-memory stores (Phase 1 swaps to Zustand + SQLite)
 
-## Scope (Phase 1 Launch)
-- Auth + grade selection
-- CAPS Grade 9 curriculum browser
-- AI Tutor chat (text, English)
-- Scan Solver (printed equations)
-- Progress dashboard
-
-## Status
-Not yet scaffolded. Initialise via `pnpm create expo-app student --template` once monorepo tooling (pnpm + Turborepo) is in place.
-
-## Source of visual truth
-`UI/design2/` mockups on `main`. Translate Tailwind v4 tokens → NativeWind classes via `packages/design-tokens`.
+## What's deliberately NOT here yet
+- Auth (blocked on ADR-005)
+- Real AI tutor UI (the backend route exists; UI shell is Phase 1)
+- Camera scan solver (Phase 1)
+- Onboarding flow (grade selection, parental consent — Phase 1)
+- Offline persistence (Phase 1)
+- Real LaTeX math rendering (Phase 1)
+- Tests (Phase 1)

@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.alg.linear-eq",
+  "title": "Solving Linear Equations",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 2, Topic 2.3",
+  "prerequisites": ["g9.alg.expressions"],
+  "learningOutcomes": [
+    "Solve linear equations of the form ax + b = c",
+    "Solve linear equations with variables on both sides",
+    "Apply linear equations to word problems"
+  ],
+  "estimatedMinutes": 25
+}
