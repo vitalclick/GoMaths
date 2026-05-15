@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GoMaths — Student App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: 'Nunito', -apple-system, system-ui, sans-serif; }
+  body { overflow: hidden; }
+  #root { width: 100vw; height: 100vh; overflow: hidden; }
+  * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tokens.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="screens-a.jsx"></script>
+<script type="text/babel" src="screens-b.jsx"></script>
+
+<script type="text/babel">
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "palette": "vivid",
+  "dark": false,
+  "age": "older",
+  "gamification": "medium"
+}/*EDITMODE-END*/;
+
+// Wrap each screen in an iOS device frame
+function Frame({ children, dark, width = 360, height = 780 }) {
+  return (
+    <IOSDevice width={width} height={height} dark={dark}>
+      {children}
+    </IOSDevice>
+  );
+}
+
+function GMLogoMark({ theme }) {
+  // Placeholder logo mark — green disc with white "G/M" mark. Swap when real logo lands.
+  const T = theme;
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      padding: '6px 12px 6px 6px', borderRadius: 999,
+      background: 'rgba(255,255,255,0.7)', border: `1px dashed ${T.border}`,
+      fontFamily: GM_FONT, fontWeight: 800, fontSize: 12, color: T.textDim,
+      letterSpacing: 0.4,
+    }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: '50%',
+        background: `radial-gradient(circle at 35% 30%, ${T.primary}, ${T.primaryDk})`,
+        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: GM_FONT, fontSize: 14, fontWeight: 900,
+        boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.15)',
+      }}>G</div>
+      LOGO · drop here
+    </div>
+  );
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const T = gmTheme(t.palette, t.dark);
+
+  // Common iOS frame size
+  const W = 360, H = 780;
+
+  return (
+    <React.Fragment>
+      <DesignCanvas>
+        {/* Cover / system banner */}
+        <DCSection id="cover" title="GoMaths — Student App" subtitle="Original UI/UX exploration · 8 priority screens · Nunito + green/red brand">
+          <DCArtboard id="cover-board" label="Design system" width={620} height={W * 0 + 360}>
+            <div style={{ width: 620, height: 360, background: T.bg, color: T.text, fontFamily: GM_FONT, padding: 28, display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: -50, right: -50, width: 220, height: 220, borderRadius: '50%', background: T.primaryLt, opacity: 0.7 }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                <GMLogoMark theme={T} />
+                <Maxi size={56} theme={T} />
+              </div>
+              <div style={{ position: 'relative' }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: T.textMute, letterSpacing: 1.4, textTransform: 'uppercase' }}>Student mobile app</div>
+                <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: -0.8, lineHeight: 1.05, marginTop: 6 }}>Math that feels like a game,<br/><span style={{ color: T.primary }}>not a textbook.</span></div>
+              </div>
+              {/* Token strip */}
+              <div style={{ display: 'flex', gap: 8, marginTop: 4, position: 'relative' }}>
+                {[
+                  { c: T.primary,  l: 'Primary' },
+                  { c: T.primaryDk,l: 'Pri Dk' },
+                  { c: T.accent,   l: 'Accent' },
+                  { c: T.ai,       l: 'AI' },
+                  { c: T.xp,       l: 'XP' },
+                ].map(s => (
+                  <div key={s.l} style={{ flex: 1, background: T.surface, borderRadius: 12, padding: '8px 10px', boxShadow: T.shadow, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 8, background: s.c, boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.15)' }} />
+                    <div style={{ fontSize: 11, fontWeight: 800, color: T.textDim }}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
+                <GMButton variant="primary" size="sm" theme={T} icon="play">Primary</GMButton>
+                <GMButton variant="accent"  size="sm" theme={T} icon="flame">Accent</GMButton>
+                <GMButton variant="ai"      size="sm" theme={T} icon="sparkle">AI</GMButton>
+                <GMButton variant="secondary" size="sm" theme={T}>Secondary</GMButton>
+              </div>
+              <div style={{ fontSize: 12, color: T.textMute, position: 'relative', fontWeight: 600, marginTop: 'auto' }}>
+                <span style={{ fontFamily: GM_MONO, fontWeight: 700, color: T.text }}>Nunito</span> · headings 900 · body 600 · &nbsp;
+                <span style={{ fontFamily: GM_MONO, fontWeight: 700, color: T.text }}>JetBrains Mono</span> · numerals + equations
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* Onboarding */}
+        <DCSection id="onboarding" title="1 · Onboarding" subtitle="Welcome → Grade → Avatar">
+          <DCArtboard id="ob-welcome" label="Welcome" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrOnboardWelcome theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="ob-grade" label="Grade pick" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrOnboardGrade theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="ob-avatar" label="Avatar" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrOnboardAvatar theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* Core learning loop */}
+        <DCSection id="core" title="2 · Core loop" subtitle="Home dashboard, AI Solver, Lesson path">
+          <DCArtboard id="home" label="Home" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrHome theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="solver" label="AI Math Solver" width={W} height={H}>
+            <Frame width={W} height={H} dark={true}>
+              <ScrSolver theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="learning" label="Lesson path" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrLearning theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* Intelligence */}
+        <DCSection id="intel" title="3 · Tutor & visualisation" subtitle="Maxi chat + graphing">
+          <DCArtboard id="tutor" label="AI Tutor chat" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrTutor theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="graph" label="Graphing" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrGraphing theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* Motivation */}
+        <DCSection id="motiv" title="4 · Progress & rewards" subtitle="Analytics dashboard + gamification hub">
+          <DCArtboard id="progress" label="Progress" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrProgress theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+          <DCArtboard id="quests" label="Quests & rewards" width={W} height={H}>
+            <Frame width={W} height={H} dark={t.dark}>
+              <ScrGamification theme={T} age={t.age} gamification={t.gamification} />
+            </Frame>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection label="Brand" />
+        <TweakRadio
+          label="Palette"
+          value={t.palette}
+          options={[
+            { value: 'classic', label: 'Logo' },
+            { value: 'aiBlue',  label: 'AI Blue' },
+            { value: 'vivid',   label: 'Vivid' },
+          ]}
+          onChange={(v) => setTweak('palette', v)}
+        />
+        <TweakToggle
+          label="Dark mode"
+          value={t.dark}
+          onChange={(v) => setTweak('dark', v)}
+        />
+
+        <TweakSection label="Audience" />
+        <TweakRadio
+          label="Age skew"
+          value={t.age}
+          options={[
+            { value: 'young',   label: '8–11' },
+            { value: 'unified', label: '8–16' },
+            { value: 'older',   label: '12–16' },
+          ]}
+          onChange={(v) => setTweak('age', v)}
+        />
+
+        <TweakSection label="Gamification" />
+        <TweakRadio
+          label="Intensity"
+          value={t.gamification}
+          options={[
+            { value: 'subtle', label: 'Subtle' },
+            { value: 'medium', label: 'Medium' },
+            { value: 'loud',   label: 'Loud' },
+          ]}
+          onChange={(v) => setTweak('gamification', v)}
+        />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
