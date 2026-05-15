@@ -27,9 +27,12 @@ export class TutorService {
     this.validationUrl = config.get("VALIDATION_SERVICE_URL", "http://localhost:8003");
   }
 
-  async sendMessage(input: { message: string; topicId?: string; conversationId?: string }) {
+  async sendMessage(
+    studentId: string,
+    input: { message: string; topicId?: string; conversationId?: string },
+  ) {
     const conversationId = input.conversationId ?? `conv_${Date.now()}`;
-    const payload = { student_id: "demo-student", message: input.message, topic_id: input.topicId };
+    const payload = { student_id: studentId, message: input.message, topic_id: input.topicId };
 
     try {
       const res = await fetch(`${this.tutorUrl}/chat`, {
@@ -51,7 +54,7 @@ export class TutorService {
     }
   }
 
-  async checkAnswer(questionId: string, studentAnswer: string) {
+  async checkAnswer(_studentId: string, questionId: string, studentAnswer: string) {
     const question = this.curriculum.getQuestion(questionId);
     if (!question) throw new NotFoundException(`Question not found: ${questionId}`);
 

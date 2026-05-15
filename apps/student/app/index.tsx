@@ -1,28 +1,69 @@
 import { Button, Card } from "@gomaths/ui";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { ActivityIndicator, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, View } from "react-native";
+import { useAuth } from "../lib/auth";
 
 export default function HomeScreen() {
-  return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-1 px-6 pt-8">
-        <Text className="font-display text-4xl font-extrabold text-foreground">GoMaths</Text>
-        <Text className="mt-2 text-base text-muted-foreground">Grade 9 maths, one step at a time.</Text>
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
 
-        <View className="mt-8 gap-4">
-          <Card>
-            <Text className="font-display text-lg font-semibold text-foreground">Maya is your buddy</Text>
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 bg-background">
+        <View className="flex-1 justify-center px-6">
+          <Text className="font-display text-4xl font-extrabold text-foreground">GoMaths</Text>
+          <Text className="mt-2 text-base text-muted-foreground">
+            Grade 9 maths, one step at a time.
+          </Text>
+
+          <Card className="mt-8">
+            <Text className="font-display text-lg font-semibold text-foreground">
+              Welcome, learner
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
-              The AI tutor isn't wired up in this prototype, but the lessons and practice below are real.
+              Sign in to track your progress, or create an account to get started.
             </Text>
           </Card>
 
+          <View className="mt-8 gap-3">
+            <Link href="/login" asChild>
+              <Button label="Sign in" variant="primary" size="lg" fullWidth />
+            </Link>
+            <Link href="/register" asChild>
+              <Button label="Create account" variant="ghost" size="md" fullWidth />
+            </Link>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 bg-background">
+      <View className="flex-1 px-6 pt-4">
+        <Text className="font-display text-3xl font-extrabold text-foreground">
+          Hi, {user.displayName}
+        </Text>
+        <Text className="mt-1 text-base text-muted-foreground">
+          Grade {user.grade} · {user.email}
+        </Text>
+
+        <View className="mt-8 gap-4">
           <Card>
-            <Text className="font-display text-base font-semibold text-foreground">Demo scope</Text>
+            <Text className="font-display text-lg font-semibold text-foreground">
+              Continue learning
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
-              Two Grade 9 algebra topics, real practice questions, real SymPy-validated answer checking
-              when the backend is running.
+              Pick a topic and work through the practice questions. Maya will check your answers.
             </Text>
           </Card>
         </View>
@@ -34,6 +75,16 @@ export default function HomeScreen() {
           <Link href="/progress" asChild>
             <Button label="My progress" variant="ghost" size="md" fullWidth />
           </Link>
+          <Button
+            label="Sign out"
+            variant="ghost"
+            size="sm"
+            fullWidth
+            onPress={async () => {
+              await logout();
+              router.replace("/");
+            }}
+          />
         </View>
       </View>
     </SafeAreaView>

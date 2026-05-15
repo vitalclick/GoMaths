@@ -1,17 +1,25 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { ConfigModule } from "@nestjs/config";
 import { HealthController } from "./health/health.controller";
 import { CurriculumModule } from "./curriculum/curriculum.module";
 import { ProgressModule } from "./progress/progress.module";
 import { TutorModule } from "./tutor/tutor.module";
+import { AuthModule } from "./auth/auth.module";
+import { JwtAuthGuard } from "./auth/auth.guard";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    AuthModule,
     CurriculumModule,
     ProgressModule,
     TutorModule,
   ],
   controllers: [HealthController],
+  providers: [
+    // Apply JWT auth globally. Routes can opt out with @Public().
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
 export class AppModule {}

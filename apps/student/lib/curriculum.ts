@@ -16,6 +16,7 @@ import linearEqLesson from "../fixtures/g9.alg.linear-eq.lesson";
 import exponentsMeta from "../fixtures/g9.alg.exponents.metadata.json";
 import exponentsQuestions from "../fixtures/g9.alg.exponents.questions.json";
 import exponentsLesson from "../fixtures/g9.alg.exponents.lesson";
+import { authFetch } from "./auth";
 
 export type ContentArea =
   | "numbers"
@@ -136,7 +137,7 @@ export interface CheckResult {
  */
 export async function checkAnswer(questionId: string, answer: string): Promise<CheckResult> {
   if (apiUrl) {
-    const res = await fetch(`${apiUrl}/api/curriculum/check`, {
+    const res = await authFetch(`/api/curriculum/check`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ questionId, answer }),
