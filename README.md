@@ -16,6 +16,7 @@ gomaths/
 │   ├── student/         Expo — iOS + Android + Web
 │   ├── parent/          Expo — iOS + Android + Web
 │   ├── teacher/         Expo — iOS + Android + Web
+│   ├── tutor/           Expo — iOS + Android + Web (Phase 1.5, gated)
 │   ├── school/          Web (Next.js, primary) + Expo companion (iOS + Android)
 │   └── admin/           Next.js — Web only (internal ops)
 ├── packages/
@@ -45,19 +46,21 @@ Read in this order:
 2. [`docs/Development_Strategy.md`](docs/Development_Strategy.md) — full technical strategy
 3. [`docs/Phase1_Launch_Plan.md`](docs/Phase1_Launch_Plan.md) — **executable Phase 1 build plan** (4 apps × 3 platforms, 9–12 months)
 4. [`docs/Curriculum_Content_Plan.md`](docs/Curriculum_Content_Plan.md) — how content gets authored
-5. [`docs/Architecture_Decisions.md`](docs/Architecture_Decisions.md) — running ADR log
+5. [`docs/Tutor_Marketplace_Plan.md`](docs/Tutor_Marketplace_Plan.md) — Phase 1.5 marketplace plan (gated on Phase 1 signal)
+6. [`docs/Architecture_Decisions.md`](docs/Architecture_Decisions.md) — running ADR log
 
 ---
 
 ## Platforms shipping in Phase 1
 
-| App | iOS | Android | Web |
-|---|:-:|:-:|:-:|
-| Student | ✓ | ✓ | ✓ |
-| Parent | ✓ | ✓ | ✓ |
-| Teacher | ✓ | ✓ | ✓ |
-| School Admin | companion | companion | primary |
-| Internal Admin | — | — | ✓ |
+| App | iOS | Android | Web | Phase |
+|---|:-:|:-:|:-:|---|
+| Student | ✓ | ✓ | ✓ | 1 |
+| Parent | ✓ | ✓ | ✓ | 1 |
+| Teacher | ✓ | ✓ | ✓ | 1 |
+| School Admin | companion | companion | primary | 1 |
+| Internal Admin | — | — | ✓ | 1 (incremental) |
+| **Tutor** | ✓ | ✓ | ✓ | **1.5 (gated on Phase 1 signal)** |
 
 ---
 

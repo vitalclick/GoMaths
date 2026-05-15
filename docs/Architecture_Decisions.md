@@ -106,3 +106,41 @@ Use **Auth0** as the identity provider for Phase 1.
 
 ### Decision blocker
 Cost modelling against expected DAU + B2B SSO requirements not yet done. Decision target: Phase 0 week 2.
+
+---
+
+## ADR-006 — Human tutoring: separate marketplace product, gated on Phase 1
+
+**Date:** 2026-05-15
+**Status:** Accepted (Phase 1.5)
+
+### Decision
+Build a **Tutor Marketplace** as a distinct phase (Phase 1.5) after Phase 1 ships. It consists of:
+- A new **Tutor app** (`apps/tutor/`, Expo, iOS+Android+Web) for tutors managing their profile, availability, sessions, earnings.
+- New **marketplace surfaces inside the existing Parent and Student apps** for discovery, booking, joining, and rating sessions.
+- New **trust & safety surfaces inside the Internal Admin app** for vetting, dispute resolution, and payouts.
+
+Phase 1.5 is **gated** on Phase 1 pilot showing ≥ 6pp improvement on the Grade 9 CAPS assessment. If the gate is missed, Phase 1.5 does not ship.
+
+### Why a separate phase
+- Marketplace amplifies whatever the core product does. If the core product doesn't move learner outcomes, the marketplace amplifies nothing.
+- Marketplaces have their own compliance regime (child safety, payments, tax) that needs dedicated legal/tax work
+- Building before pilot signal risks ~R 4.4–7M with no validated demand
+
+### Why NOT fold tutoring into the Teacher app
+- Teachers = SACE-registered, school-affiliated, B2B sale, salary from school
+- Tutors = independent contractors, B2C marketplace, paid per session through GoMaths
+- Different identity, vetting, payments, compliance, support — different products
+- Mixing them creates child-safety policy ambiguity (school's policy doesn't extend to a teacher's private after-hours work)
+
+### Alternatives considered
+- **"Escalate to human" inside AI tutor only** (no full marketplace). Smaller scope, but doesn't capture marketplace economics. Reconsider as a Phase 1.5 launch feature inside the marketplace, not as a replacement for it.
+- **No tutor product at all.** Defensible but cedes a large SA opportunity to whatever competitor moves first.
+- **Tutor app added in Phase 1.** Rejected — compounds Phase 1 scope and ships marketplace before learning hypothesis is validated.
+
+### Implications
+- Repo: `apps/tutor/` scaffolded as a stub now; full build starts Month 10
+- Five consumer apps in the eventual product surface (Student / Parent / Teacher / **Tutor** / School)
+- Compliance build-out: police clearance integration, Form 30 (Children's Act), session recording + POPIA retention, FSCA-aware payments via a facilitator, tax/IRP6 handling
+- Operations build-out: trust & safety team (vetting + disputes), payouts ops
+- See `docs/Tutor_Marketplace_Plan.md` for full plan.

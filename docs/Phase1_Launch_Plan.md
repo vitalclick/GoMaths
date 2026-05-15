@@ -97,6 +97,7 @@ Grades 8 and 10 follow in Phase 2.
 - RPG / multiplayer → Phase 4
 - WhatsApp integration → Phase 2
 - Payments / subscriptions at scale (Phase 1 is pilot-free; billing wired but not promoted) → Phase 2 commercial launch
+- **Human Tutor Marketplace (Tutor app + booking/payments/video)** → Phase 1.5, gated on Phase 1 pilot signal. See `Tutor_Marketplace_Plan.md`.
 
 ---
 
