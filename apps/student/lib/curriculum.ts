@@ -17,6 +17,7 @@ import exponentsMeta from "../fixtures/g9.alg.exponents.metadata.json";
 import exponentsQuestions from "../fixtures/g9.alg.exponents.questions.json";
 import exponentsLesson from "../fixtures/g9.alg.exponents.lesson";
 import { authFetch } from "./auth";
+import { getClient } from "./api";
 
 export type ContentArea =
   | "numbers"
@@ -90,19 +91,25 @@ const FIXTURES: { meta: FixtureMeta; questions: FixtureQuestionsFile; lesson: st
 // ─── Public API ───────────────────────────────────────────────────────
 
 export async function listTopics(grade: number): Promise<TopicSummary[]> {
-  if (apiUrl) {
-    const res = await fetch(`${apiUrl}/api/curriculum/grades/${grade}`);
-    if (!res.ok) throw new Error(`listTopics failed: ${res.status}`);
-    return (await res.json()) as TopicSummary[];
+  const api = getClient();
+  if (api) {
+    const { data, error } = await api.GET("/api/curriculum/grades/{grade}", {
+      params: { path: { grade } },
+    });
+    if (error || !data) throw new Error(`listTopics failed: ${(error as { message?: string } | undefined)?.message ?? "unknown"}`);
+    return data as TopicSummary[];
   }
   return FIXTURES.filter((f) => f.meta.grade === grade).map(toSummary);
 }
 
 export async function getTopic(topicId: string): Promise<Topic> {
-  if (apiUrl) {
-    const res = await fetch(`${apiUrl}/api/curriculum/topics/${topicId}`);
-    if (!res.ok) throw new Error(`getTopic failed: ${res.status}`);
-    return (await res.json()) as Topic;
+  const api = getClient();
+  if (api) {
+    const { data, error } = await api.GET("/api/curriculum/topics/{topicId}", {
+      params: { path: { topicId } },
+    });
+    if (error || !data) throw new Error(`getTopic failed: ${(error as { message?: string } | undefined)?.message ?? "unknown"}`);
+    return data as Topic;
   }
   const f = FIXTURES.find((f) => f.meta.topicId === topicId);
   if (!f) throw new Error(`Unknown topic: ${topicId}`);
@@ -110,10 +117,13 @@ export async function getTopic(topicId: string): Promise<Topic> {
 }
 
 export async function listQuestions(topicId: string): Promise<Question[]> {
-  if (apiUrl) {
-    const res = await fetch(`${apiUrl}/api/curriculum/topics/${topicId}/questions`);
-    if (!res.ok) throw new Error(`listQuestions failed: ${res.status}`);
-    return (await res.json()) as Question[];
+  const api = getClient();
+  if (api) {
+    const { data, error } = await api.GET("/api/curriculum/topics/{topicId}/questions", {
+      params: { path: { topicId } },
+    });
+    if (error || !data) throw new Error(`listQuestions failed: ${(error as { message?: string } | undefined)?.message ?? "unknown"}`);
+    return data as Question[];
   }
   const f = FIXTURES.find((f) => f.meta.topicId === topicId);
   if (!f) throw new Error(`Unknown topic: ${topicId}`);
