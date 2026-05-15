@@ -9,6 +9,12 @@ export interface TutorReplyBody {
   conversationId: string;
   reply: string;
   validated: boolean;
+  /** Populated when the streaming `done` event arrives. */
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedTokens?: number;
+  provider?: string;
+  model?: string;
 }
 
 export interface ConversationSummary {
@@ -147,12 +153,22 @@ export function streamTutorMessage(
           const data = JSON.parse((event as { data: string }).data) as {
             reply?: string;
             validated?: boolean;
+            input_tokens?: number;
+            output_tokens?: number;
+            cached_tokens?: number;
+            provider?: string;
+            model?: string;
           };
           lastValidated = Boolean(data.validated);
           cb.onDone({
             conversationId: receivedConv ?? input.conversationId ?? "",
             reply: data.reply ?? accumulated,
             validated: lastValidated,
+            inputTokens: data.input_tokens,
+            outputTokens: data.output_tokens,
+            cachedTokens: data.cached_tokens,
+            provider: data.provider,
+            model: data.model,
           });
         } catch (e) {
           cb.onError(e as Error);

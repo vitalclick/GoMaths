@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TextWithMath } from "../components/TextWithMath";
 import { useAuth } from "../lib/auth";
+import { useDebugEnabled } from "../lib/prefs";
 import { getConversation, streamTutorMessage } from "../lib/tutor";
 
 interface ChatMessage {
@@ -24,6 +25,11 @@ interface ChatMessage {
   streaming?: boolean;
   verifiedClaims?: number;
   totalClaims?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedTokens?: number;
+  provider?: string;
+  model?: string;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -49,6 +55,7 @@ export default function TutorScreen() {
   const [conversationId, setConversationId] = useState<string | undefined>(initialConvId);
   const [error, setError] = useState<string | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(Boolean(initialConvId));
+  const debug = useDebugEnabled();
 
   const scrollRef = useRef<ScrollView | null>(null);
   const abortRef = useRef<(() => void) | null>(null);
@@ -129,7 +136,16 @@ export default function TutorScreen() {
               ),
             ),
           onDone: (final) => {
-            updateMaya({ text: final.reply, validated: final.validated, streaming: false });
+            updateMaya({
+              text: final.reply,
+              validated: final.validated,
+              streaming: false,
+              inputTokens: final.inputTokens,
+              outputTokens: final.outputTokens,
+              cachedTokens: final.cachedTokens,
+              provider: final.provider,
+              model: final.model,
+            });
             setSending(false);
             abortRef.current = null;
           },
@@ -193,7 +209,7 @@ export default function TutorScreen() {
           {messages.length === 0 && <EmptyState topicId={topicId} />}
 
           {messages.map((m) => (
-            <MessageBubble key={m.id} message={m} />
+            <MessageBubble key={m.id} message={m} debug={debug} />
           ))}
 
           {sending && <TypingBubble />}
@@ -270,7 +286,7 @@ export default function TutorScreen() {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({ message, debug }: { message: ChatMessage; debug: boolean }) {
   const isUser = message.role === "user";
   return (
     <View className={`flex-row ${isUser ? "justify-end" : "justify-start"}`}>
@@ -316,6 +332,14 @@ function MessageBubble({ message }: { message: ChatMessage }) {
               {message.validated ? "Maths verified" : "Reply not fully verified"}
             </Text>
           </View>
+        )}
+        {debug && !isUser && !message.streaming && message.inputTokens !== undefined && (
+          <Text className="mt-0.5 px-2 text-[10px] font-mono text-muted-foreground">
+            {message.provider}/{message.model}
+            {" · "}
+            in {message.inputTokens} (cached {message.cachedTokens ?? 0})
+            {" · out "}{message.outputTokens}
+          </Text>
         )}
       </View>
     </View>

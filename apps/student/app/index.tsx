@@ -1,12 +1,14 @@
 import { Button, Card } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../lib/auth";
+import { setDebugEnabled, useDebugEnabled } from "../lib/prefs";
 
 export default function HomeScreen() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const debug = useDebugEnabled();
 
   if (loading) {
     return (
@@ -94,6 +96,17 @@ export default function HomeScreen() {
               router.replace("/");
             }}
           />
+
+          <Pressable
+            onPress={() => setDebugEnabled(!debug)}
+            className="mt-2 self-center rounded-full px-3 py-1 active:opacity-60"
+            accessibilityRole="switch"
+            accessibilityState={{ checked: debug }}
+          >
+            <Text className="text-[11px] text-muted-foreground">
+              Developer mode: {debug ? "ON" : "off"}
+            </Text>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
