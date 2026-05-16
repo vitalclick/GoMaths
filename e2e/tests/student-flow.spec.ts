@@ -47,8 +47,10 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await tapByLabel(page, "Grade 9");
   await tapByLabel(page, "Create account");
 
-  // Dashboard appears with the user's name.
-  await expect(page.getByText(/Hi, Test Learner/i)).toBeVisible();
+  // Dashboard appears with the user's name. `.first()` because the
+  // greeting can be rendered into more than one DOM node by Expo
+  // Router's transition layer.
+  await expect(page.getByText(/Hi, Test Learner/i).first()).toBeVisible();
 
   // Browse topics → tap the linear equations topic.
   await tapByLabel(page, "Browse topics");
@@ -57,16 +59,16 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
 
   // Lesson screen renders the markdown via WebView/iframe — we can't
   // peek inside; we verify the surrounding chrome instead.
-  await expect(page.getByText("You'll be able to")).toBeVisible();
+  await expect(page.getByText("You'll be able to").first()).toBeVisible();
   await tapByLabel(page, "Practice this topic");
 
   // Practice screen shows the first question.
-  await expect(page.getByText("2*x + 5 = 13")).toBeVisible();
+  await expect(page.getByText("2*x + 5 = 13").first()).toBeVisible();
   await page.getByPlaceholder(/your answer/i).fill("x = 4");
   await tapByLabel(page, "Check answer");
-  await expect(page.getByText(/^Correct$/)).toBeVisible();
+  await expect(page.getByText(/^Correct$/).first()).toBeVisible();
   await tapByLabel(page, "Next question");
-  await expect(page.getByText("All done!")).toBeVisible();
+  await expect(page.getByText("All done!").first()).toBeVisible();
 
   // Back to dashboard, into chat.
   await page.goBack();
@@ -76,6 +78,6 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   // Send a message; verify Maya's reply streams in and the validated badge appears.
   await page.getByPlaceholder(/ask maya anything/i).fill("Why does x equal 4?");
   await tapByLabel(page, "Send");
-  await expect(page.getByText(/To solve, x = 4\./i)).toBeVisible();
-  await expect(page.getByText("Maths verified")).toBeVisible();
+  await expect(page.getByText(/To solve, x = 4\./i).first()).toBeVisible();
+  await expect(page.getByText("Maths verified").first()).toBeVisible();
 });
