@@ -1,0 +1,3 @@
+# Per-app .gitignore. See apps/student/.gitignore for the rationale.
+expo-env.d.ts
+.expo/
