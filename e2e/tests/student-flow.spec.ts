@@ -1,16 +1,33 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { installBackendMocks } from "./utils/mock-backend";
 
 test.beforeEach(async ({ page }) => {
   await installBackendMocks(page);
 });
 
+/**
+ * Click a tappable element by its visible label.
+ *
+ * react-native-web renders our `Button` component as a Pressable with
+ * `accessibilityRole="button"`, but when wrapped in expo-router's
+ * `<Link asChild>` the resulting DOM ends up with `role="link"` (or
+ * something unpredictable depending on Slot prop merge order). Rather
+ * than couple the test to which role wins, we click by label text.
+ *
+ * `.first()` so we don't fail if the label appears in multiple places
+ * on the same screen — the user-visible action is always the first one.
+ */
+async function tapByLabel(page: Page, label: RegExp | string): Promise<void> {
+  await page.getByText(label).first().click();
+}
+
 test("happy path: register → topic → lesson → practice → chat with Maya", async ({ page }) => {
   await page.goto("/");
 
-  // Sign-in screen on cold start.
-  await expect(page.getByText("GoMaths")).toBeVisible();
-  await page.getByRole("button", { name: /create account/i }).click();
+  // Sign-in screen on cold start. Match strict to avoid the "or create
+  // an account" Card body text that would otherwise win the .first().
+  await expect(page.getByText("GoMaths").first()).toBeVisible();
+  await tapByLabel(page, /^create account$/i);
 
   // Register: step 1 — details. 4 inputs (name, email, password, birth year).
   // Use a birth year that makes the user an adult so we skip the consent step.
@@ -18,41 +35,41 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await page.locator("input").nth(1).fill("test@example.com");
   await page.locator("input").nth(2).fill("supersecret");
   await page.locator("input").nth(3).fill("1995");
-  await page.getByRole("button", { name: /next: pick a grade/i }).click();
+  await tapByLabel(page, /next: pick a grade/i);
 
   // Step 2 — grade picker. Tap Grade 9.
-  await page.getByText(/^Grade 9$/).click();
-  await page.getByRole("button", { name: /^create account$/i }).click();
+  await tapByLabel(page, /^Grade 9$/);
+  await tapByLabel(page, /^create account$/i);
 
   // Dashboard appears with the user's name.
   await expect(page.getByText(/Hi, Test Learner/i)).toBeVisible();
 
   // Browse topics → tap the linear equations topic.
-  await page.getByRole("button", { name: /browse topics/i }).click();
+  await tapByLabel(page, /browse topics/i);
   await expect(page.getByText("Solving Linear Equations")).toBeVisible();
-  await page.getByText("Solving Linear Equations").click();
+  await tapByLabel(page, "Solving Linear Equations");
 
   // Lesson screen renders the markdown via WebView/iframe — we can't
   // peek inside; we verify the surrounding chrome instead.
   await expect(page.getByText("You'll be able to")).toBeVisible();
-  await page.getByRole("button", { name: /practice this topic/i }).click();
+  await tapByLabel(page, /practice this topic/i);
 
   // Practice screen shows the first question.
   await expect(page.getByText("2*x + 5 = 13")).toBeVisible();
   await page.getByPlaceholder(/your answer/i).fill("x = 4");
-  await page.getByRole("button", { name: /check answer/i }).click();
+  await tapByLabel(page, /check answer/i);
   await expect(page.getByText(/^Correct$/)).toBeVisible();
-  await page.getByRole("button", { name: /next question/i }).click();
+  await tapByLabel(page, /next question/i);
   await expect(page.getByText("All done!")).toBeVisible();
 
   // Back to dashboard, into chat.
   await page.goBack();
   await page.goBack();
-  await page.getByRole("button", { name: /chat with maya/i }).click();
+  await tapByLabel(page, /chat with maya/i);
 
   // Send a message; verify Maya's reply streams in and the validated badge appears.
   await page.getByPlaceholder(/ask maya anything/i).fill("Why does x equal 4?");
-  await page.getByRole("button", { name: "Send" }).click();
+  await tapByLabel(page, "Send");
   await expect(page.getByText(/To solve, x = 4\./i)).toBeVisible();
   await expect(page.getByText("Maths verified")).toBeVisible();
 });
