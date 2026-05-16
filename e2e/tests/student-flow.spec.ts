@@ -47,6 +47,15 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await tapByLabel(page, "Grade 9");
   await tapByLabel(page, "Create account");
 
+  // After register, expo-router does router.replace("/") which
+  // updates the URL but on web keeps the /register screen mounted
+  // underneath the / screen for a tick. Wait for the URL to actually
+  // settle on "/" before asserting dashboard visibility — otherwise
+  // the home Text exists in DOM but is hidden by the /register layer.
+  await page.waitForURL((url) => url.pathname === "/" || url.pathname === "", {
+    timeout: 10_000,
+  });
+
   // Dashboard appears with the user's name. `.first()` because the
   // greeting can be rendered into more than one DOM node by Expo
   // Router's transition layer.
