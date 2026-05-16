@@ -9,10 +9,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "co.za.gomaths.v2.parent"
+      "bundleIdentifier": "com.gomaths.mathai.parent"
     },
     "android": {
-      "package": "co.za.gomaths.v2.parent",
+      "package": "com.gomaths.mathai.parent",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }

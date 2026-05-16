@@ -14,8 +14,8 @@ AI-powered mathematics learning platform for South African and African learners.
 > **Status: v2 rebuild on a clean stack.** GoMaths is an established
 > product (10+ years, multiple South African schools under MOU, apps
 > live in both stores). This branch is a **full rebuild** with a new
-> tech stack, new AWS account, new app store listings (new bundle IDs:
-> `co.za.gomaths.v2.*`), and a new database — **no migration of v1
+> tech stack, new AWS account, new app store listings (new bundle IDs
+> under the `com.gomaths.mathai*` namespace), and a new database — **no migration of v1
 > data or users**. The v1 product continues to run during the rebuild;
 > v2 replaces it by re-onboarding schools and learners, not by lift-
 > and-shift. See `docs/Phase1_Launch_Plan.md` for the rollout plan.
