@@ -29,10 +29,9 @@ async function tapByLabel(page: Page, label: string | RegExp): Promise<void> {
 test("happy path: register → topic → lesson → practice → chat with Maya", async ({ page }) => {
   await page.goto("/");
 
-  // Sign-in screen on cold start. Match strict to avoid the "or create
-  // an account" Card body text that would otherwise win the .first().
+  // Sign-in screen on cold start.
   await expect(page.getByText("GoMaths").first()).toBeVisible();
-  await tapByLabel(page, /^create account$/i);
+  await tapByLabel(page, "Create account");
 
   // Register: step 1 — details. 4 inputs (name, email, password, birth year).
   // Use a birth year that makes the user an adult so we skip the consent step.
@@ -40,37 +39,39 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await page.locator("input").nth(1).fill("test@example.com");
   await page.locator("input").nth(2).fill("supersecret");
   await page.locator("input").nth(3).fill("1995");
-  await tapByLabel(page, /next: pick a grade/i);
+  await tapByLabel(page, "Next: pick a grade");
 
-  // Step 2 — grade picker. Tap Grade 9.
-  await tapByLabel(page, /^Grade 9$/);
-  await tapByLabel(page, /^create account$/i);
+  // Step 2 — grade picker. Tap Grade 9 (radio's accessible name is
+  // "Grade 9 Senior · pilot grade", so substring match — not an
+  // anchored regex — is the right shape here).
+  await tapByLabel(page, "Grade 9");
+  await tapByLabel(page, "Create account");
 
   // Dashboard appears with the user's name.
   await expect(page.getByText(/Hi, Test Learner/i)).toBeVisible();
 
   // Browse topics → tap the linear equations topic.
-  await tapByLabel(page, /browse topics/i);
-  await expect(page.getByText("Solving Linear Equations")).toBeVisible();
+  await tapByLabel(page, "Browse topics");
+  await expect(page.getByText("Solving Linear Equations").first()).toBeVisible();
   await tapByLabel(page, "Solving Linear Equations");
 
   // Lesson screen renders the markdown via WebView/iframe — we can't
   // peek inside; we verify the surrounding chrome instead.
   await expect(page.getByText("You'll be able to")).toBeVisible();
-  await tapByLabel(page, /practice this topic/i);
+  await tapByLabel(page, "Practice this topic");
 
   // Practice screen shows the first question.
   await expect(page.getByText("2*x + 5 = 13")).toBeVisible();
   await page.getByPlaceholder(/your answer/i).fill("x = 4");
-  await tapByLabel(page, /check answer/i);
+  await tapByLabel(page, "Check answer");
   await expect(page.getByText(/^Correct$/)).toBeVisible();
-  await tapByLabel(page, /next question/i);
+  await tapByLabel(page, "Next question");
   await expect(page.getByText("All done!")).toBeVisible();
 
   // Back to dashboard, into chat.
   await page.goBack();
   await page.goBack();
-  await tapByLabel(page, /chat with maya/i);
+  await tapByLabel(page, "Chat with Maya");
 
   // Send a message; verify Maya's reply streams in and the validated badge appears.
   await page.getByPlaceholder(/ask maya anything/i).fill("Why does x equal 4?");
