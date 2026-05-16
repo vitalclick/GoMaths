@@ -23,11 +23,7 @@ export class TutorController {
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post("tutor/messages/stream")
   @ApiOperation({ summary: "Stream a tutor reply over Server-Sent Events" })
-  stream(
-    @CurrentUser() user: JwtClaims,
-    @Body() dto: TutorMessageDto,
-    @Res() res: Response,
-  ) {
+  stream(@CurrentUser() user: JwtClaims, @Body() dto: TutorMessageDto, @Res() res: Response) {
     return this.service.streamMessage(user.sub, dto, res);
   }
 

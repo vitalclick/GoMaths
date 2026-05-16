@@ -24,8 +24,7 @@ export async function registerForPush(): Promise<void> {
     }
     if (status !== "granted") return;
 
-    const projectId =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const projectId = // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (await import("expo-constants")).default.expoConfig?.extra?.eas?.projectId;
     const tokenResp = projectId
       ? await Notifications.getExpoPushTokenAsync({ projectId })

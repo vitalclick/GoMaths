@@ -1,11 +1,16 @@
 # Node / React Native
 node_modules/
 .expo/
+.turbo/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnp.*
+
+# Playwright
+e2e/playwright-report/
+e2e/test-results/
 
 # Python
 __pycache__/

@@ -4,7 +4,13 @@ import { randomUUID } from "node:crypto";
 import type { RegisterDto } from "./auth.dto";
 import { PrismaService } from "../prisma/prisma.service";
 
-export type UserRole = "student" | "parent" | "teacher" | "school_admin" | "tutor" | "internal_admin";
+export type UserRole =
+  | "student"
+  | "parent"
+  | "teacher"
+  | "school_admin"
+  | "tutor"
+  | "internal_admin";
 export type Language = "en" | "af" | "zu" | "st" | "xh";
 
 export interface User {
@@ -132,7 +138,11 @@ const INVALID_HASH = "$2b$12$invalidhashinvalidhashinvalidhashinvalidhashinvalid
 
 function roleLanguage(l: Language | undefined): "EN" | "AF" | "ZU" | "ST" | "XH" {
   const map: Record<Language, "EN" | "AF" | "ZU" | "ST" | "XH"> = {
-    en: "EN", af: "AF", zu: "ZU", st: "ST", xh: "XH",
+    en: "EN",
+    af: "AF",
+    zu: "ZU",
+    st: "ST",
+    xh: "XH",
   };
   return map[l ?? "en"];
 }

@@ -63,6 +63,10 @@ export function Button({ label, variant, size, fullWidth, className, ...rest }: 
   return (
     <Pressable
       accessibilityRole="button"
+      // Mirror the visible label as accessibilityLabel so role+name matchers
+      // (Playwright's getByRole, screen readers, etc.) find the Pressable
+      // itself rather than only the inner Text node.
+      accessibilityLabel={label}
       className={cn(buttonVariants({ variant, size, fullWidth }), className)}
       {...rest}
     >

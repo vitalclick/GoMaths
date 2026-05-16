@@ -66,11 +66,7 @@ export default function ConversationsScreen() {
           Your conversations
         </Text>
         {items.map((c) => (
-          <Link
-            key={c.id}
-            href={{ pathname: "/tutor", params: { conversationId: c.id } }}
-            asChild
-          >
+          <Link key={c.id} href={{ pathname: "/tutor", params: { conversationId: c.id } }} asChild>
             <Pressable className="active:opacity-80">
               <Card>
                 <View className="flex-row items-center justify-between">
@@ -79,9 +75,7 @@ export default function ConversationsScreen() {
                   </Text>
                   {c.topicId ? (
                     <View className="rounded-full bg-primary-soft px-2 py-0.5">
-                      <Text className="text-[10px] font-semibold text-primary">
-                        {c.topicId}
-                      </Text>
+                      <Text className="text-[10px] font-semibold text-primary">{c.topicId}</Text>
                     </View>
                   ) : null}
                 </View>

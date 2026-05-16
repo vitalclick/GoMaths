@@ -1,0 +1,49 @@
+# Anything not needed in a build context. Smaller context = faster
+# uploads + faster cache invalidation.
+
+**/node_modules
+**/dist
+**/build
+**/.next
+**/.expo
+**/.turbo
+**/coverage
+
+# Local env files — secrets MUST never enter an image.
+.env
+.env.*
+!.env.example
+
+# Designer mockups — see UI/README.md.
+UI/
+
+# Editor / OS
+.git
+.gitignore
+.github
+.idea
+.vscode
+.DS_Store
+
+# Test outputs
+e2e/playwright-report/
+e2e/test-results/
+
+# Apps we don't ship via Docker (Expo apps go to EAS / static hosts).
+apps/
+
+# Terraform — separate deploy path.
+infrastructure/
+
+# Top-level docs that don't affect builds.
+# NOTE: not a blanket *.md exclusion — curriculum-data/**/*.md is the
+# lesson content and MUST stay in the image.
+/HANDOFF.md
+/README.md
+/CONTRIBUTING.md
+runbooks/
+docs/
+
+# Python service files when building Node images, and vice versa.
+# Per-service .dockerignore would refine this further; for now this is
+# good enough.

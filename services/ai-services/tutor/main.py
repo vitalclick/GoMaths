@@ -29,6 +29,7 @@ from pydantic import BaseModel
 
 from .claims import extract_claims
 from .curriculum import context_for_prompt, load_all
+from .metrics import metrics
 from .providers import TutorMessage, get_provider
 from validation.sympy_validator import validate_equivalent
 
@@ -121,6 +122,14 @@ def chat(req: ChatRequest) -> ChatResponse:
     messages = _build_messages(req)
     reply = _provider.complete(messages)
 
+    metrics.record(
+        provider=reply.provider,
+        model=reply.model,
+        input_tokens=reply.input_tokens,
+        output_tokens=reply.output_tokens,
+        cached_tokens=reply.cached_tokens,
+    )
+
     # Validate any mathematical claims in the reply.
     claims = extract_claims(reply.text)
     verified = sum(1 for c in claims if validate_equivalent(c.stem, c.answer).ok)
@@ -137,6 +146,19 @@ def chat(req: ChatRequest) -> ChatResponse:
         output_tokens=reply.output_tokens,
         cached_tokens=reply.cached_tokens,
     )
+
+
+@app.get("/metrics/cache")
+def cache_metrics() -> dict:
+    """
+    Aggregate prompt-cache effectiveness since process start.
+
+    `cache_hit_ratio` is the fraction of input tokens that came from the
+    Anthropic cache. After the first warm request to a topic, this
+    should climb above 0; in steady state it tends to sit around 0.8+
+    when the same persona + curriculum context is reused.
+    """
+    return metrics.snapshot()
 
 
 def _sse(event: str, data: dict) -> str:
@@ -209,6 +231,15 @@ def _stream_events(req: ChatRequest) -> Iterator[bytes]:
             ).encode()
 
         fully_validated = bool(total_claims) and verified_count == total_claims
+
+        if final is not None:
+            metrics.record(
+                provider=final.provider,
+                model=final.model,
+                input_tokens=final.input_tokens,
+                output_tokens=final.output_tokens,
+                cached_tokens=final.cached_tokens,
+            )
 
         yield _sse(
             "done",

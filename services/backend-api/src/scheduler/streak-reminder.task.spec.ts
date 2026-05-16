@@ -16,7 +16,9 @@ describe("StreakReminderTask", () => {
     const sent: unknown[] = [];
     const task = new StreakReminderTask(
       { enabled: false } as unknown as PrismaService,
-      { send: async (i: unknown) => (sent.push(i), { delivered: 0, failed: 0 }) } as unknown as NotificationsService,
+      {
+        send: async (i: unknown) => (sent.push(i), { delivered: 0, failed: 0 }),
+      } as unknown as NotificationsService,
       leaderAlwaysWins,
     );
     await task.run();

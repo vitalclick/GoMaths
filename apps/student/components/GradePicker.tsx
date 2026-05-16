@@ -39,7 +39,9 @@ export function GradePicker({ value, onChange }: Props) {
             }`}
           >
             <View>
-              <Text className={`font-display text-base font-bold ${selected ? "text-primary" : "text-foreground"}`}>
+              <Text
+                className={`font-display text-base font-bold ${selected ? "text-primary" : "text-foreground"}`}
+              >
                 {g.label}
               </Text>
               <Text className="text-xs text-muted-foreground">{g.sub}</Text>

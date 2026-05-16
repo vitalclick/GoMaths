@@ -1,11 +1,20 @@
-Building “GoMaths” into a single unified platform is a very large-scale EdTech + AI project. What you’re describing combines the core functionality of multiple world-class platforms:
+> **Note:** This document is the original product-vision Preamble that
+> shaped GoMaths v1 and continues to shape the v2 rebuild. Treat it as
+> historical + directional context — it's aspirational and pre-dates
+> the v2 architectural decisions in `docs/Architecture_Decisions.md`.
+> Specific scope, phasing, and budget numbers in here have been
+> superseded by `docs/Phase1_Launch_Plan.md` for v2.
 
-* [Photomath](https://photomath.com?utm_source=chatgpt.com)
-* [Prodigy Math](https://www.prodigygame.com?utm_source=chatgpt.com)
-* [IXL](https://www.ixl.com?utm_source=chatgpt.com)
-* [Brilliant](https://brilliant.org?utm_source=chatgpt.com)
-* [Desmos](https://www.desmos.com?utm_source=chatgpt.com)
-* [DreamBox](https://www.dreambox.com?utm_source=chatgpt.com)
+---
+
+Building "GoMaths" into a single unified platform is a very large-scale EdTech + AI project. What you're describing combines the core functionality of multiple world-class platforms:
+
+- [Photomath](https://photomath.com?utm_source=chatgpt.com)
+- [Prodigy Math](https://www.prodigygame.com?utm_source=chatgpt.com)
+- [IXL](https://www.ixl.com?utm_source=chatgpt.com)
+- [Brilliant](https://brilliant.org?utm_source=chatgpt.com)
+- [Desmos](https://www.desmos.com?utm_source=chatgpt.com)
+- [DreamBox](https://www.dreambox.com?utm_source=chatgpt.com)
 
 This is absolutely achievable, but it requires careful architecture, phased development, and a strong long-term roadmap.
 
@@ -13,16 +22,15 @@ This is absolutely achievable, but it requires careful architecture, phased deve
 
 GoMaths would evolve into:
 
-* A mobile-first AI Math Learning Platform
-* A South African curriculum-aligned EdTech ecosystem
-* An AI tutor + RPG game + assessment engine + graphing calculator + analytics platform
-* A B2C + B2B product for:
-
-  * Students
-  * Parents
-  * Schools
-  * Tutors
-  * Education departments
+- A mobile-first AI Math Learning Platform
+- A South African curriculum-aligned EdTech ecosystem
+- An AI tutor + RPG game + assessment engine + graphing calculator + analytics platform
+- A B2C + B2B product for:
+  - Students
+  - Parents
+  - Schools
+  - Tutors
+  - Education departments
 
 You are essentially building a “Math Super App”.
 
@@ -34,30 +42,29 @@ You are essentially building a “Math Super App”.
 
 ### Features
 
-* Scan handwritten or printed equations
-* OCR for mathematics
-* Step-by-step solutions
-* AI explanation engine
-* Multiple solving methods
-* Voice explanation
-* Real-time camera recognition
+- Scan handwritten or printed equations
+- OCR for mathematics
+- Step-by-step solutions
+- AI explanation engine
+- Multiple solving methods
+- Voice explanation
+- Real-time camera recognition
 
 ### Technology Stack
 
-* OCR Engine:
+- OCR Engine:
+  - Google ML Kit
+  - MathPix API
+  - Custom LaTeX OCR models
 
-  * Google ML Kit
-  * MathPix API
-  * Custom LaTeX OCR models
-* AI Solver:
+- AI Solver:
+  - OpenAI reasoning models
+  - Wolfram-style symbolic engine
+  - SymPy
 
-  * OpenAI reasoning models
-  * Wolfram-style symbolic engine
-  * SymPy
-* Equation Rendering:
-
-  * MathJax
-  * KaTeX
+- Equation Rendering:
+  - MathJax
+  - KaTeX
 
 ### Difficulty
 
@@ -71,27 +78,27 @@ Math OCR alone is a major engineering challenge.
 
 ### Features
 
-* Character creation
-* Quests
-* Battle system using math
-* XP and leveling
-* Rewards and achievements
-* Multiplayer classrooms
-* Parent dashboards
+- Character creation
+- Quests
+- Battle system using math
+- XP and leveling
+- Rewards and achievements
+- Multiplayer classrooms
+- Parent dashboards
 
 ### Required Team
 
-* Game designers
-* Unity developers
-* Animators
-* Sound designers
-* Education specialists
+- Game designers
+- Unity developers
+- Animators
+- Sound designers
+- Education specialists
 
 ### Best Technology
 
-* Unity Engine
-* Godot (budget-friendly alternative)
-* Firebase multiplayer backend
+- Unity Engine
+- Godot (budget-friendly alternative)
+- Firebase multiplayer backend
 
 ### Complexity
 
@@ -105,19 +112,19 @@ This is critical because localization becomes your competitive advantage.
 
 ## You Need
 
-* CAPS curriculum mapping
-* Grade-by-grade topic trees
-* Difficulty levels
-* Assessment database
-* Learning outcomes
+- CAPS curriculum mapping
+- Grade-by-grade topic trees
+- Difficulty levels
+- Assessment database
+- Learning outcomes
 
 ### Subjects
 
-* Foundation phase maths
-* Intermediate maths
-* Senior phase
-* FET phase
-* Matric prep
+- Foundation phase maths
+- Intermediate maths
+- Senior phase
+- FET phase
+- Matric prep
 
 ### Important
 
@@ -131,18 +138,18 @@ This is the “brain” of the platform.
 
 ## Features
 
-* Detect weak areas
-* Recommend lessons
-* Predict failure risks
-* Personalized difficulty adjustment
-* Learning speed optimization
+- Detect weak areas
+- Recommend lessons
+- Predict failure risks
+- Personalized difficulty adjustment
+- Learning speed optimization
 
 ### Technologies
 
-* AI recommendation systems
-* Learning analytics
-* Student behavior tracking
-* Knowledge graphs
+- AI recommendation systems
+- Learning analytics
+- Student behavior tracking
+- Knowledge graphs
 
 ### Complexity
 
@@ -150,9 +157,9 @@ Very high.
 
 This requires:
 
-* Data scientists
-* AI engineers
-* Educational psychologists
+- Data scientists
+- AI engineers
+- Educational psychologists
 
 ---
 
@@ -160,18 +167,18 @@ This requires:
 
 ### Features
 
-* Interactive graphing
-* Geometry visualization
-* Algebra animations
-* Function transformations
-* Calculus visualizations
+- Interactive graphing
+- Geometry visualization
+- Algebra animations
+- Function transformations
+- Calculus visualizations
 
 ### Technologies
 
-* Desmos API alternatives
-* WebGL
-* D3.js
-* Three.js
+- Desmos API alternatives
+- WebGL
+- D3.js
+- Three.js
 
 ### Important
 
@@ -189,17 +196,17 @@ Students can visually understand transformations instead of memorizing formulas.
 
 ### Features
 
-* Visual problem solving
-* Interactive simulations
-* Logic puzzles
-* Drag-and-drop equations
-* Science + math integration
+- Visual problem solving
+- Interactive simulations
+- Logic puzzles
+- Drag-and-drop equations
+- Science + math integration
 
 ### Technologies
 
-* React Native animations
-* Three.js
-* Interactive canvas systems
+- React Native animations
+- Three.js
+- Interactive canvas systems
 
 ---
 
@@ -209,22 +216,22 @@ This becomes the emotional center of the app.
 
 ## Features
 
-* Chat-based tutoring
-* Voice tutoring
-* Explain concepts differently
-* Multilingual support
-* Personalized encouragement
-* Homework help
+- Chat-based tutoring
+- Voice tutoring
+- Explain concepts differently
+- Multilingual support
+- Personalized encouragement
+- Homework help
 
 ### South African Advantage
 
 Support:
 
-* English
-* Afrikaans
-* isiZulu
-* Sesotho
-* Xhosa
+- English
+- Afrikaans
+- isiZulu
+- Sesotho
+- Xhosa
 
 This can become a major differentiator.
 
@@ -234,32 +241,32 @@ This can become a major differentiator.
 
 ## Mobile App
 
-* React Native (recommended)
+- React Native (recommended)
   OR
-* Flutter
+- Flutter
 
 ## Backend
 
-* Node.js / NestJS
-* Python AI microservices
+- Node.js / NestJS
+- Python AI microservices
 
 ## Database
 
-* PostgreSQL
-* Redis
-* Vector DB for AI memory
+- PostgreSQL
+- Redis
+- Vector DB for AI memory
 
 ## Cloud
 
-* AWS
+- AWS
   OR
-* Google Cloud
+- Google Cloud
 
 ## AI Infrastructure
 
-* OpenAI APIs
-* Custom fine-tuned models
-* OCR AI services
+- OpenAI APIs
+- Custom fine-tuned models
+- OCR AI services
 
 ---
 
@@ -269,20 +276,20 @@ This can become a major differentiator.
 
 Focus ONLY on:
 
-* User accounts
-* Grade selection
-* Curriculum lessons
-* AI tutor chat
-* Equation scanner
-* Basic analytics
+- User accounts
+- Grade selection
+- Curriculum lessons
+- AI tutor chat
+- Equation scanner
+- Basic analytics
 
 ### Team
 
-* 1 UI/UX Designer
-* 2 Mobile developers
-* 1 Backend developer
-* 1 AI engineer
-* 1 Curriculum specialist
+- 1 UI/UX Designer
+- 2 Mobile developers
+- 1 Backend developer
+- 1 AI engineer
+- 1 Curriculum specialist
 
 ### Estimated Cost
 
@@ -294,12 +301,12 @@ $30,000–$120,000+
 
 Add:
 
-* Adaptive learning
-* Progress tracking
-* Parent dashboards
-* Teacher dashboards
-* Gamification
-* Quizzes
+- Adaptive learning
+- Progress tracking
+- Parent dashboards
+- Teacher dashboards
+- Gamification
+- Quizzes
 
 ### Estimated Cost
 
@@ -311,11 +318,11 @@ $100,000–$350,000+
 
 Add:
 
-* Full RPG gameplay
-* Multiplayer
-* Advanced visual simulations
-* 3D learning
-* AI-generated challenges
+- Full RPG gameplay
+- Multiplayer
+- Advanced visual simulations
+- 3D learning
+- AI-generated challenges
 
 ### Estimated Cost
 
@@ -331,10 +338,10 @@ This is actually harder than coding.
 
 You need:
 
-* Thousands of lessons
-* Thousands of exercises
-* Step-by-step solutions
-* Curriculum mapping
+- Thousands of lessons
+- Thousands of exercises
+- Step-by-step solutions
+- Curriculum mapping
 
 ---
 
@@ -344,8 +351,8 @@ Math AI must be extremely reliable.
 
 Parents lose trust quickly if:
 
-* Solutions are wrong
-* Steps are inconsistent
+- Solutions are wrong
+- Steps are inconsistent
 
 ---
 
@@ -373,20 +380,20 @@ Start with:
 
 ### Version 1
 
-* AI Solver
-* South African curriculum
-* AI Tutor
-* Progress analytics
+- AI Solver
+- South African curriculum
+- AI Tutor
+- Progress analytics
 
 ### Version 2
 
-* Gamification
-* Rewards
-* Challenges
+- Gamification
+- Rewards
+- Challenges
 
 ### Version 3
 
-* Full RPG ecosystem
+- Full RPG ecosystem
 
 This is how most successful EdTech companies evolved.
 
@@ -398,24 +405,24 @@ A localized African-first AI math learning platform has huge potential.
 
 Most global apps are:
 
-* US-centric
-* Expensive
-* Not aligned to African curricula
+- US-centric
+- Expensive
+- Not aligned to African curricula
 
 GoMaths can dominate:
 
-* South Africa
-* Nigeria
-* Kenya
-* Ghana
-* Namibia
-* Botswana
+- South Africa
+- Nigeria
+- Kenya
+- Ghana
+- Namibia
+- Botswana
 
 especially if:
 
-* Mobile data optimization is strong
-* Offline learning exists
-* Pricing is affordable
+- Mobile data optimization is strong
+- Offline learning exists
+- Pricing is affordable
 
 ---
 
@@ -423,15 +430,15 @@ especially if:
 
 ## AI Teacher Assistant
 
-* Generates worksheets
-* Marks assignments
-* Creates tests automatically
+- Generates worksheets
+- Marks assignments
+- Creates tests automatically
 
 ## Parent Intelligence Dashboard
 
-* Child strengths/weaknesses
-* Study recommendations
-* Performance predictions
+- Child strengths/weaknesses
+- Study recommendations
+- Performance predictions
 
 ## Offline Learning
 
@@ -467,16 +474,16 @@ Important for younger learners.
 
 ## Core Team
 
-* Product Manager
-* EdTech Specialist
-* Math Curriculum Experts
-* Mobile Developers
-* Backend Developers
-* AI Engineers
-* Game Developers
-* UI/UX Designers
-* QA Engineers
-* DevOps Engineer
+- Product Manager
+- EdTech Specialist
+- Math Curriculum Experts
+- Mobile Developers
+- Backend Developers
+- AI Engineers
+- Game Developers
+- UI/UX Designers
+- QA Engineers
+- DevOps Engineer
 
 ---
 
@@ -486,11 +493,11 @@ What you described is not just “an app”.
 
 It is:
 
-* an AI platform,
-* a gaming platform,
-* a curriculum platform,
-* an analytics platform,
-* and an educational ecosystem.
+- an AI platform,
+- a gaming platform,
+- a curriculum platform,
+- an analytics platform,
+- and an educational ecosystem.
 
 This is venture-scale software.
 

@@ -2,6 +2,7 @@ import { Button, Card } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PreviewBanner } from "../components/PreviewBanner";
 import { useAuth } from "../lib/auth";
 import { setDebugEnabled, useDebugEnabled } from "../lib/prefs";
 
@@ -21,6 +22,7 @@ export default function HomeScreen() {
   if (!user) {
     return (
       <SafeAreaView className="flex-1 bg-background">
+        <PreviewBanner />
         <View className="flex-1 justify-center px-6">
           <Text className="font-display text-4xl font-extrabold text-foreground">GoMaths</Text>
           <Text className="mt-2 text-base text-muted-foreground">
@@ -51,6 +53,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+      <PreviewBanner />
       <View className="flex-1 px-6 pt-4">
         <Text className="font-display text-3xl font-extrabold text-foreground">
           Hi, {user.displayName}

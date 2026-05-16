@@ -40,8 +40,7 @@ export async function registerForPush(): Promise<void> {
 
     // The Expo projectId is required to fetch a token. It's set via app.json
     // at `expo.extra.eas.projectId` once the EAS project is created.
-    const projectId =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const projectId = // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (await import("expo-constants")).default.expoConfig?.extra?.eas?.projectId;
 
     const tokenResp = projectId

@@ -3,13 +3,13 @@
 Under POPIA, a data subject (or their guardian, for under-18s) has the
 right to:
 
-| Right | What we do |
-|---|---|
-| **Access** | Export everything we hold on them, in a portable format |
-| **Rectification** | Correct something incorrect we hold |
-| **Deletion** | Remove the subject's data ("right to be forgotten") |
-| **Objection** | Stop processing data for a specific purpose (e.g. analytics) |
-| **Portability** | Same as access, but in a machine-readable form |
+| Right             | What we do                                                   |
+| ----------------- | ------------------------------------------------------------ |
+| **Access**        | Export everything we hold on them, in a portable format      |
+| **Rectification** | Correct something incorrect we hold                          |
+| **Deletion**      | Remove the subject's data ("right to be forgotten")          |
+| **Objection**     | Stop processing data for a specific purpose (e.g. analytics) |
+| **Portability**   | Same as access, but in a machine-readable form               |
 
 **Statutory clock: 30 days from receipt.** Track every DSR in the Internal Admin app's `/admin/dsr/...` route (Phase 1 build — until that ships, log to a shared Notion/Confluence page).
 
@@ -20,6 +20,7 @@ The **Information Officer** (per `DEPLOYMENT_INFO.md §9`) signs off every respo
 ## 1. Receive + verify
 
 DSRs reach us via:
+
 - Email to `privacy@gomaths.co.za` (set up before pilot)
 - In-app "Request my data" button (Phase 1)
 - Letter / school admin (rare; same process)
@@ -64,6 +65,7 @@ psql "$DATABASE_URL" -c "SELECT * FROM \"PushToken\" WHERE \"userId\" = '$USER_I
 ```
 
 **Don't forget non-Postgres data:**
+
 - Sentry events — search by `user.id` tag (Phase 1 must scope user to JWT.sub).
 - Server logs (CloudWatch) — search for the user id and capture / redact as needed.
 - AWS S3 — solver scan images if we start retaining them (Phase 1 decision: we currently don't).
@@ -74,6 +76,7 @@ psql "$DATABASE_URL" -c "SELECT * FROM \"PushToken\" WHERE \"userId\" = '$USER_I
 ### Access / portability
 
 Build a single JSON document containing every row above plus the lesson content the learner interacted with. Hand off via:
+
 - Encrypted email (PGP), or
 - A one-time S3 presigned URL with a 24-hour expiry
 
@@ -115,6 +118,7 @@ SQL
 Every count should be 0. If any aren't, **roll back** (`ROLLBACK;`) and figure out which foreign key isn't cascading before re-running.
 
 Then:
+
 - Sentry: delete user events via the Sentry API ("Forget User" action)
 - S3: delete any uploaded objects scoped by user id
 - Backups: send the requester the retention statement (see §2)
@@ -132,8 +136,8 @@ Carve out specific processing (e.g. push notifications): set the column directly
 ## 5. Edge cases
 
 - **Under-18 deletion request**: only the registered parent / guardian. If the parent isn't reachable, do not act on the child's own request alone — escalate to legal.
-- **School-managed account**: if a school owns the licence, deletion still proceeds for the *person*, but the school may have a parallel contractual claim. Loop the school admin in.
-- **Backup retention**: communicate clearly that *active systems* are cleared in <30 days, *automated backups* roll off within the configured window (current: 30 days prod, 7 days dev).
+- **School-managed account**: if a school owns the licence, deletion still proceeds for the _person_, but the school may have a parallel contractual claim. Loop the school admin in.
+- **Backup retention**: communicate clearly that _active systems_ are cleared in <30 days, _automated backups_ roll off within the configured window (current: 30 days prod, 7 days dev).
 - **The tutor cache**: a deleted learner's prior turns may still be in Anthropic's prompt cache for up to 5 minutes. Document this as a known transient.
 
 ## 6. Practice

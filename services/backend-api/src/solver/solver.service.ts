@@ -44,7 +44,7 @@ export class SolverService {
       const form = new FormData();
       form.append(
         "image",
-        new Blob([image.buffer], { type: image.mimetype || "image/jpeg" }),
+        new Blob([new Uint8Array(image.buffer)], { type: image.mimetype || "image/jpeg" }),
         image.originalname || "scan.jpg",
       );
 

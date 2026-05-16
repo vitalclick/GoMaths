@@ -1,6 +1,7 @@
 # Payment dispute (Phase 1.5 — Tutor Marketplace)
 
 A parent has disputed a charge for a tutor session. Either:
+
 - **Chargeback** — the parent went to their bank, not us. The payment facilitator (Stitch / PayFast / Paystack-SA) tells us via webhook.
 - **In-app dispute** — the parent tapped "I have a problem with this session" in the Parent app.
 - **Email / WhatsApp** — out-of-band complaint to support.
@@ -43,13 +44,13 @@ psql "$DATABASE_URL" -c "
 
 Decision tree:
 
-| Signal | Action |
-|---|---|
-| Session never started (no video join from tutor) | **Refund 100%.** Tutor no-show. |
-| Tutor joined < 5 min late, then disconnected and never rejoined | **Refund 100%.** Tutor partial no-show. |
-| Both joined, session ran ~full duration, parent says quality was poor | Watch the recording (with the consent already captured at booking — see POPIA below). If clearly substandard, refund. If competent but parent disagrees, mediate. |
-| Both joined, parent disputes that the session happened at all | Pull the video provider's join logs. The recording is the source of truth. |
-| Chargeback for "fraud" (parent claims they never booked) | Investigate device + IP + login history; common cause is a child booking on a parent's card. **Refund** but **don't penalise the tutor** — fee comes from our reserve. |
+| Signal                                                                | Action                                                                                                                                                                 |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session never started (no video join from tutor)                      | **Refund 100%.** Tutor no-show.                                                                                                                                        |
+| Tutor joined < 5 min late, then disconnected and never rejoined       | **Refund 100%.** Tutor partial no-show.                                                                                                                                |
+| Both joined, session ran ~full duration, parent says quality was poor | Watch the recording (with the consent already captured at booking — see POPIA below). If clearly substandard, refund. If competent but parent disagrees, mediate.      |
+| Both joined, parent disputes that the session happened at all         | Pull the video provider's join logs. The recording is the source of truth.                                                                                             |
+| Chargeback for "fraud" (parent claims they never booked)              | Investigate device + IP + login history; common cause is a child booking on a parent's card. **Refund** but **don't penalise the tutor** — fee comes from our reserve. |
 
 ## 2. Refund mechanics
 
@@ -119,6 +120,7 @@ Procedure:
    further comms.
 
 POPIA + Children's Act recording-access notes:
+
 - Parental consent for recording was captured at booking.
 - Internal review of recordings is permitted for trust + safety;
   log every access with reviewer + timestamp + reason.
@@ -131,6 +133,7 @@ Every dispute generates a one-paragraph internal note:
 
 ```md
 **Dispute <id>** — <date>
+
 - Session: <date>, <duration>, <subject/topic>
 - Parent: <name redacted>, <city>
 - Tutor: <name redacted>, <vetting tier>
@@ -140,6 +143,7 @@ Every dispute generates a one-paragraph internal note:
 ```
 
 Aggregate monthly into the trust + safety dashboard. Patterns to watch:
+
 - Same tutor → multiple disputes
 - Same parent → multiple disputes (could be billing confusion, could be abuse of the refund policy)
 - Same time-of-day → tutor multitasking?

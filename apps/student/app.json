@@ -1,18 +1,18 @@
 {
   "expo": {
     "name": "GoMaths",
-    "slug": "gomaths-student",
-    "version": "0.0.1",
+    "slug": "gomaths-v2-student",
+    "version": "2.0.0",
     "orientation": "portrait",
-    "scheme": "gomaths",
+    "scheme": "gomaths-v2",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "co.za.gomaths.student"
+      "bundleIdentifier": "co.za.gomaths.v2.student"
     },
     "android": {
-      "package": "co.za.gomaths.student",
+      "package": "co.za.gomaths.v2.student",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }

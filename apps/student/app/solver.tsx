@@ -2,7 +2,15 @@ import { Button, Card } from "@gomaths/ui";
 import * as ImagePicker from "expo-image-picker";
 import { Stack } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Math as MathView } from "../components/Math";
 import { useAuth } from "../lib/auth";
@@ -116,24 +124,42 @@ export default function SolverScreen() {
                 Capture or pick an equation
               </Text>
               <Text className="mt-1 text-sm text-muted-foreground">
-                Works best with clearly printed equations. The mock OCR returns a canned
-                expression — wire MathPix to enable real recognition.
+                Works best with clearly printed equations. The mock OCR returns a canned expression
+                — wire MathPix to enable real recognition.
               </Text>
               <View className="mt-4 gap-2">
-                <Button label="Use camera" variant="primary" size="md" fullWidth onPress={captureFromCamera} />
-                <Button label="Pick from library" variant="ghost" size="md" fullWidth onPress={pickFromLibrary} />
+                <Button
+                  label="Use camera"
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  onPress={captureFromCamera}
+                />
+                <Button
+                  label="Pick from library"
+                  variant="ghost"
+                  size="md"
+                  fullWidth
+                  onPress={pickFromLibrary}
+                />
               </View>
             </Card>
 
             {previewUri && (
               <View className="overflow-hidden rounded-2xl border border-border">
-                <Image source={{ uri: previewUri }} style={{ width: "100%", height: 220 }} resizeMode="contain" />
+                <Image
+                  source={{ uri: previewUri }}
+                  style={{ width: "100%", height: 220 }}
+                  resizeMode="contain"
+                />
               </View>
             )}
           </>
         ) : (
           <Card>
-            <Text className="font-display text-lg font-semibold text-foreground">Type an equation</Text>
+            <Text className="font-display text-lg font-semibold text-foreground">
+              Type an equation
+            </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
               Use plain notation: <Text className="font-mono">2x + 5 = 13</Text>,{" "}
               <Text className="font-mono">x^2 + 5x + 6 = 0</Text>.
@@ -174,13 +200,23 @@ export default function SolverScreen() {
   );
 }
 
-function ModeChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function ModeChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
       className={`rounded-full px-4 py-2 ${active ? "bg-primary" : "bg-muted"}`}
     >
-      <Text className={`text-sm font-semibold ${active ? "text-primary-foreground" : "text-muted-foreground"}`}>
+      <Text
+        className={`text-sm font-semibold ${active ? "text-primary-foreground" : "text-muted-foreground"}`}
+      >
         {label}
       </Text>
     </Pressable>
@@ -192,7 +228,9 @@ function SolutionView({ result }: { result: SolverResponse }) {
     return (
       <Card className="border-destructive">
         <Text className="font-display text-base font-bold text-destructive">Couldn't solve</Text>
-        <Text className="mt-1 text-sm text-muted-foreground">{result.detail || "Try a clearer image or rephrase the equation."}</Text>
+        <Text className="mt-1 text-sm text-muted-foreground">
+          {result.detail || "Try a clearer image or rephrase the equation."}
+        </Text>
       </Card>
     );
   }
@@ -206,7 +244,9 @@ function SolutionView({ result }: { result: SolverResponse }) {
           </View>
           <Text className="mt-2 text-[10px] text-muted-foreground">
             OCR: {result.ocrProvider}
-            {result.ocrConfidence != null ? ` · confidence ${Math.round(result.ocrConfidence * 100)}%` : ""}
+            {result.ocrConfidence != null
+              ? ` · confidence ${Math.round(result.ocrConfidence * 100)}%`
+              : ""}
           </Text>
         </Card>
       )}
@@ -231,7 +271,9 @@ function SolutionView({ result }: { result: SolverResponse }) {
       {result.finalAnswer && (
         <Card className="border-success">
           <Text className="text-xs uppercase tracking-wider text-success">Final answer</Text>
-          <Text className="mt-1 font-mono text-lg font-bold text-foreground">{result.finalAnswer}</Text>
+          <Text className="mt-1 font-mono text-lg font-bold text-foreground">
+            {result.finalAnswer}
+          </Text>
         </Card>
       )}
     </View>

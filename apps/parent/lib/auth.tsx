@@ -112,6 +112,33 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+/**
+ * Authenticated fetch for the parent app. Attaches the access token
+ * and surfaces network errors directly — the parent surfaces are
+ * narrow enough that we don't yet need the silent-refresh dance the
+ * Student app does.
+ */
+export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+  const accessToken = await storage.getItem(ACCESS_KEY);
+  const headers = new Headers(init.headers ?? {});
+  if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
+  return fetch(`${apiUrl}${path}`, { ...init, headers });
+}
+
+export interface LinkedChild {
+  email: string;
+  displayName: string;
+  grade: number | null;
+  linkedAt: string;
+}
+
+export async function fetchLinkedChildren(): Promise<LinkedChild[]> {
+  const res = await authFetch("/api/parents/me/children");
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as LinkedChild[];
+}
+
 async function readError(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { message?: string | string[] };

@@ -1,0 +1,54 @@
+# Fly config for the NestJS backend.
+#
+# Deploy from the repo root:
+#
+#   fly launch -c fly.backend.toml --copy-config --no-deploy   # first time
+#   fly deploy -c fly.backend.toml
+#
+# Secrets to set before first deploy:
+#   fly secrets set -a gomaths-backend \
+#     DATABASE_URL="..."  \
+#     REDIS_URL="..." \
+#     JWT_ACCESS_SECRET="$(openssl rand -base64 64)" \
+#     JWT_REFRESH_SECRET="$(openssl rand -base64 64)" \
+#     PARENTAL_CONSENT_INVITE_SECRET="$(openssl rand -base64 64)" \
+#     PARENTAL_CONSENT_RECEIPT_SECRET="$(openssl rand -base64 64)" \
+#     PUBLIC_APP_URL="https://gomaths-student.pages.dev" \
+#     RESEND_API_KEY="re_..." \
+#     EMAIL_FROM="GoMaths <consent@<your-verified-domain>>" \
+#     SENTRY_DSN="https://...@sentry.io/..." \
+#     TUTOR_SERVICE_URL="https://gomaths-ai-tutor.fly.dev" \
+#     SOLVER_SERVICE_URL="https://gomaths-ai-solver.fly.dev" \
+#     VALIDATION_SERVICE_URL="https://gomaths-ai-validation.fly.dev"
+
+app = "gomaths-backend"
+primary_region = "jnb"
+
+[build]
+  dockerfile = "services/backend-api/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Don't auto-stop the API — it's the front door, latency matters and
+  # the Prisma engine cold-start is ~3s. Cheaper but worse UX would be
+  # auto_stop_machines = "stop" + min_machines_running = 0.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

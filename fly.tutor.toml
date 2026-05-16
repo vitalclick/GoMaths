@@ -1,0 +1,48 @@
+# Fly config for the FastAPI tutor service.
+#
+# Deploy from the repo root:
+#
+#   fly launch -c fly.tutor.toml --copy-config --no-deploy
+#   fly deploy -c fly.tutor.toml --build-arg SERVICE=tutor
+#
+# Secrets:
+#   fly secrets set -a gomaths-ai-tutor \
+#     TUTOR_PROVIDER="anthropic" \
+#     ANTHROPIC_API_KEY="sk-ant-..." \
+#     TUTOR_MODEL="claude-haiku-4-5"
+#
+# Leave TUTOR_PROVIDER unset to default to the mock provider — fine for
+# a first deploy where you want to verify the topology without spending
+# LLM credit.
+
+app = "gomaths-ai-tutor"
+primary_region = "jnb"
+
+[build]
+  dockerfile = "services/ai-services/Dockerfile"
+  [build.args]
+    SERVICE = "tutor"
+
+[env]
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Tutor sees bursty traffic; auto-stop saves money during quiet hours.
+  # First request after stop takes ~2s (FastAPI cold start), which is
+  # within streaming-tolerance.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

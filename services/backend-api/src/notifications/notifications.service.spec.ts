@@ -91,10 +91,9 @@ describe("NotificationsService (in-memory)", () => {
     globalThis.fetch = (async (_url: string, init: RequestInit) => {
       const batch = JSON.parse(init.body as string) as { to: string }[];
       for (const m of batch) sent.push(m.to);
-      return new Response(
-        JSON.stringify({ data: batch.map(() => ({ status: "ok" })) }),
-        { status: 200 },
-      );
+      return new Response(JSON.stringify({ data: batch.map(() => ({ status: "ok" })) }), {
+        status: 200,
+      });
     }) as unknown as typeof fetch;
 
     await svc.send({ userId: "user-1", title: "x", body: "y", appSlug: "parent" });

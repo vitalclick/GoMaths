@@ -21,6 +21,7 @@ servers:
 tags:
   - name: auth
   - name: users
+  - name: parents
   - name: curriculum
   - name: progress
   - name: tutor
@@ -117,6 +118,110 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /api/auth/parental-consent/request:
+    post:
+      tags: [auth]
+      summary: Mail a parental-consent invite to a parent
+      description: |
+        Parent submits their email + the minor's email. The server mints a
+        signed JWT, persists a PENDING ParentalConsent row, and (in
+        production) mails the parent a confirmation link. In dev the URL
+        is echoed in the response and logged so a developer can copy it.
+        Repeated requests for the same (parentEmail, studentEmail) pair
+        refresh the existing PENDING row rather than creating duplicates.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParentalConsentRequest" }
+      responses:
+        "202":
+          description: Invite created or refreshed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParentalConsentRequestAccepted" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/auth/parental-consent/confirm:
+    post:
+      tags: [auth]
+      summary: Confirm parental consent (parent has clicked the email link)
+      description: |
+        Verifies the invite JWT signature + freshness, marks the consent
+        row CONFIRMED, and returns a short-lived receipt token. The
+        student app submits that receipt as `parentalConsentToken` on
+        /auth/register.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParentalConsentConfirmRequest" }
+      responses:
+        "200":
+          description: Confirmed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParentalConsentConfirmResponse" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Consent record not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "410":
+          description: Consent expired or already consumed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /api/auth/parental-consent/poll:
+    post:
+      tags: [auth]
+      summary: Poll a consent record from the student app
+      description: |
+        The student app polls this after issuing a consent request to learn
+        when the parent has confirmed. The first CONFIRMED response carries
+        a one-time `receiptToken` the app submits as `parentalConsentToken`
+        on /auth/register. Subsequent CONFIRMED responses omit the token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, studentEmail]
+              properties:
+                id: { type: string }
+                studentEmail: { type: string, format: email }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [PENDING, CONFIRMED, CONSUMED, EXPIRED]
+                  receiptToken:
+                    type: string
+                    description: Present only on the first CONFIRMED poll.
+                  expiresAt:
+                    type: string
+                    format: date-time
+        "404":
+          description: Consent record not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /api/users/me:
     get:
       tags: [users]
@@ -127,6 +232,26 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/User" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/parents/me/children:
+    get:
+      tags: [parents]
+      summary: List children linked to the current parent
+      description: |
+        Returns children whose parental-consent record was signed by the
+        current parent's email and has been consumed by a successful
+        registration. Phase 1 is read-only; Phase 1.5 adds invite-link
+        management and per-child progress.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LinkedChild" }
         "401":
           $ref: "#/components/responses/Unauthorized"
 
@@ -509,16 +634,79 @@ components:
 
     RegisterRequest:
       type: object
-      required: [email, password, displayName, grade]
+      required: [email, password, displayName, grade, birthYear]
       properties:
         email: { type: string, format: email }
         password: { type: string, minLength: 8 }
         displayName: { type: string, minLength: 1, maxLength: 80 }
         grade: { $ref: "#/components/schemas/Grade" }
+        birthYear:
+          type: integer
+          minimum: 1990
+          maximum: 2100
+          description: |
+            Year of birth. Server uses this to determine whether the learner
+            is a minor (< 18); minors must provide `parentalConsentToken`.
         language: { $ref: "#/components/schemas/Language" }
         parentalConsentToken:
           type: string
-          description: Required for under-18 sign-ups. Issued by the consent flow.
+          description: |
+            Receipt token from /auth/parental-consent/confirm. REQUIRED for
+            sign-ups where the server-derived age is < 18; ignored otherwise.
+
+    LinkedChild:
+      type: object
+      required: [email, displayName, linkedAt]
+      properties:
+        email: { type: string, format: email }
+        displayName: { type: string }
+        grade:
+          type: integer
+          minimum: 1
+          maximum: 12
+          nullable: true
+        linkedAt:
+          type: string
+          format: date-time
+          description: When the parental consent was consumed (i.e. the child finished registering).
+
+    ParentalConsentRequest:
+      type: object
+      required: [parentEmail, studentEmail]
+      properties:
+        parentEmail: { type: string, format: email }
+        studentEmail: { type: string, format: email }
+
+    ParentalConsentRequestAccepted:
+      type: object
+      required: [id, inviteUrl, expiresAt]
+      properties:
+        id: { type: string }
+        inviteUrl:
+          type: string
+          format: uri
+          description: URL containing the signed invite JWT. In production the
+            server mails this to the parent; in dev it's echoed for testing.
+        expiresAt: { type: string, format: date-time }
+
+    ParentalConsentConfirmRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: The invite JWT extracted from the email link.
+
+    ParentalConsentConfirmResponse:
+      type: object
+      required: [studentEmail, receiptToken, expiresAt]
+      properties:
+        studentEmail: { type: string, format: email }
+        receiptToken:
+          type: string
+          description: Short-lived receipt to submit as `parentalConsentToken`
+            on /auth/register.
+        expiresAt: { type: string, format: date-time }
 
     LoginRequest:
       type: object

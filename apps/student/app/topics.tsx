@@ -49,9 +49,13 @@ export default function TopicsScreen() {
                 <Text className="text-xs uppercase tracking-wider text-muted-foreground">
                   {formatContentArea(item.contentArea)} · {item.capsReference}
                 </Text>
-                <Text className="mt-1 font-display text-lg font-bold text-foreground">{item.title}</Text>
+                <Text className="mt-1 font-display text-lg font-bold text-foreground">
+                  {item.title}
+                </Text>
                 <View className="mt-2 flex-row items-center gap-2">
-                  <Text className="text-xs text-muted-foreground">~{item.estimatedMinutes} min</Text>
+                  <Text className="text-xs text-muted-foreground">
+                    ~{item.estimatedMinutes} min
+                  </Text>
                 </View>
               </Card>
             </Pressable>

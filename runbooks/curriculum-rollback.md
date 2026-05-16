@@ -1,6 +1,7 @@
 # Curriculum rollback
 
 A bad lesson or question reached production. Either:
+
 - The lesson explanation is wrong / misleading
 - A question's `answer` is wrong (the SymPy validator should catch this in CI — if it didn't, that's also a bug we need to write up)
 - The `lessonMarkdown` renders incorrectly on a specific platform
@@ -85,6 +86,7 @@ psql "$DATABASE_URL" -c "
 ```
 
 Honest comms to schools (template):
+
 > Yesterday a small number of learners worked on a Grade 9 algebra
 > question where our system marked the wrong answer as correct
 > (and vice versa). We've corrected it. The affected question was

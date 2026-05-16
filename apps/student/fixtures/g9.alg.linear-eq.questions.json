@@ -7,10 +7,7 @@
       "stem": "2*x + 5 = 13",
       "answer": "x = 4",
       "answerLatex": "x = 4",
-      "solutionSteps": [
-        "Subtract 5 from both sides: 2x = 8",
-        "Divide both sides by 2: x = 4"
-      ],
+      "solutionSteps": ["Subtract 5 from both sides: 2x = 8", "Divide both sides by 2: x = 4"],
       "commonMistakes": [
         "Forgetting to apply the operation to both sides",
         "Sign errors when moving terms"
@@ -23,14 +20,8 @@
       "stem": "3*x - 7 = 2*x + 5",
       "answer": "x = 12",
       "answerLatex": "x = 12",
-      "solutionSteps": [
-        "Subtract 2x from both sides: x - 7 = 5",
-        "Add 7 to both sides: x = 12"
-      ],
-      "commonMistakes": [
-        "Moving the wrong term across the equals sign",
-        "Combining unlike terms"
-      ],
+      "solutionSteps": ["Subtract 2x from both sides: x - 7 = 5", "Add 7 to both sides: x = 12"],
+      "commonMistakes": ["Moving the wrong term across the equals sign", "Combining unlike terms"],
       "tags": ["linear", "variables-on-both-sides"]
     }
   ]

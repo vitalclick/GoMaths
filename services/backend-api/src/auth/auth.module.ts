@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
+import { ParentalConsentService } from "./parental-consent.service";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "./auth.guard";
 
@@ -18,7 +19,7 @@ import { JwtAuthGuard } from "./auth.guard";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtAuthGuard],
-  exports: [AuthService, UsersService, JwtAuthGuard, JwtModule],
+  providers: [AuthService, UsersService, JwtAuthGuard, ParentalConsentService],
+  exports: [AuthService, UsersService, JwtAuthGuard, JwtModule, ParentalConsentService],
 })
 export class AuthModule {}

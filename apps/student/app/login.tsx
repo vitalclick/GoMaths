@@ -39,9 +39,7 @@ export default function LoginScreen() {
           <Field label="Password" value={password} onChange={setPassword} secure />
         </View>
 
-        {error && (
-          <Text className="mt-4 text-sm text-destructive">{error}</Text>
-        )}
+        {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
 
         <View className="mt-8 gap-3">
           <Button

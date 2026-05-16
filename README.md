@@ -1,4 +1,4 @@
-# GoMaths
+# GoMaths v2
 
 AI-powered mathematics learning platform for South African and African learners.
 
@@ -11,7 +11,14 @@ AI-powered mathematics learning platform for South African and African learners.
 > The first-install checklist below is the condensed command list;
 > `HANDOFF.md` is the context around it.
 
-> **Status:** Pre-development. Planning documents, architecture decisions, and a scaffolded monorepo structure live here. Engineering begins after Phase 1 sign-off (see `docs/Phase1_Launch_Plan.md`).
+> **Status: v2 rebuild on a clean stack.** GoMaths is an established
+> product (10+ years, multiple South African schools under MOU, apps
+> live in both stores). This branch is a **full rebuild** with a new
+> tech stack, new AWS account, new app store listings (new bundle IDs:
+> `co.za.gomaths.v2.*`), and a new database — **no migration of v1
+> data or users**. The v1 product continues to run during the rebuild;
+> v2 replaces it by re-onboarding schools and learners, not by lift-
+> and-shift. See `docs/Phase1_Launch_Plan.md` for the rollout plan.
 
 ---
 
@@ -63,23 +70,23 @@ Read in this order:
 
 ## Platforms shipping in Phase 1
 
-| App | iOS | Android | Web | Phase |
-|---|:-:|:-:|:-:|---|
-| Student | ✓ | ✓ | ✓ | 1 |
-| Parent | ✓ | ✓ | ✓ | 1 |
-| Teacher | ✓ | ✓ | ✓ | 1 |
-| School Admin | companion | companion | primary | 1 |
-| Internal Admin | — | — | ✓ | 1 (incremental) |
-| **Tutor** | ✓ | ✓ | ✓ | **1.5 (gated on Phase 1 signal)** |
+| App            |    iOS    |  Android  |   Web   | Phase                             |
+| -------------- | :-------: | :-------: | :-----: | --------------------------------- |
+| Student        |     ✓     |     ✓     |    ✓    | 1                                 |
+| Parent         |     ✓     |     ✓     |    ✓    | 1                                 |
+| Teacher        |     ✓     |     ✓     |    ✓    | 1                                 |
+| School Admin   | companion | companion | primary | 1                                 |
+| Internal Admin |     —     |     —     |    ✓    | 1 (incremental)                   |
+| **Tutor**      |     ✓     |     ✓     |    ✓    | **1.5 (gated on Phase 1 signal)** |
 
 ---
 
 ## First-install checklist
 
-The branch ships with extensive scaffolding but **has not yet run on a
-real machine**. The work below is for the first engineer to clone and
-bring the whole stack to life. Expect to find dependency-version drift
-and minor fixes — flag them as you go.
+The stack runs end-to-end on a clean machine: `pnpm-lock.yaml` is
+committed, the API client codegen output is real, CI runs the full
+typecheck + lint + format + E2E matrix. The steps below are the
+condensed command list for getting a working local dev environment.
 
 ### Prerequisites
 
@@ -94,34 +101,24 @@ and minor fixes — flag them as you go.
 ```sh
 git clone git@github.com:vitalclick/GoMaths.git
 cd GoMaths
-
-# Creates pnpm-lock.yaml on first run.
 pnpm install
 ```
 
-**Expected friction here.** If `pnpm install` errors, it's most likely
+If `pnpm install` errors after a dependency bump, the usual suspect is
 peer-dep tension between Expo SDK 52 + React 19 + RN 0.76 +
-NativeWind 4. Fix one package version at a time; rerun. **Commit the
-resulting `pnpm-lock.yaml`** — CI is currently scoped down because
-this doesn't exist yet (see `.github/workflows/ci.yml`).
+NativeWind 4. Fix one package version at a time and rerun.
 
-### 2. Generate the API client
+### 2. Re-run the API client codegen (only after editing openapi.yaml)
 
 ```sh
 pnpm --filter @gomaths/api-client generate
 ```
 
-This populates `packages/api-client/src/generated.ts` from
-`services/backend-api/openapi.yaml`. **Commit the result** — the
-currently-committed file is a stub.
+This regenerates `packages/api-client/src/generated.ts` from
+`services/backend-api/openapi.yaml`. CI fails on drift between the two,
+so commit the result.
 
-### 3. Re-enable the scoped-down CI jobs
-
-In `.github/workflows/ci.yml`, flip the four `if: ${{ false }}`
-guards back on (Node typecheck, Node lint, Node format, Node codegen
-check, E2E). Push; the full CI matrix should now run for real.
-
-### 4. Bring up Postgres + Redis
+### 3. Bring up Postgres + Redis
 
 ```sh
 pnpm --filter @gomaths/backend-api db:up
@@ -142,7 +139,7 @@ pnpm --filter @gomaths/backend-api prisma:generate
 pnpm --filter @gomaths/backend-api prisma:seed
 ```
 
-### 5. Start the AI services
+### 4. Start the AI services
 
 ```sh
 # In services/ai-services/
@@ -154,7 +151,7 @@ uvicorn tutor.main:app --port 8001         # set TUTOR_PROVIDER=anthropic + key 
 uvicorn solver.main:app --port 8002
 ```
 
-### 6. Start the backend
+### 5. Start the backend
 
 ```sh
 pnpm --filter @gomaths/backend-api dev
@@ -162,7 +159,7 @@ pnpm --filter @gomaths/backend-api dev
 
 Hit `http://localhost:4000/api/health` and `/api/docs` (Swagger).
 
-### 7. Start the Student app
+### 6. Start the Student app
 
 ```sh
 EXPO_PUBLIC_API_URL=http://localhost:4000 \
@@ -170,15 +167,15 @@ EXPO_PUBLIC_API_URL=http://localhost:4000 \
 # press `w` for web, `i` for iOS sim, `a` for Android emu
 ```
 
-### 8. Smoke-test the full flow
+### 7. Smoke-test the full flow
 
-1. Register an account (use birth year that makes you 18+; consent flow is in §7 of `docs/Phase1_Launch_Plan.md`)
+1. Register an account. Use a birth year that makes you 18+ for the quickest path, or under 18 to exercise the parental-consent flow (the invite URL is logged to the backend's stdout when `RESEND_API_KEY` isn't set).
 2. Pick Grade 9
 3. Open "Solving Linear Equations"
 4. Practice — answer `x = 4` to `2x + 5 = 13` → "Correct" (SymPy-validated via the backend)
 5. Chat with Maya — confirm the reply streams in and the "Maths verified" badge appears (or "Reply not fully verified" if the mock provider is on)
 
-### 9. Run the E2E suite
+### 8. Run the E2E suite
 
 ```sh
 pnpm --filter @gomaths/e2e test
@@ -196,4 +193,10 @@ pass independently of whether the backend is running.
 
 ## Current phase
 
-**Pre-development.** Awaiting decisions in `docs/Phase1_Launch_Plan.md §11` and funding commitment (R 11.5–17.3M, 12-month runway).
+**v2 rebuild — engineering in progress.** v1 of GoMaths is live and
+serving schools today. This branch rebuilds the product on a new tech
+stack (Expo + NestJS + AI services + SymPy validation) on a clean AWS
+account with new app store listings. v1 continues to run; v2 launches
+when the rebuild is feature-complete for the initial school rollout.
+See `docs/Phase1_Launch_Plan.md` for the v2 rollout plan and ADR-007
+for the clean-slate decision.

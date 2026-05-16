@@ -1,0 +1,8 @@
+# Per-app .gitignore. Pre-created so Expo CLI's typed-routes setup
+# doesn't try to upsert it at boot — that's the operation that fails
+# in CI sandboxes where the workspace is not writable by the bundler
+# process. The repo's root .gitignore already covers .expo/, dist/,
+# node_modules/, etc.
+
+expo-env.d.ts
+.expo/

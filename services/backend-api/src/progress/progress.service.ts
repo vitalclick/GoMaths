@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type { ProgressEventInputDto, ProgressEventType } from "./progress.dto";
 
@@ -48,7 +49,7 @@ export class ProgressService {
           type: input.type.toUpperCase() as ProgressEventTypeDb,
           topicId: input.topicId ?? null,
           questionId: input.questionId ?? null,
-          meta: input.meta ?? undefined,
+          meta: (input.meta ?? Prisma.JsonNull) as Prisma.InputJsonValue,
         },
       });
       return {
@@ -110,14 +111,21 @@ export class ProgressService {
   private computeMastery(
     events: { type: ProgressEventType; topicId: string; occurredAt: string }[],
   ): TopicMastery[] {
-    const byTopic = new Map<string, {
-      attempts: number;
-      correct: number;
-      lastInteractionAt: string;
-    }>();
+    const byTopic = new Map<
+      string,
+      {
+        attempts: number;
+        correct: number;
+        lastInteractionAt: string;
+      }
+    >();
 
     for (const e of events) {
-      const m = byTopic.get(e.topicId) ?? { attempts: 0, correct: 0, lastInteractionAt: e.occurredAt };
+      const m = byTopic.get(e.topicId) ?? {
+        attempts: 0,
+        correct: 0,
+        lastInteractionAt: e.occurredAt,
+      };
       m.lastInteractionAt = e.occurredAt;
       if (e.type === "question_attempted") m.attempts++;
       if (e.type === "question_correct") {

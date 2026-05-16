@@ -19,7 +19,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit(): Promise<void> {
     if (!this.enabled) {
-      this.logger.warn("DATABASE_URL not set — Prisma disabled, services will use in-memory stores");
+      this.logger.warn(
+        "DATABASE_URL not set — Prisma disabled, services will use in-memory stores",
+      );
       return;
     }
     try {

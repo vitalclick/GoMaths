@@ -16,7 +16,7 @@ A single happy-path spec walks the full Phase 1 student flow:
 
 The backend layer is mocked at the network boundary (Playwright route
 interception). Service / unit tests already cover backend behaviour;
-this suite confirms the app *uses* it correctly.
+this suite confirms the app _uses_ it correctly.
 
 ## Running
 

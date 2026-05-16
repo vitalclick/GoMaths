@@ -15,14 +15,14 @@
 
 GoMaths will combine:
 
-* AI-powered equation solving
-* Personalized adaptive learning
-* RPG-style gamified education
-* South African curriculum alignment
-* Interactive visual mathematics
-* Real-time analytics
-* AI tutoring
-* Teacher + parent dashboards
+- AI-powered equation solving
+- Personalized adaptive learning
+- RPG-style gamified education
+- South African curriculum alignment
+- Interactive visual mathematics
+- Real-time analytics
+- AI tutoring
+- Teacher + parent dashboards
 
 The platform should be engineered as a scalable modular ecosystem rather than a monolithic mobile app.
 
@@ -72,17 +72,17 @@ Avoid building everything as one large backend.
 
 Use:
 
-* Independent AI services
-* Independent game services
-* Independent analytics services
-* Independent curriculum services
+- Independent AI services
+- Independent game services
+- Independent analytics services
+- Independent curriculum services
 
 This improves:
 
-* scalability
-* maintainability
-* deployment speed
-* AI experimentation
+- scalability
+- maintainability
+- deployment speed
+- AI experimentation
 
 ---
 
@@ -158,20 +158,20 @@ This improves:
 
 ## Features
 
-* Student accounts
-* Parent accounts
-* Teacher accounts
-* School accounts
-* Social login
-* Role-based access control
-* Subscription handling
+- Student accounts
+- Parent accounts
+- Teacher accounts
+- School accounts
+- Social login
+- Role-based access control
+- Subscription handling
 
 ## Security
 
-* JWT authentication
-* Refresh tokens
-* MFA for admins
-* COPPA/GDPR/POPIA compliance
+- JWT authentication
+- Refresh tokens
+- MFA for admins
+- COPPA/GDPR/POPIA compliance
 
 ---
 
@@ -183,12 +183,12 @@ Map all South African CAPS mathematics curriculum content.
 
 ## Features
 
-* Grade-based learning trees
-* Topic dependency graphs
-* Learning objectives
-* Difficulty ratings
-* Question banks
-* Exam preparation
+- Grade-based learning trees
+- Topic dependency graphs
+- Learning objectives
+- Difficulty ratings
+- Question banks
+- Exam preparation
 
 ## Database Structure
 
@@ -207,12 +207,12 @@ Grades
 
 ## Core Features
 
-* Camera OCR
-* Handwriting recognition
-* Step-by-step solving
-* Multiple solving methods
-* Voice explanations
-* Instant feedback
+- Camera OCR
+- Handwriting recognition
+- Step-by-step solving
+- Multiple solving methods
+- Voice explanations
+- Instant feedback
 
 ---
 
@@ -249,11 +249,11 @@ Personalize learning paths dynamically.
 
 ## Features
 
-* Weakness detection
-* Skill mastery scoring
-* Personalized recommendations
-* Difficulty adaptation
-* Retention modeling
+- Weakness detection
+- Skill mastery scoring
+- Personalized recommendations
+- Difficulty adaptation
+- Retention modeling
 
 ---
 
@@ -276,13 +276,13 @@ Student
 
 ## Features
 
-* XP points
-* Coins
-* Badges
-* Daily streaks
-* Quests
-* Leaderboards
-* Unlockable content
+- XP points
+- Coins
+- Badges
+- Daily streaks
+- Quests
+- Leaderboards
+- Unlockable content
 
 ---
 
@@ -290,11 +290,11 @@ Student
 
 ## Components
 
-* Character system
-* Math battles
-* Multiplayer arenas
-* Story mode
-* Guilds/classrooms
+- Character system
+- Math battles
+- Multiplayer arenas
+- Story mode
+- Guilds/classrooms
 
 ---
 
@@ -302,10 +302,10 @@ Student
 
 ## Features
 
-* Interactive graphing
-* Geometry drawing
-* Algebra visualization
-* Calculus animations
+- Interactive graphing
+- Geometry drawing
+- Algebra visualization
+- Calculus animations
 
 Example visualization support:
 
@@ -327,11 +327,11 @@ Example visualization support:
 
 ## Features
 
-* Chat tutor
-* Voice tutor
-* Homework help
-* Multi-language support
-* Personalized explanations
+- Chat tutor
+- Voice tutor
+- Homework help
+- Multi-language support
+- Personalized explanations
 
 ---
 
@@ -354,21 +354,21 @@ Student Question
 
 ## Student Dashboard
 
-* Performance trends
-* Strength analysis
-* Weakness analysis
+- Performance trends
+- Strength analysis
+- Weakness analysis
 
 ## Parent Dashboard
 
-* Child progress
-* Study time
-* Performance predictions
+- Child progress
+- Study time
+- Performance predictions
 
 ## Teacher Dashboard
 
-* Classroom analytics
-* Assignment tracking
-* Student engagement
+- Classroom analytics
+- Assignment tracking
+- Student engagement
 
 ---
 
@@ -403,12 +403,12 @@ Launch a usable learning platform.
 
 ## Features
 
-* Authentication
-* Curriculum lessons
-* Quizzes
-* AI Tutor
-* Basic OCR solver
-* Progress tracking
+- Authentication
+- Curriculum lessons
+- Quizzes
+- AI Tutor
+- Basic OCR solver
+- Progress tracking
 
 ## Team
 
@@ -432,12 +432,12 @@ Launch a usable learning platform.
 
 ## Features
 
-* Adaptive learning
-* Recommendation engine
-* Parent dashboards
-* Teacher dashboards
-* Gamification
-* Analytics
+- Adaptive learning
+- Recommendation engine
+- Parent dashboards
+- Teacher dashboards
+- Gamification
+- Analytics
 
 ---
 
@@ -445,11 +445,11 @@ Launch a usable learning platform.
 
 ## Features
 
-* STEM simulations
-* Advanced graphing
-* AI-generated exercises
-* Voice tutoring
-* Offline learning
+- STEM simulations
+- Advanced graphing
+- AI-generated exercises
+- Voice tutoring
+- Offline learning
 
 ---
 
@@ -457,11 +457,11 @@ Launch a usable learning platform.
 
 ## Features
 
-* Multiplayer
-* RPG engine
-* Virtual worlds
-* Team competitions
-* Story campaigns
+- Multiplayer
+- RPG engine
+- Virtual worlds
+- Team competitions
+- Story campaigns
 
 ---
 
@@ -488,11 +488,11 @@ Launch a usable learning platform.
 
 ## Requirements
 
-* REST + GraphQL hybrid
-* Versioned APIs
-* OpenAPI documentation
-* Rate limiting
-* Audit logging
+- REST + GraphQL hybrid
+- Versioned APIs
+- OpenAPI documentation
+- Rate limiting
+- Audit logging
 
 ---
 
@@ -516,10 +516,10 @@ GitHub
 
 ## Environments
 
-* Local
-* Development
-* Staging
-* Production
+- Local
+- Development
+- Staging
+- Production
 
 ---
 
@@ -540,10 +540,10 @@ GitHub
 
 AI answers must be:
 
-* curriculum aligned
-* mathematically correct
-* age appropriate
-* explainable
+- curriculum aligned
+- mathematically correct
+- age appropriate
+- explainable
 
 ---
 
@@ -551,10 +551,10 @@ AI answers must be:
 
 Every AI response should pass:
 
-* curriculum validation
-* equation validation
-* hallucination filtering
-* educational quality checks
+- curriculum validation
+- equation validation
+- hallucination filtering
+- educational quality checks
 
 ---
 
@@ -564,22 +564,22 @@ Every AI response should pass:
 
 ## South Africa
 
-* POPIA compliance
+- POPIA compliance
 
 ## International Expansion
 
-* GDPR
-* COPPA
-* FERPA
+- GDPR
+- COPPA
+- FERPA
 
 ---
 
 # Data Protection
 
-* Encrypted storage
-* Secure AI prompts
-* Child safety controls
-* Role permissions
+- Encrypted storage
+- Secure AI prompts
+- Child safety controls
+- Role permissions
 
 ---
 
@@ -589,10 +589,10 @@ Every AI response should pass:
 
 ## Must Support
 
-* Low-end Android devices
-* Slow internet
-* Offline access
-* Reduced data usage
+- Low-end Android devices
+- Slow internet
+- Offline access
+- Reduced data usage
 
 This is extremely important for African markets.
 
@@ -618,11 +618,11 @@ gomaths/
 
 # Design Philosophy
 
-* child-friendly
-* visually engaging
-* minimal cognitive overload
-* colorful but educational
-* gamified without distraction
+- child-friendly
+- visually engaging
+- minimal cognitive overload
+- colorful but educational
+- gamified without distraction
 
 ---
 
@@ -630,15 +630,15 @@ gomaths/
 
 ## Younger Students
 
-* large touch areas
-* voice guidance
-* visual explanations
+- large touch areas
+- voice guidance
+- visual explanations
 
 ## Older Students
 
-* speed
-* efficiency
-* exam-focused workflows
+- speed
+- efficiency
+- exam-focused workflows
 
 ---
 
@@ -648,15 +648,15 @@ gomaths/
 
 ## B2C
 
-* Monthly subscriptions
-* Premium AI tutoring
-* Exam prep packs
+- Monthly subscriptions
+- Premium AI tutoring
+- Exam prep packs
 
 ## B2B
 
-* School licensing
-* Department partnerships
-* Teacher analytics
+- School licensing
+- Department partnerships
+- Teacher analytics
 
 ---
 
@@ -670,11 +670,11 @@ This is the strongest differentiator.
 
 ### Advantages
 
-* CAPS alignment
-* local examples
-* multilingual support
-* affordable pricing
-* offline-first architecture
+- CAPS alignment
+- local examples
+- multilingual support
+- affordable pricing
+- offline-first architecture
 
 ---
 
@@ -698,21 +698,21 @@ This is the strongest differentiator.
 
 ### Essential MVP
 
-* AI Solver
-* AI Tutor
-* CAPS curriculum
-* Lessons
-* Quizzes
-* Analytics
+- AI Solver
+- AI Tutor
+- CAPS curriculum
+- Lessons
+- Quizzes
+- Analytics
 
 ---
 
 # Delay These
 
-* RPG multiplayer
-* advanced 3D simulations
-* full STEM universe
-* social gaming
+- RPG multiplayer
+- advanced 3D simulations
+- full STEM universe
+- social gaming
 
 ---
 
@@ -720,20 +720,20 @@ This is the strongest differentiator.
 
 # Technical KPIs
 
-* OCR accuracy
-* AI response accuracy
-* app performance
-* retention rate
-* lesson completion rate
+- OCR accuracy
+- AI response accuracy
+- app performance
+- retention rate
+- lesson completion rate
 
 ---
 
 # Educational KPIs
 
-* student improvement
-* mastery progression
-* engagement duration
-* exam pass improvement
+- student improvement
+- mastery progression
+- engagement duration
+- exam pass improvement
 
 ---
 
@@ -743,16 +743,16 @@ This is the strongest differentiator.
 
 Do NOT architect GoMaths as:
 
-* a simple mobile app
-* a school portal
-* or a single AI chatbot
+- a simple mobile app
+- a school portal
+- or a single AI chatbot
 
 Architect it as:
 
-* a scalable AI learning ecosystem
-* with modular services
-* independent AI pipelines
-* and curriculum intelligence at its core.
+- a scalable AI learning ecosystem
+- with modular services
+- independent AI pipelines
+- and curriculum intelligence at its core.
 
 The long-term value of GoMaths will come from:
 
@@ -766,6 +766,6 @@ The biggest moat will not be the OCR scanner or the RPG system.
 
 The biggest moat will be:
 
-* localized educational intelligence,
-* learning data,
-* and personalized AI-driven mathematics mastery for African learners.
+- localized educational intelligence,
+- learning data,
+- and personalized AI-driven mathematics mastery for African learners.
