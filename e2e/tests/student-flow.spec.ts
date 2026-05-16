@@ -6,19 +6,24 @@ test.beforeEach(async ({ page }) => {
 });
 
 /**
- * Click a tappable element by its visible label.
+ * Click a tappable element by its accessible name.
  *
- * react-native-web renders our `Button` component as a Pressable with
- * `accessibilityRole="button"`, but when wrapped in expo-router's
- * `<Link asChild>` the resulting DOM ends up with `role="link"` (or
- * something unpredictable depending on Slot prop merge order). Rather
- * than couple the test to which role wins, we click by label text.
+ * react-native-web maps Pressables to different roles depending on
+ * context: `accessibilityRole="button"` becomes `role="button"`, but
+ * the same Pressable wrapped in expo-router's `<Link asChild>` ends up
+ * with `role="link"` thanks to Slot's prop merge. The grade-picker
+ * uses `accessibilityRole="radio"`. Match all three so the tap works
+ * regardless of which wrapping won.
  *
- * `.first()` so we don't fail if the label appears in multiple places
- * on the same screen — the user-visible action is always the first one.
+ * The Pressable wrapper is the right click target — clicking the inner
+ * Text trips Playwright's visibility check because the Text's bounding
+ * box can collapse below the actionability threshold on RN-web.
  */
-async function tapByLabel(page: Page, label: RegExp | string): Promise<void> {
-  await page.getByText(label).first().click();
+async function tapByLabel(page: Page, label: string | RegExp): Promise<void> {
+  const button = page.getByRole("button", { name: label });
+  const link = page.getByRole("link", { name: label });
+  const radio = page.getByRole("radio", { name: label });
+  await button.or(link).or(radio).first().click();
 }
 
 test("happy path: register → topic → lesson → practice → chat with Maya", async ({ page }) => {
