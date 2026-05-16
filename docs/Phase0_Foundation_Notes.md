@@ -35,14 +35,14 @@ reproducible.
   with the real parental-consent flow, curriculum browse, lesson view
   (KaTeX in WebView), practice with SymPy-backed checking, streaming
   tutor chat with Maya, scan solver, progress, conversations. New
-  bundle ID: `co.za.gomaths.v2.student`. Pre-release banner gated on
+  bundle ID: `com.gomaths.mathai`. Pre-release banner gated on
   `EXPO_PUBLIC_PREVIEW_BANNER=1`.
 - **`@gomaths/parent`** — login + push registration + a real
   dashboard fetching `/api/parents/me/children` with pull-to-refresh.
-  Bundle: `co.za.gomaths.v2.parent`.
+  Bundle: `com.gomaths.mathai.parent`.
 - **`@gomaths/teacher`** — skeleton that boots: login + placeholder
   home. Teacher-scoped backend endpoints are the next chunk.
-  Bundle: `co.za.gomaths.v2.teacher`.
+  Bundle: `com.gomaths.mathai.teacher`.
 - **`apps/tutor/`, `apps/school/`, `apps/admin/`** — README stubs.
 
 ### Services (`services/`)

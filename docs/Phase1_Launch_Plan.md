@@ -9,7 +9,7 @@
 > multiple SA schools under MOU today, with apps live in both stores.
 > This plan covers the **v2 rebuild** on a clean stack: new tech
 > (Expo + NestJS + AI services + SymPy validation), new AWS account,
-> new app store listings (`co.za.gomaths.v2.*`), and a new database
+> new app store listings under the `com.gomaths.mathai*` namespace, and a new database
 > with **no migration of v1 data**. Existing schools and learners
 > re-onboard onto v2 when each is cut over. v1 continues to run in
 > parallel until each school has migrated. See ADR-007 for the
@@ -311,7 +311,7 @@ v2 is ready to cut over the first school when:
 - All four core apps (Student, Parent, Teacher, School Admin) shipped
   to their target platforms with feature scope met for that school's
   needs (which may be narrower than the full plan above).
-- New app store listings live under `co.za.gomaths.v2.*`.
+- New app store listings live under the `com.gomaths.mathai*` namespace (student: `com.gomaths.mathai`; parent / teacher use `.parent` / `.teacher` suffixes).
 - Cutover plan signed off with the chosen school: onboarding session
   scheduled, learner-comms drafted, support coverage for the first
   two weeks staffed.

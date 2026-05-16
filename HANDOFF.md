@@ -4,8 +4,8 @@ You're picking up a **v2 rebuild** of GoMaths. The v1 product has been
 running for 10+ years, is live in both app stores under
 `co.za.gomaths.*`, has MOUs with South African schools, and continues
 to serve learners while this rebuild ships. v2 is a clean-slate
-replacement on a new tech stack with new bundle IDs
-(`co.za.gomaths.v2.*`), a new AWS account, and a new database — **no
+replacement on a new tech stack with new bundle IDs under the
+`com.gomaths.mathai*` namespace, a new AWS account, and a new database — **no
 data or user migration** from v1. Existing schools and learners
 re-onboard onto v2 when it's ready.
 
@@ -285,8 +285,9 @@ Two strands run in parallel from here:
    but isn't real. Don't show the scan-solver to a school until
    MathPix is plumbed.
 
-5. **v1 → v2 cutover is unengineered.** Bundle IDs are new
-   (`co.za.gomaths.v2.*`), so v2 ships as separate apps in the stores —
+5. **v1 → v2 cutover is unengineered.** Bundle IDs are new (student:
+   `com.gomaths.mathai`; parent / teacher under `com.gomaths.mathai.*`),
+   so v2 ships as separate apps in the stores —
    v1 stays installed on learners' phones. The plan to migrate
    schools (comms, onboarding, parallel-running window, v1 sunset
    date) is a product/ops job, not engineering. Block onboarding the

@@ -195,9 +195,11 @@ ADR pins down:
 **Clean slate. No migration of v1 data, infrastructure, or store
 listings.**
 
-- **Bundle IDs:** new under `co.za.gomaths.v2.*` (student, parent,
-  teacher, …). v2 ships as separate apps in both stores; v1 stays
-  installed on existing devices until each school cuts over.
+- **Bundle IDs:** new under the `com.gomaths.mathai*` namespace —
+  student app is `com.gomaths.mathai`; parent and teacher use the
+  `.parent` / `.teacher` suffixes. v2 ships as separate apps in both
+  stores; v1 stays installed on existing devices until each school
+  cuts over.
 - **AWS account:** new account, separate from anything v1 uses. Same
   region (`af-south-1`) per ADR-002.
 - **Database:** new Postgres. No v1 data is imported. Schools and

@@ -65,17 +65,17 @@ across the two.
 ### Apple
 
 v2 ships under the **same Apple Developer Team** as v1, with **new
-bundle IDs** (`co.za.gomaths.v2.*`) so v2 lives as separate listings
-in the App Store alongside v1. Existing v1 listings stay published
-until each school's cutover is complete.
+bundle IDs** under the `com.gomaths.mathai*` namespace so v2 lives as
+separate listings in the App Store alongside v1. Existing v1 listings
+stay published until each school's cutover is complete.
 
 | Field                                | Value                                                                        |
 | ------------------------------------ | ---------------------------------------------------------------------------- |
 | Apple Developer Team ID              | `(fill in — same team as v1)`                                                |
 | Apple Developer Program enrollment   | `(fill in — typically a 12-month renewal)`                                   |
-| Bundle identifier — Student app (v2) | `co.za.gomaths.v2.student`                                                   |
-| Bundle identifier — Parent app (v2)  | `co.za.gomaths.v2.parent`                                                    |
-| Bundle identifier — Teacher app (v2) | `co.za.gomaths.v2.teacher`                                                   |
+| Bundle identifier — Student app (v2) | `com.gomaths.mathai`                                                         |
+| Bundle identifier — Parent app (v2)  | `com.gomaths.mathai.parent`                                                  |
+| Bundle identifier — Teacher app (v2) | `com.gomaths.mathai.teacher`                                                 |
 | App Store Connect admin contact      | `(fill in)`                                                                  |
 | Apple Family / Kids category status  | Required for the Student app — see Apple's "Kids Category" review guidelines |
 
@@ -84,9 +84,9 @@ until each school's cutover is complete.
 | Field                            | Value                                                        |
 | -------------------------------- | ------------------------------------------------------------ |
 | Play Console account             | `(fill in — same account as v1)`                             |
-| Package — Student app (v2)       | `co.za.gomaths.v2.student`                                   |
-| Package — Parent app (v2)        | `co.za.gomaths.v2.parent`                                    |
-| Package — Teacher app (v2)       | `co.za.gomaths.v2.teacher`                                   |
+| Package — Student app (v2)       | `com.gomaths.mathai`                                         |
+| Package — Parent app (v2)        | `com.gomaths.mathai.parent`                                  |
+| Package — Teacher app (v2)       | `com.gomaths.mathai.teacher`                                 |
 | Designed for Families enrollment | Required for the Student app                                 |
 | Play Console admin contact       | `(fill in)`                                                  |
 | Upload key keystore              | `(see AWS Secrets Manager: gomaths-v2/play/upload-keystore)` |
