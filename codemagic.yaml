@@ -1,0 +1,356 @@
+## Codemagic CI/CD configuration for the GoMaths monorepo.
+##
+## Six workflows: one per (app x platform).
+##   - {student,parent,teacher}-ios     -> .ipa  -> TestFlight
+##   - {student,parent,teacher}-android -> .aab + .apk -> Play Internal track
+##
+## All workflows expect these one-time setups in the Codemagic UI
+## (see docs/codemagic-setup.md for click-by-click instructions):
+##   * App Store Connect API key uploaded and referenced as `app_store_connect`
+##     integration name `gomaths_appstore`.
+##   * Android keystores uploaded with these reference names:
+##       gomaths_student_keystore, gomaths_parent_keystore, gomaths_teacher_keystore
+##   * Google Play service account JSON stored in env group
+##     `google_play_credentials` (var name `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`).
+
+definitions:
+  instance_ios: &instance_ios
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+  instance_android: &instance_android
+    instance_type: linux_x2
+    max_build_duration: 60
+
+  cache_ios: &cache_ios
+    cache_paths:
+      - $HOME/Library/Caches/CocoaPods
+      - $HOME/.gradle/caches
+      - $CM_BUILD_DIR/node_modules
+      - $HOME/.pnpm-store
+
+  cache_android: &cache_android
+    cache_paths:
+      - $HOME/.gradle/caches
+      - $HOME/.gradle/wrapper
+      - $CM_BUILD_DIR/node_modules
+      - $HOME/.pnpm-store
+
+  env_node: &env_node
+    node: 20.10.0
+
+  env_xcode: &env_xcode
+    xcode: 16.0
+    cocoapods: default
+
+  ## Shared script blocks.
+  scripts:
+    setup_monorepo: &setup_monorepo
+      name: Install pnpm and workspace dependencies
+      script: |
+        bash "$CM_BUILD_DIR/scripts/codemagic/setup-monorepo.sh"
+
+    set_build_number_ios: &set_build_number_ios
+      name: Set iOS build number from Codemagic counter
+      script: |
+        cd "$CM_BUILD_DIR/apps/$APP_NAME/ios"
+        agvtool new-version -all "$(($BUILD_NUMBER + 1000))"
+
+    set_build_number_android: &set_build_number_android
+      name: Set Android versionCode from Codemagic counter
+      script: |
+        # Append/override versionCode via gradle.properties so Expo's default
+        # generated build.gradle picks it up at assembly time.
+        echo "VERSION_CODE=$(($BUILD_NUMBER + 1000))" >> "$CM_BUILD_DIR/apps/$APP_NAME/android/gradle.properties"
+
+workflows:
+  ## ------------------------------------------------------------------ student
+  student-ios:
+    name: Student · iOS · TestFlight
+    <<: [*instance_ios, *cache_ios]
+    integrations:
+      app_store_connect: gomaths_appstore
+    environment:
+      <<: *env_xcode
+      node: 20.10.0
+      groups:
+        - app_store_credentials
+      vars:
+        APP_NAME: student
+        BUNDLE_ID: com.gomaths.mathai
+        APP_STORE_APPLE_ID: # fill in once the app exists in App Store Connect
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.gomaths.mathai
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "student-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + CocoaPods
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-ios.sh" student
+      - *set_build_number_ios
+      - name: Apply provisioning profiles
+        script: |
+          xcode-project use-profiles
+      - name: Build .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - GoMaths Internal
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
+
+  student-android:
+    name: Student · Android · Play Internal
+    <<: [*instance_android, *cache_android]
+    environment:
+      <<: *env_node
+      groups:
+        - google_play_credentials
+      android_signing:
+        - gomaths_student_keystore
+      vars:
+        APP_NAME: student
+        PACKAGE_NAME: com.gomaths.mathai
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "student-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + inject release signing
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-android.sh" student
+      - *set_build_number_android
+      - name: Build .aab (Play Store) and .apk (sideload)
+        script: |
+          cd "$CM_BUILD_DIR/apps/student/android"
+          ./gradlew bundleRelease assembleRelease --no-daemon
+    artifacts:
+      - apps/student/android/app/build/outputs/**/*.aab
+      - apps/student/android/app/build/outputs/**/*.apk
+      - apps/student/android/app/build/outputs/mapping/**/*.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: false
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
+
+  ## ------------------------------------------------------------------- parent
+  parent-ios:
+    name: Parent · iOS · TestFlight
+    <<: [*instance_ios, *cache_ios]
+    integrations:
+      app_store_connect: gomaths_appstore
+    environment:
+      <<: *env_xcode
+      node: 20.10.0
+      groups:
+        - app_store_credentials
+      vars:
+        APP_NAME: parent
+        BUNDLE_ID: com.gomaths.mathai.parent
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.gomaths.mathai.parent
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "parent-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + CocoaPods
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-ios.sh" parent
+      - *set_build_number_ios
+      - name: Apply provisioning profiles
+        script: |
+          xcode-project use-profiles
+      - name: Build .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - GoMaths Internal
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
+
+  parent-android:
+    name: Parent · Android · Play Internal
+    <<: [*instance_android, *cache_android]
+    environment:
+      <<: *env_node
+      groups:
+        - google_play_credentials
+      android_signing:
+        - gomaths_parent_keystore
+      vars:
+        APP_NAME: parent
+        PACKAGE_NAME: com.gomaths.mathai.parent
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "parent-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + inject release signing
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-android.sh" parent
+      - *set_build_number_android
+      - name: Build .aab and .apk
+        script: |
+          cd "$CM_BUILD_DIR/apps/parent/android"
+          ./gradlew bundleRelease assembleRelease --no-daemon
+    artifacts:
+      - apps/parent/android/app/build/outputs/**/*.aab
+      - apps/parent/android/app/build/outputs/**/*.apk
+      - apps/parent/android/app/build/outputs/mapping/**/*.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: false
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
+
+  ## ------------------------------------------------------------------ teacher
+  teacher-ios:
+    name: Teacher · iOS · TestFlight
+    <<: [*instance_ios, *cache_ios]
+    integrations:
+      app_store_connect: gomaths_appstore
+    environment:
+      <<: *env_xcode
+      node: 20.10.0
+      groups:
+        - app_store_credentials
+      vars:
+        APP_NAME: teacher
+        BUNDLE_ID: com.gomaths.mathai.teacher
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.gomaths.mathai.teacher
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "teacher-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + CocoaPods
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-ios.sh" teacher
+      - *set_build_number_ios
+      - name: Apply provisioning profiles
+        script: |
+          xcode-project use-profiles
+      - name: Build .ipa
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - GoMaths Internal
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
+
+  teacher-android:
+    name: Teacher · Android · Play Internal
+    <<: [*instance_android, *cache_android]
+    environment:
+      <<: *env_node
+      groups:
+        - google_play_credentials
+      android_signing:
+        - gomaths_teacher_keystore
+      vars:
+        APP_NAME: teacher
+        PACKAGE_NAME: com.gomaths.mathai.teacher
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "teacher-v*"
+          include: true
+    scripts:
+      - *setup_monorepo
+      - name: Expo prebuild + inject release signing
+        script: |
+          bash "$CM_BUILD_DIR/scripts/codemagic/prebuild-android.sh" teacher
+      - *set_build_number_android
+      - name: Build .aab and .apk
+        script: |
+          cd "$CM_BUILD_DIR/apps/teacher/android"
+          ./gradlew bundleRelease assembleRelease --no-daemon
+    artifacts:
+      - apps/teacher/android/app/build/outputs/**/*.aab
+      - apps/teacher/android/app/build/outputs/**/*.apk
+      - apps/teacher/android/app/build/outputs/mapping/**/*.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: false
+      email:
+        recipients:
+          - mobile@gomaths.com
+        notify:
+          success: true
+          failure: true
