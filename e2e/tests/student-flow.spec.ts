@@ -85,9 +85,11 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await tapByLabel(page, "Next question");
   await expect(page.getByText("All done!").first()).toBeVisible();
 
-  // Back to dashboard, into chat.
-  await page.goBack();
-  await page.goBack();
+  // Back to dashboard, into chat. Two goBacks lands on /topics, not /
+  // (stack at this point is / → /topics → /topic/<id> → /practice/<id>);
+  // navigate to / directly. localStorage keeps the session so the
+  // dashboard renders with the same user.
+  await page.goto("/");
   await tapByLabel(page, "Chat with Maya");
 
   // Send a message; verify Maya's reply streams in and the validated badge appears.
