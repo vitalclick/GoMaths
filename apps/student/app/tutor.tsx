@@ -249,6 +249,7 @@ export default function TutorScreen() {
             />
             {sending ? (
               <Pressable
+                accessibilityRole="button"
                 accessibilityLabel="Stop"
                 onPress={abort}
                 className="h-10 w-10 items-center justify-center rounded-full bg-destructive"
@@ -259,6 +260,7 @@ export default function TutorScreen() {
               </Pressable>
             ) : (
               <Pressable
+                accessibilityRole="button"
                 accessibilityLabel="Send"
                 disabled={!input.trim()}
                 onPress={() => send(input)}
