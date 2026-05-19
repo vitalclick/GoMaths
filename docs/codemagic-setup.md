@@ -2,14 +2,14 @@
 
 `codemagic.yaml` at the repo root drives six workflows:
 
-| Workflow            | Trigger tag         | Output            | Publishes to            |
-| ------------------- | ------------------- | ----------------- | ----------------------- |
-| `student-ios`       | `student-v*`        | `.ipa`            | TestFlight              |
-| `student-android`   | `student-v*`        | `.aab` + `.apk`   | Play **internal** track |
-| `parent-ios`        | `parent-v*`         | `.ipa`            | TestFlight              |
-| `parent-android`    | `parent-v*`         | `.aab` + `.apk`   | Play **internal** track |
-| `teacher-ios`       | `teacher-v*`        | `.ipa`            | TestFlight              |
-| `teacher-android`   | `teacher-v*`        | `.aab` + `.apk`   | Play **internal** track |
+| Workflow          | Trigger tag  | Output          | Publishes to            |
+| ----------------- | ------------ | --------------- | ----------------------- |
+| `student-ios`     | `student-v*` | `.ipa`          | TestFlight              |
+| `student-android` | `student-v*` | `.aab` + `.apk` | Play **internal** track |
+| `parent-ios`      | `parent-v*`  | `.ipa`          | TestFlight              |
+| `parent-android`  | `parent-v*`  | `.aab` + `.apk` | Play **internal** track |
+| `teacher-ios`     | `teacher-v*` | `.ipa`          | TestFlight              |
+| `teacher-android` | `teacher-v*` | `.aab` + `.apk` | Play **internal** track |
 
 The YAML and helper scripts (`scripts/codemagic/*.sh`) handle everything that can
 be checked in. The rest — API keys, certificates, keystores — has to be
@@ -32,7 +32,7 @@ You only need to do this once; all three iOS workflows share the same key.
    Connect API** → **+** → role **App Manager** → download the `.p8` file.
 2. Codemagic → **Teams** → **Integrations** → **Developer Portal** → **App Store
    Connect** → **Add key**:
-   - **Name in Codemagic:** `gomaths_appstore`  ← must match `codemagic.yaml`
+   - **Name in Codemagic:** `gomaths_appstore` ← must match `codemagic.yaml`
    - **Issuer ID:** from App Store Connect.
    - **Key ID:** from App Store Connect.
    - **Key file:** the downloaded `.p8`.
@@ -67,11 +67,11 @@ keytool -genkeypair -v \
 Upload each in Codemagic → **Teams** → **Code signing identities** →
 **Android keystores** → **+**:
 
-| Reference name              | App     | Alias              |
-| --------------------------- | ------- | ------------------ |
-| `gomaths_student_keystore`  | student | `gomaths-student`  |
-| `gomaths_parent_keystore`   | parent  | `gomaths-parent`   |
-| `gomaths_teacher_keystore`  | teacher | `gomaths-teacher`  |
+| Reference name             | App     | Alias             |
+| -------------------------- | ------- | ----------------- |
+| `gomaths_student_keystore` | student | `gomaths-student` |
+| `gomaths_parent_keystore`  | parent  | `gomaths-parent`  |
+| `gomaths_teacher_keystore` | teacher | `gomaths-teacher` |
 
 Reference names must match the `android_signing:` entries in `codemagic.yaml`
 exactly. Codemagic injects `CM_KEYSTORE_PATH` / `CM_KEYSTORE_PASSWORD` /
