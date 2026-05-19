@@ -76,7 +76,10 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
 
   // Practice screen shows the first question.
   await expect(page.getByText("2*x + 5 = 13").first()).toBeVisible();
-  await page.getByPlaceholder(/your answer/i).fill("x = 4");
+  // "Your answer" is the label rendered as a sibling <Text> above the
+  // input; the TextInput's actual placeholder is the example value
+  // ("e.g. x = 4") — match on that instead.
+  await page.getByPlaceholder(/e\.g\./i).fill("x = 4");
   await tapByLabel(page, "Check answer");
   await expect(page.getByText(/^Correct$/).first()).toBeVisible();
   await tapByLabel(page, "Next question");
