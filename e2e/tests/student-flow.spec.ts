@@ -47,18 +47,21 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await tapByLabel(page, "Grade 9");
   await tapByLabel(page, "Create account");
 
-  // After register, expo-router does router.replace("/") which
-  // updates the URL but on web keeps the /register screen mounted
-  // underneath the / screen for a tick. Wait for the URL to actually
-  // settle on "/" before asserting dashboard visibility — otherwise
-  // the home Text exists in DOM but is hidden by the /register layer.
+  // After register, expo-router does router.replace("/") which updates
+  // the URL but on web react-native-screens keeps the /register screen
+  // mounted on top of the / screen and never transfers focus — the
+  // dashboard's "Hi, Test Learner" Text is in the DOM but its containing
+  // screen has display:none for the full timeout. Waiting on URL alone
+  // (previous attempt) didn't help: URL settled to "/" while the stack
+  // focus didn't. Force a hard navigation so the dashboard renders from a
+  // fresh page; the auth session is persisted in localStorage, so the
+  // AuthProvider re-hydrates and we land on the signed-in home directly.
   await page.waitForURL((url) => url.pathname === "/" || url.pathname === "", {
     timeout: 10_000,
   });
+  await page.goto("/");
 
-  // Dashboard appears with the user's name. `.first()` because the
-  // greeting can be rendered into more than one DOM node by Expo
-  // Router's transition layer.
+  // Dashboard appears with the user's name.
   await expect(page.getByText(/Hi, Test Learner/i).first()).toBeVisible();
 
   // Browse topics → tap the linear equations topic.
@@ -73,15 +76,20 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
 
   // Practice screen shows the first question.
   await expect(page.getByText("2*x + 5 = 13").first()).toBeVisible();
-  await page.getByPlaceholder(/your answer/i).fill("x = 4");
+  // "Your answer" is the label rendered as a sibling <Text> above the
+  // input; the TextInput's actual placeholder is the example value
+  // ("e.g. x = 4") — match on that instead.
+  await page.getByPlaceholder(/e\.g\./i).fill("x = 4");
   await tapByLabel(page, "Check answer");
   await expect(page.getByText(/^Correct$/).first()).toBeVisible();
   await tapByLabel(page, "Next question");
   await expect(page.getByText("All done!").first()).toBeVisible();
 
-  // Back to dashboard, into chat.
-  await page.goBack();
-  await page.goBack();
+  // Back to dashboard, into chat. Two goBacks lands on /topics, not /
+  // (stack at this point is / → /topics → /topic/<id> → /practice/<id>);
+  // navigate to / directly. localStorage keeps the session so the
+  // dashboard renders with the same user.
+  await page.goto("/");
   await tapByLabel(page, "Chat with Maya");
 
   // Send a message; verify Maya's reply streams in and the validated badge appears.
