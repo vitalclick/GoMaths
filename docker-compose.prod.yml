@@ -1,0 +1,231 @@
+# Production docker-compose for a single-VPS deployment.
+#
+# Topology:
+#   Internet ─► caddy (80/443, auto-TLS via Let's Encrypt)
+#                  │
+#                  └─► backend:8080 (the only service exposed publicly)
+#                         │
+#                         ├─► tutor:8080      (internal, called per-message)
+#                         ├─► solver:8080     (internal, called on image scan)
+#                         ├─► validation:8080 (internal, called per LLM reply)
+#                         ├─► postgres:5432   (internal)
+#                         └─► redis:6379      (internal)
+#
+# All non-caddy services live on a private docker network and have no
+# host-port mapping — postgres, redis, and the AI services are not
+# reachable from the public internet.
+#
+# Build context for both Dockerfiles is the repo root (they need
+# pnpm-workspace.yaml, packages/, and curriculum-data/).
+#
+# First deploy:
+#   cp infrastructure/vps/.env.production.example .env.production
+#   # edit .env.production — fill in every value
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#
+# Subsequent deploys (after `git pull`):
+#   docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+#   docker image prune -f
+
+name: gomaths
+
+x-restart: &restart
+  restart: unless-stopped
+
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    <<: [*restart, *logging]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./infrastructure/vps/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    depends_on:
+      backend:
+        condition: service_started
+    networks: [gomaths]
+
+  postgres:
+    image: postgres:16-alpine
+    <<: [*restart, *logging]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [gomaths]
+
+  redis:
+    image: redis:7-alpine
+    <<: [*restart, *logging]
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+        "--save",
+        "60",
+        "1",
+        "--appendonly",
+        "yes",
+        "--maxmemory",
+        "256mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [gomaths]
+
+  backend:
+    build:
+      context: .
+      dockerfile: services/backend-api/Dockerfile
+    <<: [*restart, *logging]
+    environment:
+      # Computed from the local services above.
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379
+      # AI services are reachable only on the private docker network.
+      TUTOR_SERVICE_URL: http://tutor:8080
+      SOLVER_SERVICE_URL: http://solver:8080
+      VALIDATION_SERVICE_URL: http://validation:8080
+      # JWT + consent secrets, third-party API keys, etc.
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      PARENTAL_CONSENT_INVITE_SECRET: ${PARENTAL_CONSENT_INVITE_SECRET}
+      PARENTAL_CONSENT_RECEIPT_SECRET: ${PARENTAL_CONSENT_RECEIPT_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.1}
+      SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE:-0.1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      tutor:
+        condition: service_started
+      solver:
+        condition: service_started
+      validation:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks: [gomaths]
+
+  tutor:
+    build:
+      context: .
+      dockerfile: services/ai-services/Dockerfile
+      args:
+        SERVICE: tutor
+    <<: [*restart, *logging]
+    environment:
+      TUTOR_PROVIDER: ${TUTOR_PROVIDER:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      TUTOR_MODEL: ${TUTOR_MODEL:-}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [gomaths]
+
+  solver:
+    build:
+      context: .
+      dockerfile: services/ai-services/Dockerfile
+      args:
+        SERVICE: solver
+    <<: [*restart, *logging]
+    environment:
+      SOLVER_OCR_PROVIDER: ${SOLVER_OCR_PROVIDER:-}
+      MATHPIX_APP_ID: ${MATHPIX_APP_ID:-}
+      MATHPIX_APP_KEY: ${MATHPIX_APP_KEY:-}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [gomaths]
+
+  validation:
+    build:
+      context: .
+      dockerfile: services/ai-services/Dockerfile
+      args:
+        SERVICE: validation
+    <<: [*restart, *logging]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [gomaths]
+
+networks:
+  gomaths:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  caddy-data:
+  caddy-config:
