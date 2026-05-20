@@ -1,0 +1,38 @@
+# Caddy reverse proxy for the GoMaths VPS deployment.
+#
+# Caddy handles ACME (Let's Encrypt) automatically: it requests + renews
+# the TLS certificate for $API_DOMAIN as soon as it starts, as long as
+# the domain's A/AAAA records point at this VPS and ports 80/443 are
+# open.
+#
+# Only the backend is exposed; the AI services, postgres, and redis
+# stay on the private docker network.
+
+{
+	# Global options
+	email {$ACME_EMAIL}
+	# Uncomment for testing against the staging CA (avoids rate limits
+	# while you're iterating on DNS / firewall config):
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	# Forward real client IP to the backend (NestJS reads X-Forwarded-For).
+	reverse_proxy backend:8080 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# Sensible defaults — block obvious probes for WordPress / phpMyAdmin / etc.
+	@blocked {
+		path /wp-* /xmlrpc.php /.env /.git/* /phpmyadmin*
+	}
+	respond @blocked 404
+
+	log {
+		output stdout
+		format console
+	}
+}
