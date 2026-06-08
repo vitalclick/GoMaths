@@ -23,7 +23,7 @@ half a day.
 - [ ] **Google Play Console** account — $25 one-time, instant
 - [ ] **Codemagic** account — sign up with GitHub
 - [ ] **Sentry** account (optional but recommended) — create two projects: `gomaths-backend` (Node) and `gomaths-mobile` (React Native)
-- [ ] **Anthropic** API key (optional — without it the tutor uses a mock provider)
+- [ ] **OpenAI** or **Anthropic** API key (optional — tutor uses whichever is provided; if both, OpenAI wins; if neither, a mock provider returns canned replies)
 - [ ] **MathPix** account (optional — without it the OCR solver uses a mock)
 
 ---

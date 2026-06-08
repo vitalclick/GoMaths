@@ -39,24 +39,60 @@ def test_mock_provider_stream_yields_chunks_then_done() -> None:
     assert accumulated == final[0].final.text
 
 
-def test_get_provider_defaults_to_mock(monkeypatch: pytest.MonkeyPatch) -> None:
+def _clear_provider_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("TUTOR_PROVIDER", raising=False)
-    p = get_provider()
-    assert p.name == "mock"
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+
+
+def test_get_provider_defaults_to_mock_when_nothing_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_provider_env(monkeypatch)
+    assert get_provider().name == "mock"
 
 
 def test_get_provider_anthropic_requires_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_provider_env(monkeypatch)
     monkeypatch.setenv("TUTOR_PROVIDER", "anthropic")
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
         get_provider()
 
 
 def test_get_provider_openai_requires_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_provider_env(monkeypatch)
     monkeypatch.setenv("TUTOR_PROVIDER", "openai")
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
         get_provider()
+
+
+def test_get_provider_auto_prefers_openai_when_both_keys_present(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_provider_env(monkeypatch)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-fallback")
+
+    import openai
+
+    monkeypatch.setattr(openai, "OpenAI", lambda **_: None)
+    assert get_provider().name == "openai"
+
+
+def test_get_provider_auto_falls_back_to_anthropic(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_provider_env(monkeypatch)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-fallback")
+
+    import anthropic
+
+    monkeypatch.setattr(anthropic, "Anthropic", lambda **_: None)
+    assert get_provider().name == "anthropic"
+
+
+def test_get_provider_auto_value_behaves_like_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_provider_env(monkeypatch)
+    monkeypatch.setenv("TUTOR_PROVIDER", "auto")
+    assert get_provider().name == "mock"
 
 
 # ─── Anthropic provider (with the SDK monkeypatched) ──────────────────

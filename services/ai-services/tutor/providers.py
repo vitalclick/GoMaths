@@ -4,19 +4,24 @@ LLM provider abstraction.
 Three implementations:
 
   - MockProvider — deterministic, no network. Used in tests and as the
-    fallback when no API key is configured. Keyword-driven canned replies.
+    final fallback when nothing else is configured.
   - AnthropicProvider — production. Uses prompt caching on the system
     prompt + curriculum context for cost efficiency.
   - OpenAIProvider — alternative production path. Same interface.
 
-Choose via env:
-    TUTOR_PROVIDER=anthropic   (recommended)
-    TUTOR_PROVIDER=openai
-    TUTOR_PROVIDER=mock        (default; no API key required)
+Selection via env:
+
+    TUTOR_PROVIDER=openai        # force OpenAI    (errors if no OPENAI_API_KEY)
+    TUTOR_PROVIDER=anthropic     # force Anthropic (errors if no ANTHROPIC_API_KEY)
+    TUTOR_PROVIDER=mock          # force mock
+    TUTOR_PROVIDER=auto / unset  # auto-detect by which key is present:
+                                 #   OPENAI_API_KEY    -> OpenAI
+                                 #   ANTHROPIC_API_KEY -> Anthropic
+                                 #   neither           -> mock
 
 Production keys:
-    ANTHROPIC_API_KEY=sk-ant-...
     OPENAI_API_KEY=sk-...
+    ANTHROPIC_API_KEY=sk-ant-...
 
 The provider abstraction is intentionally narrow: a `complete(messages)`
 call that returns text. Streaming, tool use, and multi-turn caching state
@@ -313,8 +318,19 @@ class OpenAIProvider:
 
 
 def get_provider() -> LLMProvider:
-    """Return the configured provider. Defaults to MockProvider."""
-    choice = os.environ.get("TUTOR_PROVIDER", "mock").lower()
+    """Return the configured provider.
+
+    Explicit selection via TUTOR_PROVIDER (=openai|anthropic|mock) wins and
+    errors if the matching key is missing. Otherwise (unset or =auto) the
+    cascade is: OPENAI_API_KEY -> ANTHROPIC_API_KEY -> MockProvider.
+    """
+    choice = os.environ.get("TUTOR_PROVIDER", "auto").lower()
+
+    if choice == "openai":
+        key = os.environ.get("OPENAI_API_KEY")
+        if not key:
+            raise RuntimeError("TUTOR_PROVIDER=openai requires OPENAI_API_KEY")
+        return OpenAIProvider(api_key=key)
 
     if choice == "anthropic":
         key = os.environ.get("ANTHROPIC_API_KEY")
@@ -322,10 +338,16 @@ def get_provider() -> LLMProvider:
             raise RuntimeError("TUTOR_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
         return AnthropicProvider(api_key=key)
 
-    if choice == "openai":
-        key = os.environ.get("OPENAI_API_KEY")
-        if not key:
-            raise RuntimeError("TUTOR_PROVIDER=openai requires OPENAI_API_KEY")
-        return OpenAIProvider(api_key=key)
+    if choice == "mock":
+        return MockProvider()
+
+    # auto / unset / unknown — cascade by which key is present.
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    if openai_key:
+        return OpenAIProvider(api_key=openai_key)
+
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    if anthropic_key:
+        return AnthropicProvider(api_key=anthropic_key)
 
     return MockProvider()
