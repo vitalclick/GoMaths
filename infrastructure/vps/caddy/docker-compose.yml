@@ -1,0 +1,49 @@
+# Shared reverse proxy for every app on this VPS.
+#
+# Caddy terminates TLS for ALL public hostnames and routes by virtual
+# host to the right app container. Each app's containers join the
+# external `web` network (with a known alias) so this Caddy can find
+# them without knowing anything about the app's internal compose
+# topology.
+#
+# Bootstrap (once per VPS):
+#   docker network create web
+#   cp .env.example .env
+#   # edit .env  (ACME_EMAIL)
+#   docker compose up -d
+#
+# After editing Caddyfile (e.g. adding a hostname):
+#   docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
+#   # or, more bluntly:
+#   docker compose restart
+
+name: caddy
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+    networks: [web]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  web:
+    external: true
+
+volumes:
+  caddy-data:
+  caddy-config:

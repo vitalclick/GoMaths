@@ -1,85 +1,128 @@
 # VPS Deployment — GoMaths
 
 Run the entire GoMaths backend stack on a single Ubuntu VPS using Docker
-Compose. Cheapest path to a public HTTPS API URL for TestFlight beta.
+Compose, alongside any other apps you want to host on the same box.
+Cheapest path to a public HTTPS API URL for TestFlight beta.
 
-## What gets deployed
+## Architecture
 
-| Container    | Purpose                            | Exposed?             |
-| ------------ | ---------------------------------- | -------------------- |
-| `caddy`      | Reverse proxy + auto-TLS           | 80 + 443 (public)    |
-| `backend`    | NestJS API                         | internal (via Caddy) |
-| `tutor`      | FastAPI tutor (Anthropic / OpenAI) | internal only        |
-| `solver`     | FastAPI OCR solver (MathPix)       | internal only        |
-| `validation` | FastAPI SymPy validator            | internal only        |
-| `postgres`   | Postgres 16                        | internal only        |
-| `redis`      | Redis 7 (throttling + token cache) | internal only        |
+The VPS uses a **shared reverse proxy** pattern so multiple apps can
+share ports 80/443 and one Caddy instance handles TLS for all of them.
 
-All seven containers fit comfortably in **2 GB of RAM** when idle.
+```
+                  ┌────────────────────────────────────────┐
+                  │           public internet              │
+                  └────────────────────────────────────────┘
+                                    │ 80/443
+                                    ▼
+       ┌────────────────────────────────────────────────────┐
+       │   shared Caddy (infrastructure/vps/caddy/)         │
+       │   - terminates TLS for every public hostname       │
+       │   - reverse-proxies by virtual host                │
+       └────────────────────────────────────────────────────┘
+                                    │ docker network `web`
+        ┌──────────────────────┬────┴─────┬─────────────────────┐
+        ▼                      ▼          ▼                     ▼
+   gomaths-backend       (next-app)   (next-app)            ...
+   (apps join `web`     each on its own private network for
+    with an alias)      its own datastores + sidecars
+```
+
+## What gets deployed (GoMaths only)
+
+| Container    | Purpose                                       | Reachable from |
+| ------------ | --------------------------------------------- | -------------- |
+| `backend`    | NestJS API (alias `gomaths-backend` on `web`) | shared Caddy   |
+| `tutor`      | FastAPI tutor (Anthropic / OpenAI)            | backend only   |
+| `solver`     | FastAPI OCR solver (MathPix)                  | backend only   |
+| `validation` | FastAPI SymPy validator                       | backend only   |
+| `postgres`   | Postgres 16                                   | backend only   |
+| `redis`      | Redis 7 (throttling + token cache)            | backend only   |
+
+The GoMaths stack itself exposes no host ports. The shared Caddy
+project (`infrastructure/vps/caddy/`) owns 80/443 and is the only
+thing publicly reachable.
+
+All six GoMaths containers fit comfortably in **~2 GB of RAM** when idle,
+leaving room for 2–3 more small apps on a 4 GB VPS.
 
 ## Recommended VPS sizing
 
-| Provider      | Plan          | RAM  | Cost     | Notes                            |
-| ------------- | ------------- | ---- | -------- | -------------------------------- |
-| Hetzner       | CX22          | 4 GB | €3.79/mo | Best price/perf; EU/US regions   |
-| DigitalOcean  | Basic 2 GB    | 2 GB | $12/mo   | Tight under load — fine for beta |
-| Vultr         | Cloud Compute | 2 GB | $12/mo   | —                                |
-| AWS Lightsail | 2 GB Linux    | 2 GB | $12/mo   | If your team requires AWS        |
-
-You can run the whole thing on 2 GB but 4 GB gives you headroom for
-Postgres + Redis growth and JVM-style spikes when the Node backend
-compiles its bundle.
+| Provider      | Plan       | RAM  | Cost     | Notes                            |
+| ------------- | ---------- | ---- | -------- | -------------------------------- |
+| Hetzner       | CX22       | 4 GB | €3.79/mo | Best price/perf; EU/US regions   |
+| Hetzner       | CX32       | 8 GB | €6.99/mo | Pick this if hosting 4+ apps     |
+| DigitalOcean  | Basic 2 GB | 2 GB | $12/mo   | Tight under load — fine for beta |
+| AWS Lightsail | 2 GB Linux | 2 GB | $12/mo   | If your team requires AWS        |
 
 ---
 
-## Deployment, end to end
+## First-time setup (once per VPS)
 
 ### 0. Prerequisites
 
-- A VPS with Ubuntu 24.04 LTS (any provider).
-- A domain you control with DNS access (e.g. `gomaths.com`).
-- SSH access to the VPS as root (or sudo-capable user).
+- A VPS with Ubuntu 24.04 LTS.
+- A domain you control with DNS access (`gomaths.co.za`).
+- SSH access to the VPS as root.
 
 ### 1. Bootstrap the VPS
 
-SSH in as root, then run:
+SSH in as root, then:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vitalclick/GoMaths/main/infrastructure/vps/bootstrap.sh | sudo bash
 ```
 
-This installs Docker + Compose, configures UFW (only 22/80/443 open),
-creates a non-root `gomaths` user, enables unattended security updates,
-and disables SSH root login / password auth.
+This installs Docker + Compose, creates the shared `web` docker
+network, configures UFW (22/80/443 only), creates a non-root `gomaths`
+user, enables unattended security updates, and hardens SSH.
 
-### 2. Point DNS at the VPS
-
-In your DNS provider's dashboard, create an A record:
-
-```
-api.yourdomain.com  →  <vps public IP>
-```
-
-Wait for propagation (~1–5 min). Check with `dig api.yourdomain.com`.
-
-### 3. Clone the repo as the app user
+### 2. Start the shared Caddy reverse proxy
 
 ```bash
 ssh gomaths@<vps ip>
 git clone https://github.com/vitalclick/GoMaths.git
-cd GoMaths
+cd GoMaths/infrastructure/vps/caddy
+cp .env.example .env
+$EDITOR .env                # set ACME_EMAIL to a real address
+docker compose up -d
 ```
+
+Verify it's listening:
+
+```bash
+docker compose ps
+ss -ltnp | grep -E ':80|:443'
+```
+
+Caddy is now sitting at port 80/443 ready to terminate TLS for any
+hostname declared in `infrastructure/vps/caddy/Caddyfile`. Right now
+that's just `api.gomaths.co.za`.
+
+### 3. Point DNS at the VPS
+
+Cloudflare → `gomaths.co.za` zone → DNS → Add A record:
+
+```
+api  →  <vps public IP>   (proxy: DNS only / gray cloud)
+```
+
+Verify: `dig +short api.gomaths.co.za` returns the VPS IP.
+
+---
+
+## Deploy GoMaths
 
 ### 4. Create `.env.production`
 
 ```bash
+cd ~/GoMaths
 cp infrastructure/vps/.env.production.example .env.production
 ```
 
-Generate the secrets:
+Generate secrets:
 
 ```bash
-# Inside .env.production, paste the output of each command into the right line.
 openssl rand -base64 32 | tr -d '/+=' | head -c 32  # POSTGRES_PASSWORD
 openssl rand -base64 32 | tr -d '/+=' | head -c 32  # REDIS_PASSWORD
 openssl rand -base64 64 | tr -d '\n'                # JWT_ACCESS_SECRET
@@ -88,14 +131,16 @@ openssl rand -base64 64 | tr -d '\n'                # PARENTAL_CONSENT_INVITE_SE
 openssl rand -base64 64 | tr -d '\n'                # PARENTAL_CONSENT_RECEIPT_SECRET
 ```
 
-Fill in the rest:
+Fill in the rest of `.env.production`:
 
-- `API_DOMAIN=api.yourdomain.com` — must match the DNS record from step 2.
-- `ACME_EMAIL=you@yourdomain.com` — Let's Encrypt expiry notices.
-- `RESEND_API_KEY=re_...` — sign up at resend.com.
-- `EMAIL_FROM=GoMaths <consent@yourdomain.com>` — domain must be verified in Resend.
-- `PUBLIC_APP_URL=https://app.yourdomain.com` — student web SPA URL (placeholder OK for beta).
-- (Optional) `SENTRY_DSN`, `ANTHROPIC_API_KEY`, `MATHPIX_*` — leave blank to use mock providers.
+- `RESEND_API_KEY=re_...`
+- `EMAIL_FROM="GoMaths <consent@gomaths.co.za>"` — domain must be verified in Resend
+- `PUBLIC_APP_URL=https://gomaths.co.za`
+- (Optional) `SENTRY_DSN`, `ANTHROPIC_API_KEY`, `MATHPIX_*`
+
+`API_DOMAIN` and `ACME_EMAIL` are no longer here — they live in
+`infrastructure/vps/caddy/.env` because Caddy owns the public-facing
+config.
 
 ### 5. Start the stack
 
@@ -103,7 +148,7 @@ Fill in the rest:
 docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 ```
 
-First build takes ~5–8 min (cold pnpm install + 4 Docker images). Watch logs:
+First build takes ~5–8 min. Watch logs:
 
 ```bash
 docker compose -f docker-compose.prod.yml logs -f
@@ -119,14 +164,19 @@ tutor-1      | Uvicorn running on http://0.0.0.0:8080
 solver-1     | Uvicorn running on http://0.0.0.0:8080
 backend-1    | prisma:engine ... Applying migration `xxx`
 backend-1    | [Nest] Nest application successfully started
-caddy-1      | certificate obtained successfully
+```
+
+Caddy logs (separate compose project) will show the Let's Encrypt
+challenge succeeding the first time api.gomaths.co.za resolves:
+
+```bash
+docker compose -f infrastructure/vps/caddy/docker-compose.yml logs caddy | grep -i cert
 ```
 
 ### 6. Verify
 
 ```bash
-# From your laptop:
-curl https://api.yourdomain.com/api/health
+curl https://api.gomaths.co.za/api/health
 # {"status":"ok","timestamp":"..."}
 ```
 
@@ -134,22 +184,97 @@ If `/api/health` returns 200, **the backend is live**.
 
 ### 7. Wire the mobile apps
 
-In `apps/{student,parent,teacher}/app.json`, add:
+In each Codemagic workflow's `environment.vars`, or in
+`apps/{student,parent,teacher}/app.json` under `extra`:
 
 ```json
 "extra": {
-  "EXPO_PUBLIC_API_URL": "https://api.yourdomain.com"
+  "EXPO_PUBLIC_API_URL": "https://api.gomaths.co.za"
 }
 ```
 
-Or set them as Codemagic workflow `vars:`. Then tag a build and the
-iOS app will hit your VPS.
+Tag a build — the iOS app will hit your VPS.
+
+---
+
+## Adding another app to this VPS
+
+Once the shared Caddy is up, each new app is a "drop-in" — clone the
+app's repo, make sure its compose file follows the contract below, and
+add one block to the central Caddyfile.
+
+### Contract each new app's compose must follow
+
+1. Give the public-facing container a known **alias on the `web`
+   network**, e.g. `myapp-backend`:
+
+   ```yaml
+   services:
+     backend:
+       networks:
+         myapp-internal: # private network for the app's datastores
+         web:
+           aliases:
+             - myapp-backend # what Caddy will reverse-proxy to
+   ```
+
+2. Declare both networks at the bottom — `web` must be **external**:
+
+   ```yaml
+   networks:
+     myapp-internal:
+       driver: bridge
+     web:
+       external: true
+   ```
+
+3. Do **not** publish ports 80/443 in the app's compose. The shared
+   Caddy owns them.
+
+### Three steps to onboard a new app
+
+```bash
+# 1. Clone the app's repo on the VPS.
+ssh gomaths@<vps ip>
+git clone https://github.com/your-org/otherapp.git
+cd otherapp
+# ... fill in its .env.production ...
+
+# 2. Add a hostname block to the central Caddyfile.
+$EDITOR ~/GoMaths/infrastructure/vps/caddy/Caddyfile
+# Add:
+#   otherapp.example.com {
+#     reverse_proxy otherapp-backend:3000
+#   }
+
+# 3. Reload Caddy + start the new app.
+docker compose -f ~/GoMaths/infrastructure/vps/caddy/docker-compose.yml \
+  exec caddy caddy reload --config /etc/caddy/Caddyfile
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+```
+
+Don't forget to point DNS for the new hostname at the VPS first.
+
+### Resource ceiling
+
+A 4 GB CX22 comfortably hosts GoMaths + 2–3 small apps. Past that,
+upgrade to CX32 (8 GB, €6.99/mo). To prevent one runaway app from OOM-
+killing Postgres, cap memory per service in each app's compose:
+
+```yaml
+services:
+  someapp:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+```
 
 ---
 
 ## Day-2 operations
 
-### Deploy a new version
+### Deploy a new GoMaths version
 
 ```bash
 ssh gomaths@<vps ip>
@@ -159,25 +284,32 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d --bui
 docker image prune -f
 ```
 
-Backend boots run `prisma migrate deploy` automatically — no manual
-migration step.
+Backend boots run `prisma migrate deploy` automatically.
 
 ### Tail logs
 
 ```bash
-# All services
+# GoMaths stack
 docker compose -f docker-compose.prod.yml logs -f
-
 # Just the backend
 docker compose -f docker-compose.prod.yml logs -f backend
+# Shared Caddy (TLS + routing)
+docker compose -f infrastructure/vps/caddy/docker-compose.yml logs -f
 ```
+
+### Reload Caddy after editing Caddyfile
+
+```bash
+docker compose -f infrastructure/vps/caddy/docker-compose.yml \
+  exec caddy caddy reload --config /etc/caddy/Caddyfile
+```
+
+Reload is zero-downtime; restart only if reload fails to apply.
 
 ### Postgres backups
 
 Install the cron entry from `backup.sh` (header has the exact crontab
-line). For off-VPS backups, pipe the gzipped dump to S3 / Backblaze B2
-/ similar — a single-VPS deployment has no inherent redundancy and
-"the box died" recovery starts from the latest off-VPS backup.
+line). For off-VPS backups, pipe the gzipped dump to S3 / Backblaze B2.
 
 ### Rotate a secret
 
@@ -187,8 +319,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 # Compose recreates only containers whose env changed.
 ```
 
-JWT secrets cannot be rotated without invalidating existing sessions —
-users will need to log in again.
+JWT secrets cannot be rotated without invalidating existing sessions.
 
 ### Shell into a container
 
@@ -198,41 +329,38 @@ docker compose -f docker-compose.prod.yml exec postgres psql -U gomaths gomaths
 docker compose -f docker-compose.prod.yml exec redis redis-cli -a "$REDIS_PASSWORD"
 ```
 
-### Stop everything
+### Stop the GoMaths stack
 
 ```bash
 docker compose -f docker-compose.prod.yml down            # stops, keeps data
-docker compose -f docker-compose.prod.yml down --volumes  # also wipes Postgres + Redis (destructive)
+docker compose -f docker-compose.prod.yml down --volumes  # also wipes data (destructive)
 ```
+
+The shared Caddy keeps running — other apps on the VPS are unaffected.
 
 ---
 
 ## Troubleshooting
 
-| Symptom                                          | Likely cause                                        | Fix                                                                                                                                  |
-| ------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `caddy` logs show `failed to obtain certificate` | DNS not pointing at VPS yet, or port 80 blocked     | Verify A record; check `sudo ufw status`                                                                                             |
-| `backend` exits with `P1001 can't reach DB`      | Postgres still booting on first start               | Wait; the `depends_on: condition: service_healthy` should handle it. If persistent, check `POSTGRES_PASSWORD` matches `DATABASE_URL` |
-| `backend` exits with `Missing required env: ...` | A required env var in `.env.production` is blank    | Fill it in and `up -d` again                                                                                                         |
-| Resend rejects emails with `domain not verified` | `EMAIL_FROM` domain not yet verified in Resend      | Add DKIM + SPF DNS records from Resend dashboard; wait 5–10 min                                                                      |
-| Out-of-memory kills                              | 2 GB VPS under sustained load                       | Upgrade to 4 GB plan, or set `--maxmemory` lower on redis                                                                            |
-| Disk fills up                                    | Old Docker images / postgres WAL / backup retention | `docker image prune -af`, `docker volume ls`, check `/var/backups/gomaths`                                                           |
+| Symptom                                          | Likely cause                                                         | Fix                                                                                                                 |
+| ------------------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `network web not found` when starting an app     | Caddy compose project wasn't started, or `web` network was deleted   | `docker network create web && docker compose -f infrastructure/vps/caddy/docker-compose.yml up -d`                  |
+| `caddy` logs show `failed to obtain certificate` | DNS not pointing at VPS yet, port 80 blocked, or Cloudflare proxy on | Verify A record, check `sudo ufw status`, switch Cloudflare proxy to "DNS only" (gray cloud)                        |
+| Caddy returns 502 Bad Gateway                    | App container's network alias on `web` doesn't match the Caddyfile   | `docker inspect <container>` and confirm `Networks.web.Aliases` includes the alias the Caddyfile reverse-proxies to |
+| `backend` exits with `P1001 can't reach DB`      | Postgres still booting on first start                                | Wait; the `depends_on: condition: service_healthy` should handle it                                                 |
+| Resend rejects emails with `domain not verified` | `EMAIL_FROM` domain not yet verified in Resend                       | Add DKIM + SPF DNS records from Resend dashboard; wait 5–10 min                                                     |
+| Out-of-memory kills                              | VPS RAM exhausted                                                    | Upgrade plan, or cap per-service memory with `deploy.resources.limits` in each app's compose                        |
+| Disk fills up                                    | Old Docker images / postgres WAL / backup retention                  | `docker image prune -af`, check `/var/backups/gomaths`                                                              |
 
 ---
 
 ## What this setup does NOT give you
 
-Be honest with yourself about the trade-offs:
+- **No HA.** If the VPS dies, every app on it is down until you restore. Wire `backup.sh` to off-VPS storage before going live.
+- **No horizontal scaling.** All apps + datastores share one machine.
+- **No CDN.** Direct hits to the VPS. Add Cloudflare in front later when traffic grows.
+- **Shared blast radius.** A misbehaving app can starve the others if you don't set memory limits.
 
-- **No HA.** If the VPS dies, the app is down until you restore from
-  backup onto a new box (~30–60 min recovery if you've practised).
-- **No horizontal scaling.** All seven containers share one machine's
-  CPU + RAM.
-- **No managed Postgres backups.** You own this — wire `backup.sh` to
-  off-VPS storage before going live.
-- **No CDN.** Direct hits to the VPS. Fine for an API; you'll want
-  CloudFront / Cloudflare in front when traffic grows.
-
-For a TestFlight beta this is exactly the right tradeoff. When you
-outgrow it, the same Docker images move to ECS / Fly / Kubernetes with
-no code changes.
+For a TestFlight beta with one or two small additional apps this is the
+right trade-off. The migration path off (managed Postgres, separate
+VMs, ECS/Fly) is straightforward — same Docker images, different host.

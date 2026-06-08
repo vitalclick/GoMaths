@@ -4,9 +4,11 @@
 # What this does:
 #   1. Updates apt and installs base utilities
 #   2. Installs Docker Engine + Compose v2
-#   3. Configures UFW firewall (allows 22/80/443 only)
-#   4. Creates a non-root `gomaths` user with docker group access
-#   5. Enables unattended security updates
+#   3. Creates the shared `web` docker network
+#   4. Configures UFW firewall (allows 22/80/443 only)
+#   5. Creates a non-root `gomaths` user with docker group access
+#   6. Enables unattended security updates
+#   7. Hardens SSH (root login + password auth disabled)
 #
 # What it does NOT do:
 #   - Clone the repo (do that manually as the gomaths user, see README)
@@ -28,7 +30,7 @@ fi
 
 APP_USER="${APP_USER:-gomaths}"
 
-echo "==> 1/6  apt update + base utilities"
+echo "==> 1/7  apt update + base utilities"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get upgrade -y -qq
@@ -42,7 +44,7 @@ apt-get install -y -qq \
   htop \
   jq
 
-echo "==> 2/6  Installing Docker Engine + Compose plugin"
+echo "==> 2/7  Installing Docker Engine + Compose plugin"
 install -m 0755 -d /etc/apt/keyrings
 if [ ! -f /etc/apt/keyrings/docker.asc ]; then
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -64,7 +66,12 @@ apt-get install -y -qq \
 
 systemctl enable --now docker
 
-echo "==> 3/6  Configuring UFW firewall"
+echo "==> 3/7  Creating shared 'web' docker network"
+# Used by the central Caddy reverse proxy and every app container that
+# needs to be publicly reachable. Idempotent.
+docker network inspect web >/dev/null 2>&1 || docker network create web
+
+echo "==> 4/7  Configuring UFW firewall"
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
@@ -74,7 +81,7 @@ ufw allow 443/tcp comment 'HTTPS'
 ufw allow 443/udp comment 'HTTP/3 (QUIC)'
 ufw --force enable
 
-echo "==> 4/6  Creating $APP_USER user"
+echo "==> 5/7  Creating $APP_USER user"
 if ! id "$APP_USER" >/dev/null 2>&1; then
   adduser --disabled-password --gecos "" "$APP_USER"
 fi
@@ -88,14 +95,14 @@ if [ -d /root/.ssh ] && [ -f /root/.ssh/authorized_keys ]; then
   chown -R "$APP_USER:$APP_USER" "/home/$APP_USER/.ssh"
 fi
 
-echo "==> 5/6  Enabling unattended security updates"
+echo "==> 6/7  Enabling unattended security updates"
 cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 APT::Periodic::AutocleanInterval "7";
 EOF
 
-echo "==> 6/6  Hardening SSH (disabling root login + password auth)"
+echo "==> 7/7  Hardening SSH (disabling root login + password auth)"
 sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
 systemctl reload ssh || systemctl reload sshd || true
@@ -113,18 +120,28 @@ Next steps:
        git clone https://github.com/vitalclick/GoMaths.git
        cd GoMaths
 
-  3. Create the env file:
-       cp infrastructure/vps/.env.production.example .env.production
-       \$EDITOR .env.production
+  3. Start the shared Caddy reverse proxy (once per VPS):
+       cd infrastructure/vps/caddy
+       cp .env.example .env
+       \$EDITOR .env                 # set ACME_EMAIL
+       docker compose up -d
+       cd ../../..
 
-  4. Point your domain's A record at $(hostname -I | awk '{print $1}'),
-     wait for DNS to propagate (~5 min), then start the stack:
+  4. Create the GoMaths env file:
+       cp infrastructure/vps/.env.production.example .env.production
+       \$EDITOR .env.production       # fill in every value
+
+  5. Point api.gomaths.co.za (or your domain) at $(hostname -I | awk '{print $1}'),
+     wait for DNS to propagate (~5 min), then start the GoMaths stack:
        docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 
-  5. Watch logs:
+  6. Watch logs:
        docker compose -f docker-compose.prod.yml logs -f
 
 Verify HTTPS works:
-  curl https://\$API_DOMAIN/api/health
+  curl https://api.gomaths.co.za/api/health
+
+To add another app to this VPS, see infrastructure/vps/README.md →
+"Adding another app".
 ============================================================================
 EOF

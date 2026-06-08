@@ -1,19 +1,21 @@
-# Production docker-compose for a single-VPS deployment.
+# Production docker-compose for the GoMaths stack on a shared VPS.
 #
 # Topology:
-#   Internet ─► caddy (80/443, auto-TLS via Let's Encrypt)
-#                  │
-#                  └─► backend:8080 (the only service exposed publicly)
-#                         │
-#                         ├─► tutor:8080      (internal, called per-message)
-#                         ├─► solver:8080     (internal, called on image scan)
-#                         ├─► validation:8080 (internal, called per LLM reply)
-#                         ├─► postgres:5432   (internal)
-#                         └─► redis:6379      (internal)
+#   [shared Caddy on the `web` network] ─► backend:8080 (alias gomaths-backend)
+#                                              │
+#                                              ├─► tutor:8080      (internal)
+#                                              ├─► solver:8080     (internal)
+#                                              ├─► validation:8080 (internal)
+#                                              ├─► postgres:5432   (internal)
+#                                              └─► redis:6379      (internal)
 #
-# All non-caddy services live on a private docker network and have no
-# host-port mapping — postgres, redis, and the AI services are not
-# reachable from the public internet.
+# This stack owns NO public ports. TLS termination, ACME, and hostname
+# routing live in the shared Caddy project at infrastructure/vps/caddy/,
+# which routes api.gomaths.co.za → gomaths-backend:8080 over the `web`
+# docker network.
+#
+# Prerequisite: the shared `web` network and Caddy must already be up.
+# See infrastructure/vps/README.md for the one-time VPS bootstrap.
 #
 # Build context for both Dockerfiles is the repo root (they need
 # pnpm-workspace.yaml, packages/, and curriculum-data/).
@@ -40,25 +42,6 @@ x-logging: &logging
       max-file: "3"
 
 services:
-  caddy:
-    image: caddy:2-alpine
-    <<: [*restart, *logging]
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp" # HTTP/3
-    volumes:
-      - ./infrastructure/vps/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    environment:
-      API_DOMAIN: ${API_DOMAIN}
-      ACME_EMAIL: ${ACME_EMAIL}
-    depends_on:
-      backend:
-        condition: service_started
-    networks: [gomaths]
-
   postgres:
     image: postgres:16-alpine
     <<: [*restart, *logging]
@@ -146,7 +129,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 60s
-    networks: [gomaths]
+    networks:
+      gomaths:
+      web:
+        # The shared Caddy reverse-proxies to this alias. Must match the
+        # `reverse_proxy gomaths-backend:8080` line in
+        # infrastructure/vps/caddy/Caddyfile.
+        aliases:
+          - gomaths-backend
 
   tutor:
     build:
@@ -221,11 +211,16 @@ services:
     networks: [gomaths]
 
 networks:
+  # Private network for backend ↔ postgres / redis / AI services. Only
+  # the backend joins both this network and `web`.
   gomaths:
     driver: bridge
+  # Shared network owned by infrastructure/vps/caddy/. Must already
+  # exist: `docker network create web` (the VPS bootstrap script does
+  # this automatically).
+  web:
+    external: true
 
 volumes:
   postgres-data:
   redis-data:
-  caddy-data:
-  caddy-config:
