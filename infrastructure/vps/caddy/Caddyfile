@@ -1,0 +1,56 @@
+# Central reverse proxy for every app on this VPS.
+#
+# Each public hostname gets one block. The reverse_proxy target uses the
+# app container's network alias on the shared `web` docker network — see
+# each app's compose file for the alias it registers.
+#
+# Reload after editing:
+#   docker compose -f infrastructure/vps/caddy/docker-compose.yml exec caddy \
+#     caddy reload --config /etc/caddy/Caddyfile
+
+{
+	email {$ACME_EMAIL}
+	# Uncomment while iterating on DNS / firewall to avoid Let's Encrypt
+	# rate limits:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# ─── GoMaths ────────────────────────────────────────────────────────────
+api.gomaths.co.za {
+	encode zstd gzip
+	reverse_proxy gomaths-backend:8080 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+	@blocked {
+		path /wp-* /xmlrpc.php /.env /.git/* /phpmyadmin*
+	}
+	respond @blocked 404
+	log {
+		output stdout
+		format console
+	}
+}
+
+# ─── Add new apps below ─────────────────────────────────────────────────
+# Template:
+#
+# api.<your-app>.com {
+#   encode zstd gzip
+#   reverse_proxy <your-app>-backend:<port>
+# }
+#
+# The alias <your-app>-backend must be registered by the app's compose
+# file as a network alias on the shared `web` network:
+#
+#   services:
+#     backend:
+#       networks:
+#         <your-app>-internal:
+#         web:
+#           aliases:
+#             - <your-app>-backend
+#   networks:
+#     <your-app>-internal:
+#     web:
+#       external: true

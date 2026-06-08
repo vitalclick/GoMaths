@@ -64,12 +64,21 @@ Goal: `curl https://api.gomaths.co.za/api/health` returns `200 OK`.
   ```bash
   curl -fsSL https://raw.githubusercontent.com/vitalclick/GoMaths/main/infrastructure/vps/bootstrap.sh | sudo bash
   ```
-- [ ] Confirm `gomaths` user exists, Docker is installed, UFW shows 22/80/443 open
+- [ ] Confirm `gomaths` user exists, Docker is installed, UFW shows 22/80/443 open, `docker network ls` shows the `web` network
 
-### 2.4 Clone the repo
+### 2.4 Clone the repo + start the shared Caddy reverse proxy
 
 - [ ] SSH in as the app user: `ssh gomaths@<vps ip>`
 - [ ] Clone: `git clone https://github.com/vitalclick/GoMaths.git && cd GoMaths`
+- [ ] Configure Caddy (one-time per VPS — owns TLS for every app):
+  ```bash
+  cd infrastructure/vps/caddy
+  cp .env.example .env
+  $EDITOR .env                    # set ACME_EMAIL
+  docker compose up -d
+  cd ../../..
+  ```
+- [ ] Verify Caddy is listening: `ss -ltnp | grep -E ':80|:443'`
 
 ### 2.5 Fill in `.env.production`
 
@@ -86,18 +95,22 @@ Goal: `curl https://api.gomaths.co.za/api/health` returns `200 OK`.
   echo "REDIS_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=' | head -c 32)"
   ```
 - [ ] Paste those values into `.env.production`
-- [ ] Set `API_DOMAIN=api.gomaths.co.za`
-- [ ] Set `ACME_EMAIL=<your-ops-email>`
 - [ ] Set `RESEND_API_KEY=re_...` (from Resend dashboard)
 - [ ] Set `EMAIL_FROM="GoMaths <consent@gomaths.co.za>"` (domain must be verified in Resend already)
 - [ ] Set `PUBLIC_APP_URL=https://gomaths.co.za` (placeholder fine for beta)
 - [ ] (Optional) `SENTRY_DSN`, `ANTHROPIC_API_KEY`, `MATHPIX_*`
 
-### 2.6 Start the stack
+> `API_DOMAIN` and `ACME_EMAIL` are NOT in this env file — they live in `infrastructure/vps/caddy/.env` because the shared Caddy owns TLS.
+
+### 2.6 Start the GoMaths stack
 
 - [ ] `docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build`
 - [ ] Watch logs: `docker compose -f docker-compose.prod.yml logs -f`
-- [ ] Wait for `caddy-1 | certificate obtained successfully` (~30s after stack is up)
+- [ ] Wait for `backend-1 | [Nest] Nest application successfully started`
+- [ ] Caddy obtains its TLS cert on the first request to `api.gomaths.co.za` — check:
+  ```bash
+  docker compose -f infrastructure/vps/caddy/docker-compose.yml logs caddy | grep -i cert
+  ```
 
 ### 2.7 Verify
 
