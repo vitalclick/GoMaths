@@ -173,8 +173,13 @@ services:
     <<: [*restart, *logging]
     environment:
       SOLVER_OCR_PROVIDER: ${SOLVER_OCR_PROVIDER:-}
+      SOLVER_OCR_MODEL: ${SOLVER_OCR_MODEL:-}
       MATHPIX_APP_ID: ${MATHPIX_APP_ID:-}
       MATHPIX_APP_KEY: ${MATHPIX_APP_KEY:-}
+      # Vision OCR can reuse the tutor's LLM keys via the cascade in
+      # solver/providers.py:get_ocr_provider.
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     healthcheck:
       test:
         [
