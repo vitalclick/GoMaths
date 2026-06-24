@@ -123,12 +123,10 @@ workflows:
           failure: true
 
   student-android:
-    name: Student · Android · Play Internal
+    name: Student · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
         - gomaths_student_keystore
       vars:
@@ -154,10 +152,6 @@ workflows:
       - apps/student/android/app/build/outputs/**/*.apk
       - apps/student/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
@@ -220,12 +214,10 @@ workflows:
           failure: true
 
   parent-android:
-    name: Parent · Android · Play Internal
+    name: Parent · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
         - gomaths_parent_keystore
       vars:
@@ -251,10 +243,6 @@ workflows:
       - apps/parent/android/app/build/outputs/**/*.apk
       - apps/parent/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
@@ -317,12 +305,10 @@ workflows:
           failure: true
 
   teacher-android:
-    name: Teacher · Android · Play Internal
+    name: Teacher · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
         - gomaths_teacher_keystore
       vars:
@@ -348,10 +334,6 @@ workflows:
       - apps/teacher/android/app/build/outputs/**/*.apk
       - apps/teacher/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
