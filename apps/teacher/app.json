@@ -20,6 +20,7 @@
     },
     "android": {
       "package": "com.gomaths.mathai.teacher",
+      "kotlinVersion": "1.9.25",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0E8A3E"
