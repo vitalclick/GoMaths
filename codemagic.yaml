@@ -71,7 +71,7 @@ workflows:
     name: Student · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
@@ -162,7 +162,7 @@ workflows:
     name: Parent · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
@@ -251,7 +251,7 @@ workflows:
     name: Teacher · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
