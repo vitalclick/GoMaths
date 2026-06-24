@@ -112,7 +112,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
@@ -201,7 +201,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
@@ -290,7 +290,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
