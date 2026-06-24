@@ -14,6 +14,8 @@ ARG PNPM_VERSION=9.12.0
 # ─── stage 1: deps + build ──────────────────────────────────────────────
 FROM node:${NODE_VERSION}-slim AS builder
 
+ARG PNPM_VERSION
+
 # Build deps for bcrypt + Prisma engines. Prisma needs openssl.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
