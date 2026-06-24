@@ -80,7 +80,7 @@ workflows:
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: "000000000" # replace with real ID from App Store Connect (Phase 4)
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
