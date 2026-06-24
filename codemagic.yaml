@@ -179,6 +179,7 @@ workflows:
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.parent
@@ -275,6 +276,7 @@ workflows:
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.teacher
