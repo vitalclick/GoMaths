@@ -23,18 +23,20 @@ definitions:
     max_build_duration: 60
 
   cache_ios: &cache_ios
-    cache_paths:
-      - $HOME/Library/Caches/CocoaPods
-      - $HOME/.gradle/caches
-      - $CM_BUILD_DIR/node_modules
-      - $HOME/.pnpm-store
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+        - $HOME/.gradle/caches
+        - $CM_BUILD_DIR/node_modules
+        - $HOME/.pnpm-store
 
   cache_android: &cache_android
-    cache_paths:
-      - $HOME/.gradle/caches
-      - $HOME/.gradle/wrapper
-      - $CM_BUILD_DIR/node_modules
-      - $HOME/.pnpm-store
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
+        - $CM_BUILD_DIR/node_modules
+        - $HOME/.pnpm-store
 
   env_node: &env_node
     node: 20.10.0
@@ -78,7 +80,7 @@ workflows:
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: # fill in once the app exists in App Store Connect
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
@@ -121,14 +123,12 @@ workflows:
           failure: true
 
   student-android:
-    name: Student · Android · Play Internal
+    name: Student · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
-        - gomaths_student_keystore
+        - uploadkey
       vars:
         APP_NAME: student
         PACKAGE_NAME: com.gomaths.mathai
@@ -152,10 +152,6 @@ workflows:
       - apps/student/android/app/build/outputs/**/*.apk
       - apps/student/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
@@ -177,6 +173,7 @@ workflows:
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.parent
@@ -217,14 +214,12 @@ workflows:
           failure: true
 
   parent-android:
-    name: Parent · Android · Play Internal
+    name: Parent · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
-        - gomaths_parent_keystore
+        - uploadkey
       vars:
         APP_NAME: parent
         PACKAGE_NAME: com.gomaths.mathai.parent
@@ -248,10 +243,6 @@ workflows:
       - apps/parent/android/app/build/outputs/**/*.apk
       - apps/parent/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
@@ -273,6 +264,7 @@ workflows:
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.teacher
@@ -313,14 +305,12 @@ workflows:
           failure: true
 
   teacher-android:
-    name: Teacher · Android · Play Internal
+    name: Teacher · Android · Manual Upload
     <<: [*instance_android, *cache_android]
     environment:
       <<: *env_node
-      groups:
-        - google_play_credentials
       android_signing:
-        - gomaths_teacher_keystore
+        - uploadkey
       vars:
         APP_NAME: teacher
         PACKAGE_NAME: com.gomaths.mathai.teacher
@@ -344,10 +334,6 @@ workflows:
       - apps/teacher/android/app/build/outputs/**/*.apk
       - apps/teacher/android/app/build/outputs/mapping/**/*.txt
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: false
       email:
         recipients:
           - mobile@gomaths.com
