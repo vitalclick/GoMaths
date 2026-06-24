@@ -71,16 +71,14 @@ workflows:
     name: Student · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: "6743315031"
+        APP_STORE_APPLE_ID: "6752224795"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
@@ -114,7 +112,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
@@ -164,16 +162,14 @@ workflows:
     name: Parent · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
-        APP_STORE_APPLE_ID: "6743315031"
+        APP_STORE_APPLE_ID: "6752224795"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.parent
@@ -205,7 +201,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
@@ -255,16 +251,14 @@ workflows:
     name: Teacher · iOS · TestFlight
     <<: [*instance_ios, *cache_ios]
     integrations:
-      app_store_connect: gomaths_appstore
+      app_store_connect: VitalClick App Manager
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
-        APP_STORE_APPLE_ID: "6743315031"
+        APP_STORE_APPLE_ID: "6752224795"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.teacher
@@ -296,7 +290,7 @@ workflows:
         auth: integration
         submit_to_testflight: true
         beta_groups:
-          - GoMaths Internal
+          - Testers
       email:
         recipients:
           - mobile@gomaths.com
