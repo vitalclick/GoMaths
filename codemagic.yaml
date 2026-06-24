@@ -75,8 +75,6 @@ workflows:
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
@@ -168,8 +166,6 @@ workflows:
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
@@ -259,8 +255,6 @@ workflows:
     environment:
       <<: *env_xcode
       node: 20.10.0
-      groups:
-        - app_store_credentials
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
