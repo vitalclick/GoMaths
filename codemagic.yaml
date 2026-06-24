@@ -23,18 +23,20 @@ definitions:
     max_build_duration: 60
 
   cache_ios: &cache_ios
-    cache_paths:
-      - $HOME/Library/Caches/CocoaPods
-      - $HOME/.gradle/caches
-      - $CM_BUILD_DIR/node_modules
-      - $HOME/.pnpm-store
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+        - $HOME/.gradle/caches
+        - $CM_BUILD_DIR/node_modules
+        - $HOME/.pnpm-store
 
   cache_android: &cache_android
-    cache_paths:
-      - $HOME/.gradle/caches
-      - $HOME/.gradle/wrapper
-      - $CM_BUILD_DIR/node_modules
-      - $HOME/.pnpm-store
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.gradle/wrapper
+        - $CM_BUILD_DIR/node_modules
+        - $HOME/.pnpm-store
 
   env_node: &env_node
     node: 20.10.0
@@ -78,7 +80,7 @@ workflows:
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: # fill in once the app exists in App Store Connect
+        APP_STORE_APPLE_ID: "000000000" # replace with real ID from App Store Connect (Phase 4)
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
