@@ -14,6 +14,8 @@ ARG PNPM_VERSION=9.12.0
 # ─── stage 1: deps + build ──────────────────────────────────────────────
 FROM node:${NODE_VERSION}-slim AS builder
 
+ARG PNPM_VERSION
+
 # Build deps for bcrypt + Prisma engines. Prisma needs openssl.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -52,6 +54,13 @@ RUN pnpm --filter @gomaths/backend-api prisma:generate \
 # from a separate release-command image. Either is fine; preview keeps
 # it simple at the cost of ~80MB.
 RUN pnpm deploy --filter @gomaths/backend-api /app
+
+# pnpm deploy creates a fresh node_modules at /app; the Prisma client
+# generated above lives in the workspace tree and is not copied. Re-run
+# generate inside the deployed directory so the .prisma/client artefact
+# is present at runtime.
+WORKDIR /app
+RUN ./node_modules/.bin/prisma generate
 
 # ─── stage 2: runtime ───────────────────────────────────────────────────
 FROM node:${NODE_VERSION}-slim AS runner
