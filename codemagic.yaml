@@ -128,7 +128,7 @@ workflows:
     environment:
       <<: *env_node
       android_signing:
-        - gomaths_student_keystore
+        - uploadkey
       vars:
         APP_NAME: student
         PACKAGE_NAME: com.gomaths.mathai
@@ -219,7 +219,7 @@ workflows:
     environment:
       <<: *env_node
       android_signing:
-        - gomaths_parent_keystore
+        - uploadkey
       vars:
         APP_NAME: parent
         PACKAGE_NAME: com.gomaths.mathai.parent
@@ -310,7 +310,7 @@ workflows:
     environment:
       <<: *env_node
       android_signing:
-        - gomaths_teacher_keystore
+        - uploadkey
       vars:
         APP_NAME: teacher
         PACKAGE_NAME: com.gomaths.mathai.teacher
