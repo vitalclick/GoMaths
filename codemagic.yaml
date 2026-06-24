@@ -19,7 +19,7 @@ definitions:
     max_build_duration: 60
 
   instance_android: &instance_android
-    instance_type: linux_x1
+    instance_type: mac_mini_m1
     max_build_duration: 60
 
   cache_ios: &cache_ios
