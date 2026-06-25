@@ -22,7 +22,6 @@
     "@gomaths/ui": "workspace:*",
     "@sentry/react-native": "~6.4.0",
     "expo": "~52.0.0",
-    "expo-build-properties": "^56.0.19",
     "expo-constants": "~17.0.0",
     "expo-device": "~7.0.0",
     "expo-image-manipulator": "~13.0.0",
