@@ -60,5 +60,27 @@ android {
 }
 GRADLE
 
+ROOT_GRADLE="$APP_DIR/android/build.gradle"
+echo "==> Suppressing Compose Compiler Kotlin version check in $ROOT_GRADLE"
+# expo-modules-core 2.x ships Compose Compiler 1.5.15 which requires Kotlin 1.9.25,
+# but the React Native Gradle Plugin locks kotlin to 1.9.24 via libs.versions.toml.
+# We can't upgrade the compiler, so we suppress the compatibility check instead.
+cat >> "$ROOT_GRADLE" <<'GRADLE'
+
+// --- Codemagic: suppress Compose Compiler Kotlin version check ---
+// expo-modules-core 2.x (Compose Compiler 1.5.15) requires Kotlin 1.9.25 but
+// the RN Gradle Plugin pins 1.9.24. Suppress the check rather than upgrading.
+subprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=1.9.24"
+            ]
+        }
+    }
+}
+GRADLE
+
 echo "==> Done. Gradle wrapper:"
 ls -la "$APP_DIR/android/gradlew"
