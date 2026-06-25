@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import * as storage from "./secure-storage";
 
 const DEBUG_KEY = "gomaths.debug";
+const ONBOARDING_KEY = "gomaths.onboarding.done";
 
 let cachedDebug: boolean | null = null;
 const subscribers = new Set<() => void>();
@@ -28,6 +29,15 @@ export async function setDebugEnabled(value: boolean): Promise<void> {
   cachedDebug = value;
   await storage.setItem(DEBUG_KEY, value ? "1" : "0");
   for (const fn of subscribers) fn();
+}
+
+export async function hasCompletedOnboarding(): Promise<boolean> {
+  const raw = await storage.getItem(ONBOARDING_KEY);
+  return raw === "1";
+}
+
+export async function markOnboardingDone(): Promise<void> {
+  await storage.setItem(ONBOARDING_KEY, "1");
 }
 
 /** React hook — re-renders when the flag changes via setDebugEnabled. */

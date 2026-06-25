@@ -14,12 +14,13 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "oklch(0.99 0.005 130)" as unknown as string },
+          headerStyle: { backgroundColor: "#fbfcf9" },
           headerTitleStyle: { fontWeight: "700" },
           headerShadowVisible: false,
         }}
       >
         <Stack.Screen name="index" options={{ title: "GoMaths" }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: "Sign in" }} />
         <Stack.Screen name="register" options={{ title: "Create account" }} />
         <Stack.Screen name="topics" options={{ title: "Grade 9" }} />

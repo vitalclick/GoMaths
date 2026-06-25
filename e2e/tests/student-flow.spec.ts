@@ -3,6 +3,10 @@ import { installBackendMocks } from "./utils/mock-backend";
 
 test.beforeEach(async ({ page }) => {
   await installBackendMocks(page);
+  // Mark onboarding as done so tests land directly on the home screen.
+  await page.addInitScript(() => {
+    localStorage.setItem("gomaths.onboarding.done", "1");
+  });
 });
 
 /**
