@@ -1,13 +1,6 @@
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import {
-  Dimensions,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-  type ViewToken,
-} from "react-native";
+import { Dimensions, FlatList, Text, TouchableOpacity, View, type ViewToken } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { markOnboardingDone } from "../lib/prefs";
 
@@ -42,13 +35,11 @@ export default function OnboardingScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<FlatList>(null);
 
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems[0]?.index != null) {
-        setActiveIndex(viewableItems[0].index);
-      }
-    },
-  ).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems[0]?.index != null) {
+      setActiveIndex(viewableItems[0].index);
+    }
+  }).current;
 
   const finish = async () => {
     await markOnboardingDone();
@@ -69,7 +60,12 @@ export default function OnboardingScreen() {
     <SafeAreaView className="flex-1 bg-background">
       {/* Skip button */}
       <View className="items-end px-6 pt-2">
-        <TouchableOpacity onPress={finish} hitSlop={12} accessibilityRole="button" accessibilityLabel="Skip onboarding">
+        <TouchableOpacity
+          onPress={finish}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Skip onboarding"
+        >
           <Text className="text-base text-muted-foreground">Skip</Text>
         </TouchableOpacity>
       </View>
@@ -128,9 +124,7 @@ export default function OnboardingScreen() {
           style={{ backgroundColor: "#008a3e" }}
           className="w-full items-center rounded-2xl py-4 active:opacity-80"
         >
-          <Text className="text-lg font-bold text-white">
-            {isLast ? "Get started" : "Next"}
-          </Text>
+          <Text className="text-lg font-bold text-white">{isLast ? "Get started" : "Next"}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
