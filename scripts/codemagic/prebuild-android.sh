@@ -21,26 +21,12 @@ cd "$APP_DIR"
 echo "==> Generating native Android project for apps/$APP"
 npx --yes expo prebuild --platform android --no-install --clean
 
-# Patch kotlinVersion using Node.js (cross-platform, no sed differences).
-# Compose Compiler 1.5.15 (expo-modules-core 2.x) requires Kotlin 1.9.25;
-# the Expo template hardcodes 1.9.24 in the root build.gradle ext block.
-ROOT_GRADLE="$APP_DIR/android/build.gradle"
-echo "==> Patching kotlinVersion to 1.9.25 in $ROOT_GRADLE"
-node - "$ROOT_GRADLE" <<'NODEJS'
-const fs = require("fs");
-const file = process.argv[2];
-const orig = fs.readFileSync(file, "utf8");
-const patched = orig.replace(
-  /kotlinVersion\s*=\s*["'][\d.]+["']/g,
-  'kotlinVersion = "1.9.25"'
-);
-if (orig === patched) {
-  process.stderr.write("WARNING: kotlinVersion pattern not found in " + file + "\n");
-} else {
-  process.stdout.write("Patched kotlinVersion → 1.9.25\n");
-}
-fs.writeFileSync(file, patched);
-NODEJS
+# The React Native 0.76 template uses:
+#   kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.24'
+# Setting this Gradle property overrides the default without touching build.gradle.
+# Compose Compiler 1.5.15 (expo-modules-core 2.x) requires Kotlin >= 1.9.25.
+echo "==> Setting android.kotlinVersion=1.9.25 in gradle.properties"
+echo "android.kotlinVersion=1.9.25" >> "$APP_DIR/android/gradle.properties"
 
 GRADLE_FILE="$APP_DIR/android/app/build.gradle"
 if [ ! -f "$GRADLE_FILE" ]; then
