@@ -26,8 +26,8 @@ npx --yes expo prebuild --platform android --no-install --clean
 # Patch gradle.properties (in case it's read via findProperty) and also patch
 # the root build.gradle ext block directly, since Expo hardcodes the value there.
 echo "kotlinVersion=1.9.25" >> "$APP_DIR/android/gradle.properties"
-sed -i 's/kotlinVersion = "1\.9\.24"/kotlinVersion = "1.9.25"/' "$APP_DIR/android/build.gradle" || true
-sed -i "s/kotlinVersion = '1\.9\.24'/kotlinVersion = '1.9.25'/" "$APP_DIR/android/build.gradle" || true
+sed -i '' 's/kotlinVersion = "1\.9\.24"/kotlinVersion = "1.9.25"/' "$APP_DIR/android/build.gradle" || true
+sed -i '' "s/kotlinVersion = '1\.9\.24'/kotlinVersion = '1.9.25'/" "$APP_DIR/android/build.gradle" || true
 
 GRADLE_FILE="$APP_DIR/android/app/build.gradle"
 if [ ! -f "$GRADLE_FILE" ]; then
