@@ -1,17 +1,29 @@
 import { Button, Card } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PreviewBanner } from "../components/PreviewBanner";
 import { useAuth } from "../lib/auth";
-import { setDebugEnabled, useDebugEnabled } from "../lib/prefs";
+import { hasCompletedOnboarding, setDebugEnabled, useDebugEnabled } from "../lib/prefs";
 
 export default function HomeScreen() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const debug = useDebugEnabled();
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    hasCompletedOnboarding().then((done) => {
+      if (!done) {
+        router.replace("/onboarding");
+      } else {
+        setOnboardingChecked(true);
+      }
+    });
+  }, []);
+
+  if (loading || !onboardingChecked) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-background">
         <ActivityIndicator />
