@@ -14,7 +14,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: "oklch(0.99 0.005 130)" as unknown as string },
+          headerStyle: { backgroundColor: "#fbfcf9" },
           headerTitleStyle: { fontWeight: "700" },
           headerShadowVisible: false,
         }}

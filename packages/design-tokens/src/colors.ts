@@ -1,8 +1,9 @@
 /**
- * GoMaths color tokens.
+ * GoMaths color tokens (ADR-004).
  *
- * Translated from UI/design2/src/styles.css (oklch). All values preserved
- * exactly so the design2 mockups remain a true visual reference.
+ * Translated from UI/design2/src/styles.css (oklch). Converted to hex so
+ * React Native's color parser (which does not support oklch) can consume
+ * them directly.
  *
  * Locked by ADR-004:
  *  - Primary: GoMaths green
@@ -11,75 +12,69 @@
  */
 
 const light = {
-  background: "oklch(0.99 0.005 130)",
-  foreground: "oklch(0.18 0.02 160)",
+  background: "#fbfcf9",
+  foreground: "#0a140f",
 
-  card: "oklch(1 0 0)",
-  cardForeground: "oklch(0.18 0.02 160)",
-  popover: "oklch(1 0 0)",
-  popoverForeground: "oklch(0.18 0.02 160)",
+  card: "#ffffff",
+  cardForeground: "#0a140f",
+  popover: "#ffffff",
+  popoverForeground: "#0a140f",
 
-  primary: "oklch(0.55 0.16 152)",
-  primaryForeground: "oklch(0.99 0.005 130)",
-  primarySoft: "oklch(0.95 0.05 152)",
+  primary: "#008a3e",
+  primaryForeground: "#fbfcf9",
+  primarySoft: "#d7f9de",
 
-  secondary: "oklch(0.96 0.01 160)",
-  secondaryForeground: "oklch(0.22 0.02 160)",
+  secondary: "#ecf4ef",
+  secondaryForeground: "#121e17",
 
-  muted: "oklch(0.96 0.008 160)",
-  mutedForeground: "oklch(0.5 0.02 160)",
+  muted: "#edf3f0",
+  mutedForeground: "#5a675f",
 
-  accent: "oklch(0.62 0.21 25)",
-  accentForeground: "oklch(0.99 0.005 130)",
-  accentSoft: "oklch(0.95 0.05 25)",
+  accent: "#ea3c3f",
+  accentForeground: "#fbfcf9",
+  accentSoft: "#ffe2de",
 
-  destructive: "oklch(0.6 0.22 27)",
-  destructiveForeground: "oklch(0.99 0.005 130)",
+  destructive: "#e62c2c",
+  destructiveForeground: "#fbfcf9",
 
-  success: "oklch(0.65 0.17 152)",
-  successForeground: "oklch(0.99 0.005 130)",
+  success: "#05ab58",
+  successForeground: "#fbfcf9",
 
-  warning: "oklch(0.78 0.16 75)",
-  warningForeground: "oklch(0.2 0.02 75)",
+  warning: "#f2a618",
+  warningForeground: "#1b150c",
 
-  info: "oklch(0.65 0.14 240)",
-  infoForeground: "oklch(0.99 0.005 240)",
+  info: "#2098db",
+  infoForeground: "#f9fcff",
 
-  streak: "oklch(0.7 0.2 40)",
-  xp: "oklch(0.78 0.17 85)",
+  streak: "#ff6728",
+  xp: "#e9ac00",
 
-  border: "oklch(0.92 0.01 160)",
-  input: "oklch(0.92 0.01 160)",
-  ring: "oklch(0.55 0.16 152)",
-
-  chart1: "oklch(0.55 0.16 152)",
-  chart2: "oklch(0.62 0.21 25)",
-  chart3: "oklch(0.65 0.14 240)",
-  chart4: "oklch(0.78 0.17 85)",
-  chart5: "oklch(0.6 0.18 300)",
+  border: "#dfe7e2",
+  input: "#dfe7e2",
+  ring: "#008a3e",
 } as const;
 
 const dark = {
   ...light,
-  background: "oklch(0.16 0.02 160)",
-  foreground: "oklch(0.97 0.005 130)",
-  card: "oklch(0.22 0.02 160)",
-  cardForeground: "oklch(0.97 0.005 130)",
-  popover: "oklch(0.22 0.02 160)",
-  popoverForeground: "oklch(0.97 0.005 130)",
-  primary: "oklch(0.7 0.16 152)",
-  primaryForeground: "oklch(0.16 0.02 160)",
-  primarySoft: "oklch(0.3 0.08 152)",
-  secondary: "oklch(0.28 0.02 160)",
-  secondaryForeground: "oklch(0.97 0.005 130)",
-  muted: "oklch(0.28 0.02 160)",
-  mutedForeground: "oklch(0.7 0.02 160)",
-  accent: "oklch(0.7 0.2 25)",
-  accentForeground: "oklch(0.16 0.02 160)",
-  accentSoft: "oklch(0.3 0.1 25)",
-  border: "oklch(1 0 0 / 10%)",
-  input: "oklch(1 0 0 / 15%)",
-  ring: "oklch(0.7 0.16 152)",
+  background: "#06100a",
+  foreground: "#f4f6f2",
+  card: "#121e17",
+  cardForeground: "#f4f6f2",
+  popover: "#121e17",
+  popoverForeground: "#f4f6f2",
+  primary: "#3aba6a",
+  primaryForeground: "#06100a",
+  primarySoft: "#003918",
+  secondary: "#202c25",
+  secondaryForeground: "#f4f6f2",
+  muted: "#202c25",
+  mutedForeground: "#94a29a",
+  accent: "#ff5f5b",
+  accentForeground: "#06100a",
+  accentSoft: "#551112",
+  border: "rgba(255,255,255,0.1)",
+  input: "rgba(255,255,255,0.15)",
+  ring: "#3aba6a",
 } as const;
 
 export const colors = { light, dark } as const;
