@@ -28,7 +28,7 @@ ROOT_GRADLE="$APP_DIR/android/build.gradle"
 echo "==> Patching kotlinVersion to 1.9.25 in $ROOT_GRADLE"
 node - "$ROOT_GRADLE" <<'NODEJS'
 const fs = require("fs");
-const file = process.argv[1];
+const file = process.argv[2];
 const orig = fs.readFileSync(file, "utf8");
 const patched = orig.replace(
   /kotlinVersion\s*=\s*["'][\d.]+["']/g,
