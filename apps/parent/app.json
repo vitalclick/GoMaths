@@ -30,17 +30,7 @@
       "output": "single",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "kotlinVersion": "1.9.25"
-          }
-        }
-      ]
-    ],
+    "plugins": ["expo-router", ["../../scripts/withKotlinVersion", {}]],
     "experiments": {
       "typedRoutes": true
     }
