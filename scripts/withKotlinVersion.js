@@ -7,7 +7,7 @@ module.exports = function withKotlinVersion(config, { version = "1.9.25" } = {})
   return withProjectBuildGradle(config, (c) => {
     c.modResults.contents = c.modResults.contents.replace(
       /kotlinVersion\s*=\s*["'][\d.]+["']/g,
-      `kotlinVersion = "${version}"`
+      `kotlinVersion = "${version}"`,
     );
     return c;
   });
