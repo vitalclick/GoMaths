@@ -115,7 +115,7 @@ export class NotificationsService {
         },
         select: { token: true },
       });
-      return rows.map((r) => r.token);
+      return rows.map((r: { token: string }) => r.token);
     }
     const mine = this.fallback.get(userId);
     if (!mine) return [];

@@ -11,10 +11,11 @@
  */
 
 import * as Sentry from "@sentry/node";
-import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 const dsn = process.env.SENTRY_DSN;
 if (dsn) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { nodeProfilingIntegration } = require("@sentry/profiling-node");
   Sentry.init({
     dsn,
     environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? "development",

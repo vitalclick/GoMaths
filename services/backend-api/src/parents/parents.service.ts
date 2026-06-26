@@ -40,13 +40,14 @@ export class ParentsService {
     });
     if (consents.length === 0) return [];
 
-    const studentEmails = consents.map((c) => c.studentEmail);
+    const studentEmails = consents.map((c: { studentEmail: string }) => c.studentEmail);
     const users = await this.prisma.user.findMany({
       where: { email: { in: studentEmails }, role: "STUDENT" },
       include: { student: true },
     });
 
-    const byEmail = new Map(users.map((u) => [u.email, u]));
+    type UserWithStudent = { email: string; student: { displayName: string; grade: number | null } | null };
+    const byEmail = new Map((users as UserWithStudent[]).map((u) => [u.email, u]));
     const out: LinkedChild[] = [];
     for (const c of consents) {
       const u = byEmail.get(c.studentEmail);

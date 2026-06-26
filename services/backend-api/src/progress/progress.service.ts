@@ -49,7 +49,8 @@ export class ProgressService {
           type: input.type.toUpperCase() as ProgressEventTypeDb,
           topicId: input.topicId ?? null,
           questionId: input.questionId ?? null,
-          meta: (input.meta ?? Prisma.JsonNull) as Prisma.InputJsonValue,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          meta: (input.meta ?? null) as any,
         },
       });
       return {
@@ -89,7 +90,7 @@ export class ProgressService {
         select: { type: true, topicId: true, occurredAt: true },
       });
       const mastery = this.computeMastery(
-        events.map((e) => ({
+        events.map((e: { type: string; topicId: string | null; occurredAt: Date }) => ({
           type: e.type.toLowerCase() as ProgressEventType,
           topicId: e.topicId!,
           occurredAt: e.occurredAt.toISOString(),
