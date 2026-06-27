@@ -1,14 +1,22 @@
 /**
- * GoMaths typography tokens (ADR-004).
- *  - display: Sora — headings, hero numerals, XP/score callouts
- *  - body:    Inter — body copy, controls, labels
- *  - mono:    JetBrains Mono — math expressions, code-like content
+ * GoMaths typography tokens (ADR-008, superseding ADR-004's Sora/Inter lean).
+ *
+ * design1 is the canonical student-app design language. It uses a single
+ * rounded family — Nunito — for both display and body, leaning on weight
+ * (up to 900/black) rather than a second family for hierarchy. JetBrains
+ * Mono is retained for maths expressions.
+ *
+ * NOTE: the font files are not bundled yet. Until an app registers Nunito
+ * via expo-font, React Native falls back to the system font in the stack
+ * below (same behaviour as before this change — no visual regression).
+ * Font bundling (expo-font + @expo-google-fonts/nunito) is a tracked
+ * follow-up; see ADR-008.
  */
 
 export const typography = {
   family: {
-    display: '"Sora", system-ui, sans-serif',
-    body: '"Inter", system-ui, sans-serif',
+    display: '"Nunito", system-ui, sans-serif',
+    body: '"Nunito", system-ui, sans-serif',
     mono: '"JetBrains Mono", ui-monospace, monospace',
   },
   weight: {
@@ -17,6 +25,7 @@ export const typography = {
     semibold: 600,
     bold: 700,
     extrabold: 800,
+    black: 900,
   },
   size: {
     xs: 12,
