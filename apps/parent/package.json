@@ -14,6 +14,7 @@
     "test": "echo \"(no tests yet)\" && exit 0"
   },
   "dependencies": {
+    "@expo-google-fonts/nunito": "^0.2.3",
     "@gomaths/api-client": "workspace:*",
     "@gomaths/design-tokens": "workspace:*",
     "@gomaths/types": "workspace:*",
@@ -22,6 +23,7 @@
     "expo": "~52.0.0",
     "expo-constants": "~17.0.0",
     "expo-device": "~7.0.0",
+    "expo-font": "~13.0.4",
     "expo-linking": "~7.0.0",
     "expo-notifications": "~0.29.0",
     "expo-router": "~4.0.0",

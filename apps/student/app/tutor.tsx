@@ -1,4 +1,4 @@
-import { Card } from "@gomaths/ui";
+import { Card, Icon, Maxi } from "@gomaths/ui";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -321,11 +321,11 @@ function MessageBubble({ message, debug }: { message: ChatMessage; debug: boolea
         )}
         {!isUser && !message.streaming && message.validated !== undefined && (
           <View className="mt-1 flex-row items-center gap-1 px-2">
-            <View
-              className={`h-1.5 w-1.5 rounded-full ${
-                message.validated ? "bg-success" : "bg-muted-foreground"
-              }`}
-            />
+            {message.validated ? (
+              <Icon name="check" size={12} color="#05ab58" strokeWidth={2.5} />
+            ) : (
+              <View className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+            )}
             <Text className="text-[10px] text-muted-foreground">
               {message.validated ? "Maths verified" : "Reply not fully verified"}
             </Text>
@@ -360,13 +360,16 @@ function TypingBubble() {
 
 function EmptyState({ topicId }: { topicId?: string }) {
   return (
-    <Card>
-      <Text className="font-display text-lg font-bold text-foreground">Hi, I'm Maya</Text>
-      <Text className="mt-1 text-sm text-muted-foreground">
-        {topicId
-          ? `I have the lesson for ${topicId} in front of me. Ask me anything about it — or just start with one of the prompts below.`
-          : "Your maths buddy. Pick a topic from the home screen for me to focus on, or start with one of the prompts below."}
-      </Text>
+    <Card className="flex-row gap-3">
+      <Maxi size={44} />
+      <View className="flex-1">
+        <Text className="font-display text-lg font-extrabold text-foreground">Hi, I'm Maya</Text>
+        <Text className="mt-1 text-sm text-muted-foreground">
+          {topicId
+            ? `I have the lesson for ${topicId} in front of me. Ask me anything about it — or just start with one of the prompts below.`
+            : "Your maths buddy. Pick a topic from the home screen for me to focus on, or start with one of the prompts below."}
+        </Text>
+      </View>
     </Card>
   );
 }
