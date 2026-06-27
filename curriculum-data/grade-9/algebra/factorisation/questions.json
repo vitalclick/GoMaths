@@ -1,0 +1,90 @@
+{
+  "topicId": "g9.alg.factorisation",
+  "questions": [
+    {
+      "id": "g9.alg.factorisation.q001",
+      "difficulty": "easy",
+      "stem": "6*x + 9",
+      "answer": "3*(2*x + 3)",
+      "answerLatex": "3(2x + 3)",
+      "solutionSteps": [
+        "Find the highest common factor of 6x and 9: it is 3.",
+        "Divide each term by 3: 6x ÷ 3 = 2x, 9 ÷ 3 = 3.",
+        "Write the common factor outside the bracket: 3(2x + 3)."
+      ],
+      "commonMistakes": [
+        "Taking out a factor that is not common to every term",
+        "Forgetting to divide every term by the common factor"
+      ],
+      "tags": ["common-factor"]
+    },
+    {
+      "id": "g9.alg.factorisation.q002",
+      "difficulty": "medium",
+      "stem": "4*x^2 - 8*x",
+      "answer": "4*x*(x - 2)",
+      "answerLatex": "4x(x - 2)",
+      "solutionSteps": [
+        "The common factor of 4x^2 and 8x is 4x.",
+        "Divide each term by 4x: 4x^2 ÷ 4x = x, 8x ÷ 4x = 2.",
+        "Write 4x(x - 2)."
+      ],
+      "commonMistakes": [
+        "Only taking out 4 or only x instead of the full 4x",
+        "Losing the variable when dividing 4x^2 by 4x"
+      ],
+      "tags": ["common-factor"]
+    },
+    {
+      "id": "g9.alg.factorisation.q003",
+      "difficulty": "medium",
+      "stem": "x^2 - 16",
+      "answer": "(x - 4)*(x + 4)",
+      "answerLatex": "(x - 4)(x + 4)",
+      "solutionSteps": [
+        "Recognise the difference of two squares: x^2 - 16 = x^2 - 4^2.",
+        "Apply a^2 - b^2 = (a - b)(a + b) with a = x, b = 4.",
+        "Write (x - 4)(x + 4)."
+      ],
+      "commonMistakes": [
+        "Writing (x - 4)^2, which expands to x^2 - 8x + 16",
+        "Trying to factorise a sum of squares like x^2 + 16"
+      ],
+      "tags": ["difference-of-squares"]
+    },
+    {
+      "id": "g9.alg.factorisation.q004",
+      "difficulty": "medium",
+      "stem": "x^2 - 49",
+      "answer": "(x - 7)*(x + 7)",
+      "answerLatex": "(x - 7)(x + 7)",
+      "solutionSteps": [
+        "49 = 7^2, so this is a difference of two squares.",
+        "Apply a^2 - b^2 = (a - b)(a + b) with a = x, b = 7.",
+        "Write (x - 7)(x + 7)."
+      ],
+      "commonMistakes": [
+        "Using 6 or 8 instead of 7 as the square root of 49",
+        "Writing both brackets with the same sign"
+      ],
+      "tags": ["difference-of-squares"]
+    },
+    {
+      "id": "g9.alg.factorisation.q005",
+      "difficulty": "hard",
+      "stem": "x^2 + 5*x + 6",
+      "answer": "(x + 2)*(x + 3)",
+      "answerLatex": "(x + 2)(x + 3)",
+      "solutionSteps": [
+        "Find two numbers that multiply to 6 and add to 5.",
+        "2 and 3 work: 2 × 3 = 6 and 2 + 3 = 5.",
+        "Write (x + 2)(x + 3)."
+      ],
+      "commonMistakes": [
+        "Choosing factors that multiply correctly but do not add to 5",
+        "Mixing up the signs when the constant or middle term is negative"
+      ],
+      "tags": ["trinomial"]
+    }
+  ]
+}

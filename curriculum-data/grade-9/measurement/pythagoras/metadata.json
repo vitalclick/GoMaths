@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.mea.pythagoras",
+  "title": "The Theorem of Pythagoras",
+  "grade": 9,
+  "contentArea": "measurement",
+  "capsReference": "Term 3, Topic 3.2",
+  "prerequisites": ["g9.alg.exponents"],
+  "learningOutcomes": [
+    "State the theorem of Pythagoras for a right-angled triangle",
+    "Calculate the hypotenuse given the two shorter sides",
+    "Calculate a shorter side given the hypotenuse and the other side"
+  ],
+  "estimatedMinutes": 30
+}

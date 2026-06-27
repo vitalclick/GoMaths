@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.alg.quadratic-eq",
+  "title": "Solving Quadratic Equations by Factorising",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 2, Topic 2.4",
+  "prerequisites": ["g9.alg.factorisation"],
+  "learningOutcomes": [
+    "Use the zero-product principle to solve quadratics",
+    "Solve quadratics of the form x^2 + bx + c = 0 by factorising",
+    "Solve quadratics involving a difference of squares or a common factor"
+  ],
+  "estimatedMinutes": 30
+}

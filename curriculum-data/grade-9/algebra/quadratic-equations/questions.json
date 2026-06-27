@@ -1,0 +1,90 @@
+{
+  "topicId": "g9.alg.quadratic-eq",
+  "questions": [
+    {
+      "id": "g9.alg.quadratic-eq.q001",
+      "difficulty": "easy",
+      "stem": "x^2 - 4*x = 0",
+      "answer": "x = 0 or x = 4",
+      "answerLatex": "x = 0 \\text{ or } x = 4",
+      "solutionSteps": [
+        "Take out the common factor x: x(x - 4) = 0.",
+        "Zero-product principle: x = 0 or x - 4 = 0.",
+        "So x = 0 or x = 4."
+      ],
+      "commonMistakes": [
+        "Dividing both sides by x and losing the solution x = 0",
+        "Only giving one of the two solutions"
+      ],
+      "tags": ["common-factor", "zero-product"]
+    },
+    {
+      "id": "g9.alg.quadratic-eq.q002",
+      "difficulty": "medium",
+      "stem": "x^2 - 9 = 0",
+      "answer": "x = 3 or x = -3",
+      "answerLatex": "x = 3 \\text{ or } x = -3",
+      "solutionSteps": [
+        "Factorise the difference of squares: (x - 3)(x + 3) = 0.",
+        "Zero-product principle: x - 3 = 0 or x + 3 = 0.",
+        "So x = 3 or x = -3."
+      ],
+      "commonMistakes": [
+        "Giving only x = 3 and forgetting the negative root",
+        "Writing x = 9 by 'square-rooting' incorrectly"
+      ],
+      "tags": ["difference-of-squares", "zero-product"]
+    },
+    {
+      "id": "g9.alg.quadratic-eq.q003",
+      "difficulty": "medium",
+      "stem": "x^2 - 5*x + 6 = 0",
+      "answer": "x = 2 or x = 3",
+      "answerLatex": "x = 2 \\text{ or } x = 3",
+      "solutionSteps": [
+        "Find two numbers multiplying to 6 and adding to -5: that is -2 and -3.",
+        "Factorise: (x - 2)(x - 3) = 0.",
+        "So x = 2 or x = 3."
+      ],
+      "commonMistakes": [
+        "Using +2 and +3, which give a middle term of +5x",
+        "Forgetting that both brackets give a solution"
+      ],
+      "tags": ["trinomial", "zero-product"]
+    },
+    {
+      "id": "g9.alg.quadratic-eq.q004",
+      "difficulty": "hard",
+      "stem": "x^2 + 7*x + 12 = 0",
+      "answer": "x = -3 or x = -4",
+      "answerLatex": "x = -3 \\text{ or } x = -4",
+      "solutionSteps": [
+        "Find two numbers multiplying to 12 and adding to 7: that is 3 and 4.",
+        "Factorise: (x + 3)(x + 4) = 0.",
+        "So x = -3 or x = -4."
+      ],
+      "commonMistakes": [
+        "Giving x = 3 or x = 4 (wrong sign)",
+        "Choosing 2 and 6, which add to 8 not 7"
+      ],
+      "tags": ["trinomial", "zero-product"]
+    },
+    {
+      "id": "g9.alg.quadratic-eq.q005",
+      "difficulty": "hard",
+      "stem": "x^2 = 25",
+      "answer": "x = 5 or x = -5",
+      "answerLatex": "x = 5 \\text{ or } x = -5",
+      "solutionSteps": [
+        "Bring everything to one side: x^2 - 25 = 0.",
+        "Factorise the difference of squares: (x - 5)(x + 5) = 0.",
+        "So x = 5 or x = -5."
+      ],
+      "commonMistakes": [
+        "Writing only x = 5 — a square has two square roots",
+        "Dividing by x, which is invalid here"
+      ],
+      "tags": ["difference-of-squares", "zero-product"]
+    }
+  ]
+}
