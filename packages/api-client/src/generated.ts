@@ -1047,6 +1047,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/gamification/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** XP, level, streak and daily-goal for the current learner */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StatsView"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gamification/me/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a learner activity (awards XP, advances streak/daily goal) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RecordActivityInput"];
+                };
+            };
+            responses: {
+                /** @description Updated stats */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StatsView"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1057,6 +1136,26 @@ export interface components {
             service: string;
             /** Format: date-time */
             time: string;
+        };
+        RecordActivityInput: {
+            /**
+             * @description Lessons advance the daily goal; both award XP.
+             * @enum {string}
+             */
+            kind: "correct_answer" | "lesson_completed";
+        };
+        StatsView: {
+            xp: number;
+            level: number;
+            xpIntoLevel: number;
+            xpForNextLevel: number;
+            currentStreak: number;
+            longestStreak: number;
+            /** @description ISO date (YYYY-MM-DD) */
+            lastActiveOn?: string | null;
+            dailyGoal: number;
+            dailyCompleted: number;
+            dailyGoalMet: boolean;
         };
         Error: {
             code: string;

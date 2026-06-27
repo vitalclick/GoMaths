@@ -26,6 +26,7 @@ tags:
   - name: progress
   - name: tutor
   - name: solver
+  - name: gamification
   - name: health
 
 security:
@@ -546,6 +547,39 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /api/gamification/me:
+    get:
+      tags: [gamification]
+      summary: XP, level, streak and daily-goal for the current learner
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StatsView" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/gamification/me/activity:
+    post:
+      tags: [gamification]
+      summary: Record a learner activity (awards XP, advances streak/daily goal)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecordActivityInput" }
+      responses:
+        "200":
+          description: Updated stats
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StatsView" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -597,6 +631,41 @@ components:
         status: { type: string, enum: [ok, degraded] }
         service: { type: string }
         time: { type: string, format: date-time }
+
+    RecordActivityInput:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [correct_answer, lesson_completed]
+          description: Lessons advance the daily goal; both award XP.
+
+    StatsView:
+      type: object
+      required:
+        [
+          xp,
+          level,
+          xpIntoLevel,
+          xpForNextLevel,
+          currentStreak,
+          longestStreak,
+          dailyGoal,
+          dailyCompleted,
+          dailyGoalMet,
+        ]
+      properties:
+        xp: { type: integer }
+        level: { type: integer }
+        xpIntoLevel: { type: integer }
+        xpForNextLevel: { type: integer }
+        currentStreak: { type: integer }
+        longestStreak: { type: integer }
+        lastActiveOn: { type: string, nullable: true, description: "ISO date (YYYY-MM-DD)" }
+        dailyGoal: { type: integer }
+        dailyCompleted: { type: integer }
+        dailyGoalMet: { type: boolean }
 
     Error:
       type: object

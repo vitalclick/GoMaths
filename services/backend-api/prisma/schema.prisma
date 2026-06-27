@@ -147,6 +147,7 @@ model Student {
   progressEvents   ProgressEvent[]
   topicMastery     TopicMastery[]
   conversations    Conversation[]
+  learnerStats     LearnerStats?
 
   @@index([grade])
   @@index([schoolId])
@@ -330,6 +331,24 @@ model TopicMastery {
 
   @@id([studentId, topicId])
   @@index([studentId])
+}
+
+/// Gamification state for a learner: XP, streaks and the daily lesson goal.
+/// One row per student; all arithmetic lives in gamification.logic.ts.
+model LearnerStats {
+  id            String    @id @default(cuid())
+  studentId     String    @unique
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  xp            Int       @default(0)
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  /// Last day the learner was active (date only; time ignored).
+  lastActiveOn  DateTime?
+  /// The day the daily counter applies to.
+  dailyDate     DateTime?
+  dailyCount    Int       @default(0)
+  dailyGoal     Int       @default(5)
+  updatedAt     DateTime  @updatedAt
 }
 
 // ─────────────────────────────────────────────────────────────────────────
