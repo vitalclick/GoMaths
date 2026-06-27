@@ -27,6 +27,7 @@ tags:
   - name: tutor
   - name: solver
   - name: gamification
+  - name: teachers
   - name: health
 
 security:
@@ -580,6 +581,46 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /api/teachers/me/classes:
+    get:
+      tags: [teachers]
+      summary: Classes the current teacher teaches
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TeacherClass" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/teachers/me/classes/{classId}/roster:
+    get:
+      tags: [teachers]
+      summary: Students enrolled in one of the teacher's classes
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RosterStudent" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: The teacher does not teach this class
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -666,6 +707,24 @@ components:
         dailyGoal: { type: integer }
         dailyCompleted: { type: integer }
         dailyGoalMet: { type: boolean }
+
+    TeacherClass:
+      type: object
+      required: [id, name, grade, studentCount]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        grade: { type: integer }
+        studentCount: { type: integer }
+
+    RosterStudent:
+      type: object
+      required: [id, displayName, grade, enrolledAt]
+      properties:
+        id: { type: string }
+        displayName: { type: string }
+        grade: { type: integer }
+        enrolledAt: { type: string, format: date-time }
 
     Error:
       type: object

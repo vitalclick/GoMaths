@@ -16,6 +16,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ title: "GoMaths · Teacher" }} />
         <Stack.Screen name="login" options={{ title: "Sign in" }} />
+        <Stack.Screen name="class/[id]" options={{ title: "Roster" }} />
       </Stack>
     </AuthProvider>
   );
