@@ -1,22 +1,23 @@
 /**
  * GoMaths typography tokens (ADR-008, superseding ADR-004's Sora/Inter lean).
  *
- * design1 is the canonical student-app design language. It uses a single
- * rounded family — Nunito — for both display and body, leaning on weight
- * (up to 900/black) rather than a second family for hierarchy. JetBrains
- * Mono is retained for maths expressions.
+ * design1 is the canonical student-app design language — the rounded Nunito
+ * family. React Native cannot pick a weight from a single custom family the
+ * way the web can, so we register Nunito as per-weight families via
+ * @expo-google-fonts/nunito and map the design tokens to them:
+ *   - `display` → Nunito ExtraBold (headings, hero numerals)
+ *   - `body`    → Nunito Regular   (copy, controls)
+ *   - `mono`    → JetBrains Mono   (maths expressions)
  *
- * NOTE: the font files are not bundled yet. Until an app registers Nunito
- * via expo-font, React Native falls back to the system font in the stack
- * below (same behaviour as before this change — no visual regression).
- * Font bundling (expo-font + @expo-google-fonts/nunito) is a tracked
- * follow-up; see ADR-008.
+ * Apps that haven't registered these families (e.g. parent/teacher until
+ * they load the fonts) fall back to the system font — no crash, no
+ * regression. The student app loads them in app/_layout.tsx.
  */
 
 export const typography = {
   family: {
-    display: '"Nunito", system-ui, sans-serif',
-    body: '"Nunito", system-ui, sans-serif',
+    display: "Nunito_800ExtraBold",
+    body: "Nunito_400Regular",
     mono: '"JetBrains Mono", ui-monospace, monospace',
   },
   weight: {

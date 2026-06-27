@@ -1,4 +1,4 @@
-import { Button, Card, Heading, Maxi, Pill, ProgressBar } from "@gomaths/ui";
+import { Button, Card, Heading, Icon, type IconName, Maxi, Pill, ProgressBar } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
@@ -144,10 +144,14 @@ function SignedIn({
             <View className="flex-row gap-2">
               <Pill
                 tone="streak"
-                icon={<Text style={{ fontSize: 13 }}>🔥</Text>}
+                icon={<Icon name="flame" size={14} color="#ff6728" />}
                 label={`${s.currentStreak}`}
               />
-              <Pill tone="xp" icon={<Text style={{ fontSize: 13 }}>⚡</Text>} label={`${s.xp}`} />
+              <Pill
+                tone="xp"
+                icon={<Icon name="bolt" size={14} color="#8a6500" />}
+                label={`${s.xp}`}
+              />
             </View>
           )}
         </View>
@@ -166,17 +170,20 @@ function SignedIn({
             elevation: 6,
           }}
         >
-          <Text
-            style={{
-              color: "#fff",
-              opacity: 0.9,
-              fontWeight: "800",
-              fontSize: 12,
-              letterSpacing: 0.6,
-            }}
-          >
-            ⚡ DAILY GOAL
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Icon name="bolt" size={14} color="#ffffff" />
+            <Text
+              style={{
+                color: "#fff",
+                opacity: 0.9,
+                fontWeight: "800",
+                fontSize: 12,
+                letterSpacing: 0.6,
+              }}
+            >
+              DAILY GOAL
+            </Text>
+          </View>
           <Text style={{ color: "#fff", fontWeight: "900", fontSize: 26, marginTop: 6 }}>
             {s.dailyCompleted} of {s.dailyGoal} lessons
           </Text>
@@ -206,9 +213,12 @@ function SignedIn({
                 accessibilityRole="button"
                 accessibilityLabel="Continue learning"
               >
-                <Text style={{ color: "#008a3e", fontWeight: "900", fontSize: 14 }}>
-                  Continue →
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text style={{ color: "#008a3e", fontWeight: "900", fontSize: 14 }}>
+                    Continue
+                  </Text>
+                  <Icon name="arrow-right" size={15} color="#008a3e" strokeWidth={2.5} />
+                </View>
               </Pressable>
             </Link>
           </View>
@@ -240,26 +250,26 @@ function SignedIn({
           <View className="gap-2">
             <ActionCard
               href="/topics"
-              emoji="📘"
+              icon="book"
               title="Browse topics"
               subtitle="Lessons & practice"
             />
-            <ActionCard href="/tutor" emoji="💬" title="Chat with Maya" subtitle="Your AI tutor" />
+            <ActionCard href="/tutor" icon="chat" title="Chat with Maya" subtitle="Your AI tutor" />
             <ActionCard
               href="/solver"
-              emoji="📷"
+              icon="camera"
               title="Scan a problem"
               subtitle="Step-by-step help"
             />
             <ActionCard
               href="/progress"
-              emoji="📈"
+              icon="chart"
               title="My progress"
               subtitle="Mastery by topic"
             />
             <ActionCard
               href="/conversations"
-              emoji="🕓"
+              icon="clock"
               title="Past conversations"
               subtitle="Revisit Maya's help"
             />
@@ -286,12 +296,12 @@ function SignedIn({
 
 function ActionCard({
   href,
-  emoji,
+  icon,
   title,
   subtitle,
 }: {
   href: string;
-  emoji: string;
+  icon: IconName;
   title: string;
   subtitle: string;
 }) {
@@ -300,13 +310,13 @@ function ActionCard({
       <Pressable accessibilityRole="button" accessibilityLabel={title}>
         <Card className="flex-row items-center gap-3">
           <View className="h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft">
-            <Text style={{ fontSize: 20 }}>{emoji}</Text>
+            <Icon name={icon} size={20} color="#008a3e" />
           </View>
           <View className="flex-1">
             <Text className="font-display text-base font-extrabold text-foreground">{title}</Text>
             <Text className="text-xs text-muted-foreground">{subtitle}</Text>
           </View>
-          <Text className="text-base text-muted-foreground">→</Text>
+          <Icon name="arrow-right" size={16} color="#8B9590" />
         </Card>
       </Pressable>
     </Link>
