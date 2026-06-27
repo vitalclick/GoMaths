@@ -5,11 +5,17 @@ import "./instrument";
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import * as Sentry from "@sentry/node";
 import { AppModule } from "./app.module";
+import { assertConfig } from "./config/config.validation";
 
 async function bootstrap() {
+  // Validate configuration before anything else. In production this aborts
+  // the boot on insecure/missing critical settings rather than silently
+  // serving from ephemeral in-memory fallbacks.
+  assertConfig(process.env, new Logger("Config"));
+
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

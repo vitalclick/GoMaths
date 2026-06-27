@@ -14,7 +14,9 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "preflight": "node scripts/preflight-env.mjs",
+    "verify:cache": "node scripts/verify-tutor-cache.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
