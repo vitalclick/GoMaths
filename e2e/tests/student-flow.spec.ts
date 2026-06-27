@@ -54,7 +54,7 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   // After register, expo-router does router.replace("/") which updates
   // the URL but on web react-native-screens keeps the /register screen
   // mounted on top of the / screen and never transfers focus — the
-  // dashboard's "Hi, Test Learner" Text is in the DOM but its containing
+  // dashboard's "Howzit, Test Learner" Text is in the DOM but its containing
   // screen has display:none for the full timeout. Waiting on URL alone
   // (previous attempt) didn't help: URL settled to "/" while the stack
   // focus didn't. Force a hard navigation so the dashboard renders from a
@@ -66,7 +66,7 @@ test("happy path: register → topic → lesson → practice → chat with Maya"
   await page.goto("/");
 
   // Dashboard appears with the user's name.
-  await expect(page.getByText(/Hi, Test Learner/i).first()).toBeVisible();
+  await expect(page.getByText(/Howzit, Test Learner/i).first()).toBeVisible();
 
   // Browse topics → tap the linear equations topic.
   await tapByLabel(page, "Browse topics");

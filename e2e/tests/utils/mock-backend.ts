@@ -155,4 +155,23 @@ export async function installBackendMocks(page: Page) {
       }),
     }),
   );
+
+  const stats = {
+    xp: 120,
+    level: 1,
+    xpIntoLevel: 20,
+    xpForNextLevel: 300,
+    currentStreak: 3,
+    longestStreak: 5,
+    lastActiveOn: new Date().toISOString().slice(0, 10),
+    dailyGoal: 5,
+    dailyCompleted: 2,
+    dailyGoalMet: false,
+  };
+  await page.route(`${BASE}/api/gamification/me`, (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(stats) }),
+  );
+  await page.route(`${BASE}/api/gamification/me/activity`, (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(stats) }),
+  );
 }
