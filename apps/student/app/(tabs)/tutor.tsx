@@ -1,5 +1,5 @@
 import { Card, Icon, Maxi } from "@gomaths/ui";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,10 +12,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TextWithMath } from "../components/TextWithMath";
-import { useAuth } from "../lib/auth";
-import { useDebugEnabled } from "../lib/prefs";
-import { getConversation, streamTutorMessage } from "../lib/tutor";
+import { TextWithMath } from "../../components/TextWithMath";
+import { useAuth } from "../../lib/auth";
+import { useDebugEnabled } from "../../lib/prefs";
+import { getConversation, streamTutorMessage } from "../../lib/tutor";
 
 interface ChatMessage {
   id: string;
@@ -185,8 +185,7 @@ export default function TutorScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
-      <Stack.Screen options={{ title: "Maya · AI Tutor" }} />
+    <SafeAreaView className="flex-1 bg-background" edges={["top", "bottom"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         className="flex-1"
@@ -235,7 +234,7 @@ export default function TutorScreen() {
           </View>
         )}
 
-        <View className="border-t border-border bg-background px-4 py-3">
+        <View className="border-t border-border bg-background px-4 pb-24 pt-3">
           <View className="flex-row items-center gap-2 rounded-full border border-border bg-card pl-4 pr-1">
             <TextInput
               value={input}

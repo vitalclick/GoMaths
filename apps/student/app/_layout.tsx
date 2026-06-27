@@ -54,17 +54,16 @@ export default function RootLayout() {
           headerShadowVisible: false,
         }}
       >
-        <Stack.Screen name="index" options={{ title: "GoMaths" }} />
+        {/* The five main destinations live in the (tabs) group, which is
+            invisible in the URL so /, /topics, /solver, /tutor, /progress
+            are unchanged. */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: "Sign in" }} />
         <Stack.Screen name="register" options={{ title: "Create account" }} />
-        <Stack.Screen name="topics" options={{ title: "Grade 9" }} />
         <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
-        <Stack.Screen name="tutor" options={{ title: "Maya · AI Tutor" }} />
         <Stack.Screen name="conversations" options={{ title: "Conversations" }} />
-        <Stack.Screen name="solver" options={{ title: "Scan Solver" }} />
-        <Stack.Screen name="progress" options={{ title: "Progress" }} />
       </Stack>
     </AuthProvider>
   );

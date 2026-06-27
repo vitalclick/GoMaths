@@ -3,10 +3,10 @@ import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PreviewBanner } from "../components/PreviewBanner";
-import { useAuth } from "../lib/auth";
-import { fetchStats, type LearnerStats } from "../lib/gamification";
-import { hasCompletedOnboarding, setDebugEnabled, useDebugEnabled } from "../lib/prefs";
+import { PreviewBanner } from "../../components/PreviewBanner";
+import { useAuth } from "../../lib/auth";
+import { fetchStats, type LearnerStats } from "../../lib/gamification";
+import { hasCompletedOnboarding, setDebugEnabled, useDebugEnabled } from "../../lib/prefs";
 
 export default function HomeScreen() {
   const { user, loading, logout } = useAuth();
@@ -128,7 +128,7 @@ function SignedIn({
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
       <PreviewBanner />
       <ScrollView
-        contentContainerStyle={{ padding: 18, paddingBottom: 48 }}
+        contentContainerStyle={{ padding: 18, paddingBottom: 110 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {/* Header: mascot + greeting + stat pills */}
