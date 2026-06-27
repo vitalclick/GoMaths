@@ -52,6 +52,11 @@ const preset = {
           DEFAULT: colors.light.info,
           foreground: colors.light.infoForeground,
         },
+        ai: {
+          DEFAULT: colors.light.ai,
+          foreground: colors.light.aiForeground,
+          soft: colors.light.aiSoft,
+        },
         streak: colors.light.streak,
         xp: colors.light.xp,
         border: colors.light.border,

@@ -1,15 +1,17 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { Pressable, Text, type PressableProps } from "react-native";
+import type { ReactNode } from "react";
+import { Pressable, Text, View, type PressableProps } from "react-native";
 import { cn } from "./cn";
 
 const buttonVariants = cva(
-  "items-center justify-center rounded-2xl active:opacity-80",
+  "flex-row items-center justify-center gap-2 rounded-2xl active:opacity-80",
   {
     variants: {
       variant: {
         primary: "bg-primary",
         secondary: "bg-secondary",
         accent: "bg-accent",
+        ai: "bg-ai",
         ghost: "bg-transparent",
         destructive: "bg-destructive",
       },
@@ -37,6 +39,7 @@ const labelVariants = cva("font-semibold font-sans text-center", {
       primary: "text-primary-foreground",
       secondary: "text-secondary-foreground",
       accent: "text-accent-foreground",
+      ai: "text-ai-foreground",
       ghost: "text-foreground",
       destructive: "text-destructive-foreground",
     },
@@ -56,10 +59,12 @@ export interface ButtonProps
   extends Omit<PressableProps, "children">,
     VariantProps<typeof buttonVariants> {
   label: string;
+  /** Optional leading node (e.g. an icon). Keeps the lib icon-agnostic. */
+  icon?: ReactNode;
   className?: string;
 }
 
-export function Button({ label, variant, size, fullWidth, className, ...rest }: ButtonProps) {
+export function Button({ label, icon, variant, size, fullWidth, className, ...rest }: ButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -70,6 +75,7 @@ export function Button({ label, variant, size, fullWidth, className, ...rest }: 
       className={cn(buttonVariants({ variant, size, fullWidth }), className)}
       {...rest}
     >
+      {icon ? <View>{icon}</View> : null}
       <Text className={labelVariants({ variant, size })}>{label}</Text>
     </Pressable>
   );

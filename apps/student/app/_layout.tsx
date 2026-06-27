@@ -1,6 +1,15 @@
 import "../global.css";
+import {
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+  useFonts,
+} from "@expo-google-fonts/nunito";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator, View } from "react-native";
 import { AuthProvider } from "../lib/auth";
 import { initSentry } from "../lib/sentry";
 
@@ -9,6 +18,32 @@ import { initSentry } from "../lib/sentry";
 initSentry();
 
 export default function RootLayout() {
+  // Register the design1 Nunito families (per-weight, since RN can't pick a
+  // weight from one custom family). The design-tokens map font-display →
+  // ExtraBold and font-sans → Regular against these names.
+  const [fontsLoaded] = useFonts({
+    Nunito_400Regular,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fbfcf9",
+        }}
+      >
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
     <AuthProvider>
       <StatusBar style="auto" />

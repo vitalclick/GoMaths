@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.alg.factorisation",
+  "title": "Factorisation",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 1, Topic 1.5",
+  "prerequisites": ["g9.alg.expressions", "g9.alg.exponents"],
+  "learningOutcomes": [
+    "Factorise by taking out a common factor",
+    "Factorise the difference of two squares",
+    "Factorise trinomials of the form x^2 + bx + c"
+  ],
+  "estimatedMinutes": 30
+}

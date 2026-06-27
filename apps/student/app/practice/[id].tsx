@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { checkAnswer, listQuestions, type Question } from "../../lib/curriculum";
+import { recordActivity } from "../../lib/gamification";
 import { record } from "../../lib/progress-store";
 
 type Feedback =
@@ -19,12 +20,22 @@ export default function PracticeScreen() {
   const [feedback, setFeedback] = useState<Feedback>({ state: "idle" });
   const [error, setError] = useState<string | null>(null);
 
+  const [lessonRecorded, setLessonRecorded] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     listQuestions(id)
       .then(setQuestions)
       .catch((e) => setError(e.message));
   }, [id]);
+
+  // Award a "lesson completed" once the learner reaches the end of the set.
+  useEffect(() => {
+    if (questions && questions.length > 0 && index >= questions.length && !lessonRecorded) {
+      setLessonRecorded(true);
+      void recordActivity("lesson_completed");
+    }
+  }, [questions, index, lessonRecorded]);
 
   if (error) {
     return (
@@ -83,6 +94,7 @@ export default function PracticeScreen() {
         topicId: q.topicId,
         questionId: q.id,
       });
+      if (result.correct) void recordActivity("correct_answer");
       setFeedback({
         state: "answered",
         correct: result.correct,

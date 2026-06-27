@@ -117,6 +117,45 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+/**
+ * Authenticated fetch for the teacher app. Attaches the access token and
+ * surfaces errors directly (teacher surfaces are read-only for now, so we
+ * don't yet need the silent-refresh dance the Student app does).
+ */
+export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+  const accessToken = await storage.getItem(ACCESS_KEY);
+  const headers = new Headers(init.headers ?? {});
+  if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
+  return fetch(`${apiUrl}${path}`, { ...init, headers });
+}
+
+export interface TeacherClass {
+  id: string;
+  name: string;
+  grade: number;
+  studentCount: number;
+}
+
+export interface RosterStudent {
+  id: string;
+  displayName: string;
+  grade: number;
+  enrolledAt: string;
+}
+
+export async function fetchClasses(): Promise<TeacherClass[]> {
+  const res = await authFetch("/api/teachers/me/classes");
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as TeacherClass[];
+}
+
+export async function fetchRoster(classId: string): Promise<RosterStudent[]> {
+  const res = await authFetch(`/api/teachers/me/classes/${encodeURIComponent(classId)}/roster`);
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as RosterStudent[];
+}
+
 async function readError(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { message?: string | string[] };

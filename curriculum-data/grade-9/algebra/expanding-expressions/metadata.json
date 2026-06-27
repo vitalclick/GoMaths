@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.alg.expanding",
+  "title": "Expanding Algebraic Expressions",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 1, Topic 1.5",
+  "prerequisites": ["g9.alg.expressions"],
+  "learningOutcomes": [
+    "Expand a single bracket using the distributive law",
+    "Expand the product of two binomials",
+    "Expand the square of a binomial"
+  ],
+  "estimatedMinutes": 25
+}

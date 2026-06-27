@@ -14,6 +14,8 @@ import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { ParentsModule } from "./parents/parents.module";
 import { SchedulerModule } from "./scheduler/scheduler.module";
+import { GamificationModule } from "./gamification/gamification.module";
+import { TeachersModule } from "./teachers/teachers.module";
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { SchedulerModule } from "./scheduler/scheduler.module";
     NotificationsModule,
     ParentsModule,
     SchedulerModule,
+    GamificationModule,
+    TeachersModule,
   ],
   controllers: [HealthController],
   providers: [

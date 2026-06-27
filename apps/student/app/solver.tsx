@@ -1,4 +1,4 @@
-import { Button, Card } from "@gomaths/ui";
+import { Button, Card, Icon } from "@gomaths/ui";
 import * as ImagePicker from "expo-image-picker";
 import { Stack } from "expo-router";
 import { useState } from "react";
@@ -120,9 +120,14 @@ export default function SolverScreen() {
         {mode === "scan" ? (
           <>
             <Card>
-              <Text className="font-display text-lg font-semibold text-foreground">
-                Capture or pick an equation
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary-soft">
+                  <Icon name="camera" size={18} color="#008a3e" />
+                </View>
+                <Text className="font-display text-lg font-extrabold text-foreground">
+                  Capture or pick an equation
+                </Text>
+              </View>
               <Text className="mt-1 text-sm text-muted-foreground">
                 Works best with clearly printed equations. The mock OCR returns a canned expression
                 — wire MathPix to enable real recognition.
@@ -270,7 +275,10 @@ function SolutionView({ result }: { result: SolverResponse }) {
 
       {result.finalAnswer && (
         <Card className="border-success">
-          <Text className="text-xs uppercase tracking-wider text-success">Final answer</Text>
+          <View className="flex-row items-center gap-1.5">
+            <Icon name="check" size={14} color="#05ab58" strokeWidth={2.5} />
+            <Text className="text-xs uppercase tracking-wider text-success">Final answer</Text>
+          </View>
           <Text className="mt-1 font-mono text-lg font-bold text-foreground">
             {result.finalAnswer}
           </Text>

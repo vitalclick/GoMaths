@@ -82,7 +82,8 @@ Adopt **NativeWind** (Tailwind for React Native) as the styling layer for all Ex
 ## ADR-004 — Mascot, palette, typography lock-in (from design review)
 
 **Date:** 2026-05-15
-**Status:** Recommended (pending designer sign-off)
+**Status:** Partially superseded by ADR-008 (typography + design-language
+direction now follow design1; palette stands).
 
 ### Decision
 
@@ -274,3 +275,70 @@ listings.**
 - The `ecs` Terraform module is the next infra deliverable. It
   doesn't exist yet — the trigger to write it is "first signed v2
   cutover date for a school."
+
+---
+
+## ADR-008 — design1 is the canonical student-app design language
+
+**Date:** 2026-06-27
+**Status:** Accepted (reflects what shipped; supersedes ADR-004's
+typography + mascot lean)
+
+### Context
+
+ADR-004 leaned toward design2 for mascot naming and typography (Sora +
+Inter), but it was never signed off, and the product drifted: the
+first-launch onboarding flow shipped against **design1** ("redesign to
+match UI/design1 language"), with design1's Maxi mascot, page-dot
+pattern, and rounded Nunito-style type. Meanwhile `packages/design-tokens`
+was derived from design2 (oklch → hex), with Sora/Inter font tokens that
+nothing actually loads — every screen falls back to the system font today.
+
+The result was an inconsistent foundation: one shipped flow in design1,
+shared tokens pointing at design2, and the rest of the student app on an
+older plain component style. This ADR resolves the design1-vs-design2
+question so the rest of the app can be built against one system.
+
+### Decision
+
+- **design1 is canonical for the student app's visual language** —
+  component shapes, the Maxi mascot, gamification surfaces (XP / streak /
+  daily goal), and the floating bottom tab bar.
+- **Typography:** a single rounded family — **Nunito** — for display and
+  body, with JetBrains Mono for maths. Supersedes ADR-004's Sora + Inter.
+- **Palette:** unchanged. The design2-derived hex palette in
+  `packages/design-tokens` already matches design1 (same GoMaths green
+  `#008a3e`, warm red `#ea3c3f`) and keeps `streak`/`xp` tokens. ADR-004's
+  palette stands; only an **`ai` purple** token is added (design1's AI /
+  tutor distinction), which design2 lacked.
+- **Shared primitives live in `@gomaths/ui`**, not copy-pasted per screen
+  (the onboarding flow inlined its own Maxi; that is the anti-pattern this
+  decision exists to stop).
+
+### Why
+
+- Don't fight reality: the only shipped polished flow is already design1.
+- One rounded family (Nunito) matches design1's playful, learner-facing
+  tone better than the more neutral Sora/Inter pairing.
+- Centralising primitives is the precondition for re-skinning Home and the
+  rest of the app without duplication.
+
+### Open / follow-ups
+
+- **Mascot vs tutor naming.** design1's mascot is **Maxi**; the AI tutor
+  persona in the app + backend is **Maya**. Shipping both is confusing.
+  This is a product/copy decision, intentionally NOT resolved here — no
+  rename has been made. The shared mascot component keeps design1's name
+  (`Maxi`) until product decides.
+- **Font bundling.** Nunito is not yet bundled. Until an app registers it
+  via `expo-font` (e.g. `@expo-google-fonts/nunito`), the family token
+  falls back to the system font — no regression, but design1's look isn't
+  fully realised until the font ships. Requires a dependency add + verified
+  install (CI uses a frozen lockfile).
+- **GMIcon.** design1's ~25-glyph stroke icon set needs `react-native-svg`
+  (not currently a dependency). Deferred to the same dependency-add pass;
+  the shared primitives are icon-agnostic (accept a node) so they don't
+  block on it.
+- **expo-linear-gradient** for design1's gradient AI buttons / hero cards
+  is likewise not installed; the `ai` Button variant ships as a solid fill
+  for now.

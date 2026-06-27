@@ -46,6 +46,13 @@ const light = {
   info: "#2098db",
   infoForeground: "#f9fcff",
 
+  // AI / tutor distinction (design1 — the purple used to set AI surfaces
+  // apart from green "learning" surfaces). Absent from the design2-derived
+  // palette; added by ADR-008.
+  ai: "#7c3aed",
+  aiForeground: "#fbfcf9",
+  aiSoft: "#ede9fe",
+
   streak: "#ff6728",
   xp: "#e9ac00",
 
@@ -72,6 +79,9 @@ const dark = {
   accent: "#ff5f5b",
   accentForeground: "#06100a",
   accentSoft: "#551112",
+  ai: "#a78bfa",
+  aiForeground: "#06100a",
+  aiSoft: "#2e1065",
   border: "rgba(255,255,255,0.1)",
   input: "rgba(255,255,255,0.15)",
   ring: "#3aba6a",
