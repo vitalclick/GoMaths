@@ -1,0 +1,61 @@
+{
+  "topicId": "g9.num.integers",
+  "questions": [
+    {
+      "id": "g9.num.integers.q001",
+      "difficulty": "easy",
+      "stem": "-5 + 8",
+      "answer": "3",
+      "answerLatex": "3",
+      "solutionSteps": [
+        "Start at -5 and move 8 to the right on the number line.",
+        "-5 + 8 = 3."
+      ],
+      "commonMistakes": ["Answering -3 by subtracting instead of moving right", "Ignoring the negative sign on 5"],
+      "tags": ["addition"]
+    },
+    {
+      "id": "g9.num.integers.q002",
+      "difficulty": "easy",
+      "stem": "2 - 9",
+      "answer": "-7",
+      "answerLatex": "-7",
+      "solutionSteps": ["Subtracting a larger number gives a negative result.", "2 - 9 = -7."],
+      "commonMistakes": ["Answering 7 and dropping the sign", "Swapping the order to 9 - 2"],
+      "tags": ["subtraction"]
+    },
+    {
+      "id": "g9.num.integers.q003",
+      "difficulty": "medium",
+      "stem": "-7 - -2",
+      "answer": "-5",
+      "answerLatex": "-5",
+      "solutionSteps": [
+        "Subtracting a negative is the same as adding: -7 - (-2) = -7 + 2.",
+        "-7 + 2 = -5."
+      ],
+      "commonMistakes": ["Treating two minuses as a minus", "Answering -9"],
+      "tags": ["subtraction", "double-negative"]
+    },
+    {
+      "id": "g9.num.integers.q004",
+      "difficulty": "medium",
+      "stem": "-3 * -4",
+      "answer": "12",
+      "answerLatex": "12",
+      "solutionSteps": ["A negative times a negative is positive.", "-3 × -4 = 12."],
+      "commonMistakes": ["Answering -12", "Adding instead of multiplying"],
+      "tags": ["multiplication", "sign-rules"]
+    },
+    {
+      "id": "g9.num.integers.q005",
+      "difficulty": "hard",
+      "stem": "(-12)/4",
+      "answer": "-3",
+      "answerLatex": "-3",
+      "solutionSteps": ["A negative divided by a positive is negative.", "-12 ÷ 4 = -3."],
+      "commonMistakes": ["Answering 3 and losing the sign", "Dividing in the wrong order"],
+      "tags": ["division", "sign-rules"]
+    }
+  ]
+}
