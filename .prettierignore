@@ -13,6 +13,7 @@ package-lock.json
 yarn.lock
 packages/api-client/src/generated.ts
 **/.expo/types/**
+**/expo-env.d.ts
 
 # Designer mockups (visual reference only — see UI/README.md)
 UI/
