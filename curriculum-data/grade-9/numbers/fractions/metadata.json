@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.num.fractions",
+  "title": "Operations with Fractions",
+  "grade": 9,
+  "contentArea": "numbers",
+  "capsReference": "Term 1, Topic 1.2",
+  "prerequisites": ["g9.num.integers"],
+  "learningOutcomes": [
+    "Add and subtract fractions using a common denominator",
+    "Multiply and divide fractions",
+    "Simplify fractions to lowest terms"
+  ],
+  "estimatedMinutes": 25
+}
