@@ -14,7 +14,7 @@ const ITEMS: TabItem[] = [
   { id: "topics", label: "Learn" },
   { id: "solver", label: "Solve", center: true },
   { id: "tutor", label: "Tutor" },
-  { id: "progress", label: "Progress" },
+  { id: "profile", label: "Profile" },
 ];
 
 const ICONS: Record<string, IconName> = {
@@ -22,6 +22,9 @@ const ICONS: Record<string, IconName> = {
   topics: "book",
   solver: "camera",
   tutor: "chat",
+  profile: "profile",
+  // `progress` is still a routable tab screen (reached from Home/Profile),
+  // just not shown in the bar — keep an icon for completeness.
   progress: "chart",
 };
 
@@ -52,6 +55,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="topics" />
       <Tabs.Screen name="solver" />
       <Tabs.Screen name="tutor" />
+      <Tabs.Screen name="profile" />
       <Tabs.Screen name="progress" />
     </Tabs>
   );
