@@ -1,4 +1,4 @@
-import { Button, Card } from "@gomaths/ui";
+import { Button, Card, Icon, Maxi } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
@@ -31,6 +31,9 @@ function SignedOut() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <View className="flex-1 justify-center px-6">
+        <View className="mb-4">
+          <Maxi size={72} />
+        </View>
         <Text className="font-display text-4xl font-extrabold text-foreground">
           GoMaths · Parent
         </Text>
@@ -158,14 +161,19 @@ function SignedIn({
 
 function ChildCard({ child }: { child: LinkedChild }) {
   return (
-    <Card>
-      <Text className="font-display text-base font-semibold text-foreground">
-        {child.displayName}
-      </Text>
-      <Text className="mt-0.5 text-xs text-muted-foreground">{child.email}</Text>
-      <View className="mt-2 flex-row gap-3">
-        <Pill label={child.grade ? `Grade ${child.grade}` : "Grade —"} />
-        <Pill label={`Linked ${formatRelative(child.linkedAt)}`} />
+    <Card className="flex-row items-center gap-3">
+      <View className="h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft">
+        <Icon name="profile" size={22} color="#008a3e" />
+      </View>
+      <View className="flex-1">
+        <Text className="font-display text-base font-extrabold text-foreground">
+          {child.displayName}
+        </Text>
+        <Text className="mt-0.5 text-xs text-muted-foreground">{child.email}</Text>
+        <View className="mt-2 flex-row gap-2">
+          <Pill label={child.grade ? `Grade ${child.grade}` : "Grade —"} />
+          <Pill label={`Linked ${formatRelative(child.linkedAt)}`} />
+        </View>
       </View>
     </Card>
   );
