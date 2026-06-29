@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.num.percentages",
+  "title": "Percentages",
+  "grade": 9,
+  "contentArea": "numbers",
+  "capsReference": "Term 1, Topic 1.3",
+  "prerequisites": ["g9.num.fractions"],
+  "learningOutcomes": [
+    "Calculate a percentage of a quantity",
+    "Express one quantity as a percentage of another",
+    "Convert between fractions, decimals and percentages"
+  ],
+  "estimatedMinutes": 25
+}

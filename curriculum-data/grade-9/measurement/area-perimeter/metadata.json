@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.mea.area-perimeter",
+  "title": "Area and Perimeter",
+  "grade": 9,
+  "contentArea": "measurement",
+  "capsReference": "Term 3, Topic 3.1",
+  "prerequisites": ["g9.num.integers"],
+  "learningOutcomes": [
+    "Calculate the perimeter of rectangles and squares",
+    "Calculate the area of rectangles, triangles and squares",
+    "Calculate the area of a circle in terms of π"
+  ],
+  "estimatedMinutes": 30
+}

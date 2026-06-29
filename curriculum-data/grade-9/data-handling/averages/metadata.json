@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.dh.averages",
+  "title": "The Mean of a Data Set",
+  "grade": 9,
+  "contentArea": "data_handling",
+  "capsReference": "Term 4, Topic 4.1",
+  "prerequisites": ["g9.num.integers"],
+  "learningOutcomes": [
+    "Calculate the mean (average) of a set of values",
+    "Interpret the mean as a measure of central tendency",
+    "Handle means that are not whole numbers"
+  ],
+  "estimatedMinutes": 20
+}

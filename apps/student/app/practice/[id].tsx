@@ -1,4 +1,4 @@
-import { Button, Card } from "@gomaths/ui";
+import { Button, Card, Icon } from "@gomaths/ui";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TextInput, View } from "react-native";
@@ -65,7 +65,10 @@ export default function PracticeScreen() {
     return (
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="font-display text-3xl font-bold text-foreground">All done!</Text>
+          <View className="mb-4 h-20 w-20 items-center justify-center rounded-3xl bg-primary-soft">
+            <Icon name="trophy" size={38} color="#008a3e" />
+          </View>
+          <Text className="font-display text-3xl font-extrabold text-foreground">All done!</Text>
           <Text className="mt-2 text-center text-base text-muted-foreground">
             You worked through every question for this topic.
           </Text>
@@ -141,11 +144,19 @@ export default function PracticeScreen() {
 
         {feedback.state === "answered" && (
           <Card className={feedback.correct ? "mt-4 border-success" : "mt-4 border-destructive"}>
-            <Text
-              className={`font-display text-lg font-bold ${feedback.correct ? "text-success" : "text-destructive"}`}
-            >
-              {feedback.correct ? "Correct" : "Not quite"}
-            </Text>
+            <View className="flex-row items-center gap-1.5">
+              <Icon
+                name={feedback.correct ? "check" : "x"}
+                size={18}
+                color={feedback.correct ? "#05ab58" : "#e62c2c"}
+                strokeWidth={2.5}
+              />
+              <Text
+                className={`font-display text-lg font-extrabold ${feedback.correct ? "text-success" : "text-destructive"}`}
+              >
+                {feedback.correct ? "Correct" : "Not quite"}
+              </Text>
+            </View>
             {!feedback.correct && (
               <Text className="mt-1 text-sm text-foreground">
                 Expected: <Text className="font-mono">{feedback.expected}</Text>

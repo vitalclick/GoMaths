@@ -1,6 +1,5 @@
 import { Button, Card, Icon } from "@gomaths/ui";
 import * as ImagePicker from "expo-image-picker";
-import { Stack } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,10 +11,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Math as MathView } from "../components/Math";
-import { useAuth } from "../lib/auth";
-import { prepareImageForOcr } from "../lib/image-prep";
-import { scanImage, solveLatex, type SolverResponse } from "../lib/solver";
+import { Math as MathView } from "../../components/Math";
+import { useAuth } from "../../lib/auth";
+import { prepareImageForOcr } from "../../lib/image-prep";
+import { scanImage, solveLatex, type SolverResponse } from "../../lib/solver";
 
 type Mode = "scan" | "type";
 
@@ -109,9 +108,8 @@ export default function SolverScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <Stack.Screen options={{ title: "Solver" }} />
-      <ScrollView contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 32 }}>
+    <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 96 }}>
         <View className="flex-row gap-2">
           <ModeChip label="Scan" active={mode === "scan"} onPress={() => setMode("scan")} />
           <ModeChip label="Type" active={mode === "type"} onPress={() => setMode("type")} />

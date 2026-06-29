@@ -1,0 +1,58 @@
+{
+  "topicId": "g9.num.percentages",
+  "questions": [
+    {
+      "id": "g9.num.percentages.q001",
+      "difficulty": "easy",
+      "stem": "0.05*80",
+      "answer": "4",
+      "answerLatex": "4",
+      "solutionSteps": ["5% = 0.05.", "0.05 × 80 = 4."],
+      "commonMistakes": ["Using 0.5 instead of 0.05 for 5%"],
+      "tags": ["percentage-of"]
+    },
+    {
+      "id": "g9.num.percentages.q002",
+      "difficulty": "easy",
+      "stem": "0.2*150",
+      "answer": "30",
+      "answerLatex": "30",
+      "solutionSteps": ["20% = 0.2.", "0.2 × 150 = 30."],
+      "commonMistakes": ["Writing 20% as 0.02"],
+      "tags": ["percentage-of"]
+    },
+    {
+      "id": "g9.num.percentages.q003",
+      "difficulty": "medium",
+      "stem": "0.15*200",
+      "answer": "30",
+      "answerLatex": "30",
+      "solutionSteps": ["15% = 0.15.", "0.15 × 200 = 30."],
+      "commonMistakes": ["Multiplying by 15 instead of 0.15"],
+      "tags": ["percentage-of"]
+    },
+    {
+      "id": "g9.num.percentages.q004",
+      "difficulty": "medium",
+      "stem": "(3/4)*100",
+      "answer": "75",
+      "answerLatex": "75",
+      "solutionSteps": ["To turn a fraction into a percentage, multiply by 100.", "(3/4) × 100 = 75, so 3/4 = 75%."],
+      "commonMistakes": ["Forgetting to multiply by 100"],
+      "tags": ["fraction-to-percent"]
+    },
+    {
+      "id": "g9.num.percentages.q005",
+      "difficulty": "hard",
+      "stem": "(45/180)*100",
+      "answer": "25",
+      "answerLatex": "25",
+      "solutionSteps": [
+        "Express 45 out of 180 as a percentage: (45/180) × 100.",
+        "= 0.25 × 100 = 25, so 45 is 25% of 180."
+      ],
+      "commonMistakes": ["Dividing the wrong way (180/45)", "Forgetting the × 100"],
+      "tags": ["one-as-percent-of-another"]
+    }
+  ]
+}

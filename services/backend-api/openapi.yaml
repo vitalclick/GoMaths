@@ -621,6 +621,31 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
 
+  /api/teachers/me/classes/{classId}/progress:
+    get:
+      tags: [teachers]
+      summary: Per-student progress for one of the teacher's classes
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ClassProgressEntry" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: The teacher does not teach this class
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -725,6 +750,16 @@ components:
         displayName: { type: string }
         grade: { type: integer }
         enrolledAt: { type: string, format: date-time }
+
+    ClassProgressEntry:
+      type: object
+      required: [studentId, displayName, grade, topicsAttempted, averageMastery]
+      properties:
+        studentId: { type: string }
+        displayName: { type: string }
+        grade: { type: integer }
+        topicsAttempted: { type: integer }
+        averageMastery: { type: number, description: "Mean mastery 0–1 across attempted topics" }
 
     Error:
       type: object
