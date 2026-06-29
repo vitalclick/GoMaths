@@ -262,6 +262,12 @@ function SignedIn({
               subtitle="Step-by-step help"
             />
             <ActionCard
+              href="/graphing"
+              icon="graph"
+              title="Graph a function"
+              subtitle="See lines & curves"
+            />
+            <ActionCard
               href="/progress"
               icon="chart"
               title="My progress"
