@@ -7,11 +7,11 @@
       "stem": "-5 + 8",
       "answer": "3",
       "answerLatex": "3",
-      "solutionSteps": [
-        "Start at -5 and move 8 to the right on the number line.",
-        "-5 + 8 = 3."
+      "solutionSteps": ["Start at -5 and move 8 to the right on the number line.", "-5 + 8 = 3."],
+      "commonMistakes": [
+        "Answering -3 by subtracting instead of moving right",
+        "Ignoring the negative sign on 5"
       ],
-      "commonMistakes": ["Answering -3 by subtracting instead of moving right", "Ignoring the negative sign on 5"],
       "tags": ["addition"]
     },
     {

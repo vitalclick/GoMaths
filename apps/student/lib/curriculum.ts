@@ -109,19 +109,71 @@ interface FixtureQuestionsFile {
 }
 
 const FIXTURES: { meta: FixtureMeta; questions: FixtureQuestionsFile; lesson: string }[] = [
-  { meta: linearEqMeta as FixtureMeta, questions: linearEqQuestions as FixtureQuestionsFile, lesson: linearEqLesson as unknown as string },
-  { meta: exponentsMeta as FixtureMeta, questions: exponentsQuestions as FixtureQuestionsFile, lesson: exponentsLesson as unknown as string },
-  { meta: factorisationMeta as FixtureMeta, questions: factorisationQuestions as FixtureQuestionsFile, lesson: factorisationLesson as unknown as string },
-  { meta: expandingMeta as FixtureMeta, questions: expandingQuestions as FixtureQuestionsFile, lesson: expandingLesson as unknown as string },
-  { meta: algebraicFractionsMeta as FixtureMeta, questions: algebraicFractionsQuestions as FixtureQuestionsFile, lesson: algebraicFractionsLesson as unknown as string },
-  { meta: quadraticEqMeta as FixtureMeta, questions: quadraticEqQuestions as FixtureQuestionsFile, lesson: quadraticEqLesson as unknown as string },
-  { meta: integersMeta as FixtureMeta, questions: integersQuestions as FixtureQuestionsFile, lesson: integersLesson as unknown as string },
-  { meta: fractionsMeta as FixtureMeta, questions: fractionsQuestions as FixtureQuestionsFile, lesson: fractionsLesson as unknown as string },
-  { meta: percentagesMeta as FixtureMeta, questions: percentagesQuestions as FixtureQuestionsFile, lesson: percentagesLesson as unknown as string },
-  { meta: pythagorasMeta as FixtureMeta, questions: pythagorasQuestions as FixtureQuestionsFile, lesson: pythagorasLesson as unknown as string },
-  { meta: areaPerimeterMeta as FixtureMeta, questions: areaPerimeterQuestions as FixtureQuestionsFile, lesson: areaPerimeterLesson as unknown as string },
-  { meta: anglesMeta as FixtureMeta, questions: anglesQuestions as FixtureQuestionsFile, lesson: anglesLesson as unknown as string },
-  { meta: averagesMeta as FixtureMeta, questions: averagesQuestions as FixtureQuestionsFile, lesson: averagesLesson as unknown as string },
+  {
+    meta: linearEqMeta as FixtureMeta,
+    questions: linearEqQuestions as FixtureQuestionsFile,
+    lesson: linearEqLesson as unknown as string,
+  },
+  {
+    meta: exponentsMeta as FixtureMeta,
+    questions: exponentsQuestions as FixtureQuestionsFile,
+    lesson: exponentsLesson as unknown as string,
+  },
+  {
+    meta: factorisationMeta as FixtureMeta,
+    questions: factorisationQuestions as FixtureQuestionsFile,
+    lesson: factorisationLesson as unknown as string,
+  },
+  {
+    meta: expandingMeta as FixtureMeta,
+    questions: expandingQuestions as FixtureQuestionsFile,
+    lesson: expandingLesson as unknown as string,
+  },
+  {
+    meta: algebraicFractionsMeta as FixtureMeta,
+    questions: algebraicFractionsQuestions as FixtureQuestionsFile,
+    lesson: algebraicFractionsLesson as unknown as string,
+  },
+  {
+    meta: quadraticEqMeta as FixtureMeta,
+    questions: quadraticEqQuestions as FixtureQuestionsFile,
+    lesson: quadraticEqLesson as unknown as string,
+  },
+  {
+    meta: integersMeta as FixtureMeta,
+    questions: integersQuestions as FixtureQuestionsFile,
+    lesson: integersLesson as unknown as string,
+  },
+  {
+    meta: fractionsMeta as FixtureMeta,
+    questions: fractionsQuestions as FixtureQuestionsFile,
+    lesson: fractionsLesson as unknown as string,
+  },
+  {
+    meta: percentagesMeta as FixtureMeta,
+    questions: percentagesQuestions as FixtureQuestionsFile,
+    lesson: percentagesLesson as unknown as string,
+  },
+  {
+    meta: pythagorasMeta as FixtureMeta,
+    questions: pythagorasQuestions as FixtureQuestionsFile,
+    lesson: pythagorasLesson as unknown as string,
+  },
+  {
+    meta: areaPerimeterMeta as FixtureMeta,
+    questions: areaPerimeterQuestions as FixtureQuestionsFile,
+    lesson: areaPerimeterLesson as unknown as string,
+  },
+  {
+    meta: anglesMeta as FixtureMeta,
+    questions: anglesQuestions as FixtureQuestionsFile,
+    lesson: anglesLesson as unknown as string,
+  },
+  {
+    meta: averagesMeta as FixtureMeta,
+    questions: averagesQuestions as FixtureQuestionsFile,
+    lesson: averagesLesson as unknown as string,
+  },
 ];
 
 // ─── Public API ───────────────────────────────────────────────────────

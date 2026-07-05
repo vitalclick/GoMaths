@@ -7,10 +7,7 @@
       "stem": "8*6",
       "answer": "48",
       "answerLatex": "48",
-      "solutionSteps": [
-        "Area of a rectangle = length × breadth.",
-        "8 × 6 = 48 (square units)."
-      ],
+      "solutionSteps": ["Area of a rectangle = length × breadth.", "8 × 6 = 48 (square units)."],
       "commonMistakes": ["Adding the sides instead of multiplying (that gives perimeter)"],
       "tags": ["rectangle", "area"]
     },
@@ -47,7 +44,10 @@
         "Area of a triangle = ½ × base × height.",
         "½ × 10 × 4 = 20 (square units)."
       ],
-      "commonMistakes": ["Forgetting the ½", "Using a slant side instead of the perpendicular height"],
+      "commonMistakes": [
+        "Forgetting the ½",
+        "Using a slant side instead of the perpendicular height"
+      ],
       "tags": ["triangle", "area"]
     },
     {
@@ -56,10 +56,7 @@
       "stem": "pi*5^2",
       "answer": "25*pi",
       "answerLatex": "25\\pi",
-      "solutionSteps": [
-        "Area of a circle = π × r².",
-        "π × 5² = 25π (square units)."
-      ],
+      "solutionSteps": ["Area of a circle = π × r².", "π × 5² = 25π (square units)."],
       "commonMistakes": ["Using diameter instead of radius", "Writing 2πr (that is circumference)"],
       "tags": ["circle", "area"]
     }

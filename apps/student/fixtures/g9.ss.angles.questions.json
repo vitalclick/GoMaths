@@ -20,10 +20,7 @@
       "stem": "90 - 35",
       "answer": "55",
       "answerLatex": "55",
-      "solutionSteps": [
-        "Complementary angles add up to 90°.",
-        "The other angle is 90 - 35 = 55°."
-      ],
+      "solutionSteps": ["Complementary angles add up to 90°.", "The other angle is 90 - 35 = 55°."],
       "commonMistakes": ["Confusing complementary (90°) with supplementary (180°)"],
       "tags": ["complementary"]
     },

@@ -29,10 +29,7 @@
         "Divide the powers of x: x^2 ÷ x = x.",
         "Answer: 3x."
       ],
-      "commonMistakes": [
-        "Leaving x^2 in the answer",
-        "Dividing 6 by 2 incorrectly"
-      ],
+      "commonMistakes": ["Leaving x^2 in the answer", "Dividing 6 by 2 incorrectly"],
       "tags": ["common-factor"]
     },
     {

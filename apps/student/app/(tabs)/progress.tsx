@@ -1,13 +1,29 @@
 import { Card, Icon, ProgressBar } from "@gomaths/ui";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { masteryByTopic, subscribe, type TopicMastery } from "../../lib/progress-store";
+import { isHydrated, masteryByTopic, subscribe, type TopicMastery } from "../../lib/progress-store";
 
 export default function ProgressScreen() {
   const [rows, setRows] = useState<TopicMastery[]>(() => [...masteryByTopic().values()]);
+  const [ready, setReady] = useState(isHydrated);
 
-  useEffect(() => subscribe(() => setRows([...masteryByTopic().values()])), []);
+  useEffect(
+    () =>
+      subscribe(() => {
+        setReady(isHydrated());
+        setRows([...masteryByTopic().values()]);
+      }),
+    [],
+  );
+
+  if (!ready) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
 
   if (rows.length === 0) {
     return (

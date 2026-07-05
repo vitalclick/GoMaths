@@ -24,14 +24,8 @@
       "stem": "sqrt(6^2 + 8^2)",
       "answer": "10",
       "answerLatex": "10",
-      "solutionSteps": [
-        "hypotenuse² = 6² + 8² = 36 + 64 = 100.",
-        "Hypotenuse = √100 = 10."
-      ],
-      "commonMistakes": [
-        "Computing 6 + 8 = 14",
-        "Taking √100 as 50"
-      ],
+      "solutionSteps": ["hypotenuse² = 6² + 8² = 36 + 64 = 100.", "Hypotenuse = √100 = 10."],
+      "commonMistakes": ["Computing 6 + 8 = 14", "Taking √100 as 50"],
       "tags": ["hypotenuse"]
     },
     {
@@ -40,10 +34,7 @@
       "stem": "sqrt(5^2 + 12^2)",
       "answer": "13",
       "answerLatex": "13",
-      "solutionSteps": [
-        "hypotenuse² = 5² + 12² = 25 + 144 = 169.",
-        "Hypotenuse = √169 = 13."
-      ],
+      "solutionSteps": ["hypotenuse² = 5² + 12² = 25 + 144 = 169.", "Hypotenuse = √169 = 13."],
       "commonMistakes": [
         "Mis-squaring 12 as 24",
         "Estimating √169 instead of recognising 13² = 169"
@@ -73,14 +64,8 @@
       "stem": "sqrt(8^2 + 15^2)",
       "answer": "17",
       "answerLatex": "17",
-      "solutionSteps": [
-        "hypotenuse² = 8² + 15² = 64 + 225 = 289.",
-        "Hypotenuse = √289 = 17."
-      ],
-      "commonMistakes": [
-        "Mis-squaring 15 as 30",
-        "Not recognising that 17² = 289"
-      ],
+      "solutionSteps": ["hypotenuse² = 8² + 15² = 64 + 225 = 289.", "Hypotenuse = √289 = 17."],
+      "commonMistakes": ["Mis-squaring 15 as 30", "Not recognising that 17² = 289"],
       "tags": ["hypotenuse"]
     }
   ]

@@ -46,10 +46,7 @@
         "Here a = x and b = 4.",
         "So the answer is x^2 - 16 (the middle terms cancel)."
       ],
-      "commonMistakes": [
-        "Writing x^2 + 16",
-        "Keeping a middle term such as -8x"
-      ],
+      "commonMistakes": ["Writing x^2 + 16", "Keeping a middle term such as -8x"],
       "tags": ["difference-of-squares"]
     },
     {

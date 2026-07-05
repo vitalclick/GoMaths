@@ -127,8 +127,8 @@ export default function SolverScreen() {
                 </Text>
               </View>
               <Text className="mt-1 text-sm text-muted-foreground">
-                Works best with clearly printed equations. The mock OCR returns a canned expression
-                — wire MathPix to enable real recognition.
+                Works best with clearly printed equations on a white background. Snap a photo or
+                pick one from your library.
               </Text>
               <View className="mt-4 gap-2">
                 <Button

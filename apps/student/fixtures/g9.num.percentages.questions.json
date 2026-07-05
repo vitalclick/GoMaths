@@ -37,7 +37,10 @@
       "stem": "(3/4)*100",
       "answer": "75",
       "answerLatex": "75",
-      "solutionSteps": ["To turn a fraction into a percentage, multiply by 100.", "(3/4) × 100 = 75, so 3/4 = 75%."],
+      "solutionSteps": [
+        "To turn a fraction into a percentage, multiply by 100.",
+        "(3/4) × 100 = 75, so 3/4 = 75%."
+      ],
       "commonMistakes": ["Forgetting to multiply by 100"],
       "tags": ["fraction-to-percent"]
     },
