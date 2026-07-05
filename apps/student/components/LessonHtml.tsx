@@ -39,6 +39,12 @@ const PAGE_CSS = `
   ul { padding-left: 20px; margin: 8px 0; }
   li { margin: 4px 0; }
   code { font-family: ui-monospace, monospace; background: #F0F4F1; padding: 2px 4px; border-radius: 4px; }
+  blockquote { border-left: 3px solid #008a3e; margin: 12px 0; padding: 6px 14px;
+    background: #F5FAF7; border-radius: 0 6px 6px 0; color: #3A4A40; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #D1E4D9; padding: 7px 10px; text-align: left; }
+  th { background: #EDF3F0; font-weight: 700; }
+  tr:nth-child(even) { background: #F8FBF9; }
   .katex-display { margin: 10px 0; overflow-x: auto; overflow-y: hidden; }
 `;
 
@@ -55,17 +61,67 @@ function renderMathSubstitutions(html: string): string {
     );
 }
 
-// Very small markdown → HTML converter. Phase 1 replaces with markdown-it.
+// Small markdown → HTML converter covering the CAPS lesson format.
 function mdToHtml(md: string): string {
+  // Escape HTML entities before any transformations.
   let html = md.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]!);
 
+  // Headings
   html = html.replace(/^### (.+)$/gm, "<h3>$1</h3>");
   html = html.replace(/^## (.+)$/gm, "<h2>$1</h2>");
   html = html.replace(/^# (.+)$/gm, "<h1>$1</h1>");
 
+  // Inline emphasis (must come before blockquote/table so content renders correctly)
   html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/(?<!\w)\*(.+?)\*(?!\w)/g, "<em>$1</em>");
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
+  // Blockquotes: consecutive > lines become a single <blockquote>
+  html = html.replace(/(^|\n)((?:&gt; .+(?:\n|$))+)/g, (_, lead, block) => {
+    const inner = block
+      .trim()
+      .split("\n")
+      .map((line: string) => line.replace(/^&gt; /, "").trim())
+      .join(" ");
+    return `${lead}<blockquote>${inner}</blockquote>`;
+  });
+
+  // Tables: | col | col | rows preceded by a separator row (| --- | --- |)
+  html = html.replace(/((?:^\|.+\|\s*\n)+)/gm, (tableBlock) => {
+    const lines = tableBlock
+      .trim()
+      .split("\n")
+      .filter((l) => l.trim());
+    if (lines.length < 2) return tableBlock;
+    const isSep = (l: string) => /^\|[\s|:-]+\|$/.test(l.trim());
+    const parseCells = (l: string) =>
+      l
+        .trim()
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((c) => c.trim());
+
+    const rows: string[][] = [];
+    let headerRow: string[] | null = null;
+    for (let i = 0; i < lines.length; i++) {
+      if (i === 1 && isSep(lines[i])) {
+        headerRow = rows.shift() ?? null;
+        continue;
+      }
+      rows.push(parseCells(lines[i]));
+    }
+
+    let table = "<table>";
+    if (headerRow) {
+      table += `<thead><tr>${headerRow.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`;
+    }
+    table += `<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    table += "</table>";
+    return table;
+  });
+
+  // Unordered lists
   html = html.replace(/(^|\n)((?:- .+(?:\n|$))+)/g, (_, lead, block) => {
     const items = block
       .trim()
@@ -75,10 +131,11 @@ function mdToHtml(md: string): string {
     return `${lead}<ul>${items}</ul>`;
   });
 
+  // Wrap remaining bare text blocks in <p>
   html = html
     .split(/\n{2,}/)
     .map((chunk) =>
-      /^\s*<(h\d|ul|ol|pre|blockquote)/.test(chunk) || chunk.trim() === ""
+      /^\s*<(h\d|ul|ol|pre|blockquote|table)/.test(chunk) || chunk.trim() === ""
         ? chunk
         : `<p>${chunk.trim().replace(/\n/g, " ")}</p>`,
     )
