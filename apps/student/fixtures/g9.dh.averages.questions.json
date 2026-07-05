@@ -1,0 +1,55 @@
+{
+  "topicId": "g9.dh.averages",
+  "questions": [
+    {
+      "id": "g9.dh.averages.q001",
+      "difficulty": "easy",
+      "stem": "(12 + 18)/2",
+      "answer": "15",
+      "answerLatex": "15",
+      "solutionSteps": ["Mean = sum ÷ count.", "(12 + 18) ÷ 2 = 30 ÷ 2 = 15."],
+      "commonMistakes": ["Forgetting to divide by the number of values"],
+      "tags": ["mean"]
+    },
+    {
+      "id": "g9.dh.averages.q002",
+      "difficulty": "easy",
+      "stem": "(10 + 20 + 30)/3",
+      "answer": "20",
+      "answerLatex": "20",
+      "solutionSteps": ["Add the values: 10 + 20 + 30 = 60.", "Divide by 3: 60 ÷ 3 = 20."],
+      "commonMistakes": ["Dividing by 2 instead of 3", "Adding incorrectly"],
+      "tags": ["mean"]
+    },
+    {
+      "id": "g9.dh.averages.q003",
+      "difficulty": "medium",
+      "stem": "(4 + 8 + 6 + 2)/4",
+      "answer": "5",
+      "answerLatex": "5",
+      "solutionSteps": ["Sum = 4 + 8 + 6 + 2 = 20.", "Mean = 20 ÷ 4 = 5."],
+      "commonMistakes": ["Counting the wrong number of values"],
+      "tags": ["mean"]
+    },
+    {
+      "id": "g9.dh.averages.q004",
+      "difficulty": "medium",
+      "stem": "(2 + 4 + 6 + 8 + 10)/5",
+      "answer": "6",
+      "answerLatex": "6",
+      "solutionSteps": ["Sum = 2 + 4 + 6 + 8 + 10 = 30.", "Mean = 30 ÷ 5 = 6."],
+      "commonMistakes": ["Dividing by 4 instead of 5"],
+      "tags": ["mean"]
+    },
+    {
+      "id": "g9.dh.averages.q005",
+      "difficulty": "hard",
+      "stem": "(3 + 7 + 11 + 9)/4",
+      "answer": "7.5",
+      "answerLatex": "7.5",
+      "solutionSteps": ["Sum = 3 + 7 + 11 + 9 = 30.", "Mean = 30 ÷ 4 = 7.5."],
+      "commonMistakes": ["Rounding 7.5 down to 7", "Assuming the mean must be a whole number"],
+      "tags": ["mean", "non-integer"]
+    }
+  ]
+}

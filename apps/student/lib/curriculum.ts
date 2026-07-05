@@ -16,6 +16,39 @@ import linearEqLesson from "../fixtures/g9.alg.linear-eq.lesson";
 import exponentsMeta from "../fixtures/g9.alg.exponents.metadata.json";
 import exponentsQuestions from "../fixtures/g9.alg.exponents.questions.json";
 import exponentsLesson from "../fixtures/g9.alg.exponents.lesson";
+import factorisationMeta from "../fixtures/g9.alg.factorisation.metadata.json";
+import factorisationQuestions from "../fixtures/g9.alg.factorisation.questions.json";
+import factorisationLesson from "../fixtures/g9.alg.factorisation.lesson";
+import expandingMeta from "../fixtures/g9.alg.expanding.metadata.json";
+import expandingQuestions from "../fixtures/g9.alg.expanding.questions.json";
+import expandingLesson from "../fixtures/g9.alg.expanding.lesson";
+import algebraicFractionsMeta from "../fixtures/g9.alg.algebraic-fractions.metadata.json";
+import algebraicFractionsQuestions from "../fixtures/g9.alg.algebraic-fractions.questions.json";
+import algebraicFractionsLesson from "../fixtures/g9.alg.algebraic-fractions.lesson";
+import quadraticEqMeta from "../fixtures/g9.alg.quadratic-eq.metadata.json";
+import quadraticEqQuestions from "../fixtures/g9.alg.quadratic-eq.questions.json";
+import quadraticEqLesson from "../fixtures/g9.alg.quadratic-eq.lesson";
+import integersMeta from "../fixtures/g9.num.integers.metadata.json";
+import integersQuestions from "../fixtures/g9.num.integers.questions.json";
+import integersLesson from "../fixtures/g9.num.integers.lesson";
+import fractionsMeta from "../fixtures/g9.num.fractions.metadata.json";
+import fractionsQuestions from "../fixtures/g9.num.fractions.questions.json";
+import fractionsLesson from "../fixtures/g9.num.fractions.lesson";
+import percentagesMeta from "../fixtures/g9.num.percentages.metadata.json";
+import percentagesQuestions from "../fixtures/g9.num.percentages.questions.json";
+import percentagesLesson from "../fixtures/g9.num.percentages.lesson";
+import pythagorasMeta from "../fixtures/g9.mea.pythagoras.metadata.json";
+import pythagorasQuestions from "../fixtures/g9.mea.pythagoras.questions.json";
+import pythagorasLesson from "../fixtures/g9.mea.pythagoras.lesson";
+import areaPerimeterMeta from "../fixtures/g9.mea.area-perimeter.metadata.json";
+import areaPerimeterQuestions from "../fixtures/g9.mea.area-perimeter.questions.json";
+import areaPerimeterLesson from "../fixtures/g9.mea.area-perimeter.lesson";
+import anglesMeta from "../fixtures/g9.ss.angles.metadata.json";
+import anglesQuestions from "../fixtures/g9.ss.angles.questions.json";
+import anglesLesson from "../fixtures/g9.ss.angles.lesson";
+import averagesMeta from "../fixtures/g9.dh.averages.metadata.json";
+import averagesQuestions from "../fixtures/g9.dh.averages.questions.json";
+import averagesLesson from "../fixtures/g9.dh.averages.lesson";
 import { authFetch } from "./auth";
 import { getClient } from "./api";
 
@@ -76,16 +109,19 @@ interface FixtureQuestionsFile {
 }
 
 const FIXTURES: { meta: FixtureMeta; questions: FixtureQuestionsFile; lesson: string }[] = [
-  {
-    meta: linearEqMeta as FixtureMeta,
-    questions: linearEqQuestions as FixtureQuestionsFile,
-    lesson: linearEqLesson as unknown as string,
-  },
-  {
-    meta: exponentsMeta as FixtureMeta,
-    questions: exponentsQuestions as FixtureQuestionsFile,
-    lesson: exponentsLesson as unknown as string,
-  },
+  { meta: linearEqMeta as FixtureMeta, questions: linearEqQuestions as FixtureQuestionsFile, lesson: linearEqLesson as unknown as string },
+  { meta: exponentsMeta as FixtureMeta, questions: exponentsQuestions as FixtureQuestionsFile, lesson: exponentsLesson as unknown as string },
+  { meta: factorisationMeta as FixtureMeta, questions: factorisationQuestions as FixtureQuestionsFile, lesson: factorisationLesson as unknown as string },
+  { meta: expandingMeta as FixtureMeta, questions: expandingQuestions as FixtureQuestionsFile, lesson: expandingLesson as unknown as string },
+  { meta: algebraicFractionsMeta as FixtureMeta, questions: algebraicFractionsQuestions as FixtureQuestionsFile, lesson: algebraicFractionsLesson as unknown as string },
+  { meta: quadraticEqMeta as FixtureMeta, questions: quadraticEqQuestions as FixtureQuestionsFile, lesson: quadraticEqLesson as unknown as string },
+  { meta: integersMeta as FixtureMeta, questions: integersQuestions as FixtureQuestionsFile, lesson: integersLesson as unknown as string },
+  { meta: fractionsMeta as FixtureMeta, questions: fractionsQuestions as FixtureQuestionsFile, lesson: fractionsLesson as unknown as string },
+  { meta: percentagesMeta as FixtureMeta, questions: percentagesQuestions as FixtureQuestionsFile, lesson: percentagesLesson as unknown as string },
+  { meta: pythagorasMeta as FixtureMeta, questions: pythagorasQuestions as FixtureQuestionsFile, lesson: pythagorasLesson as unknown as string },
+  { meta: areaPerimeterMeta as FixtureMeta, questions: areaPerimeterQuestions as FixtureQuestionsFile, lesson: areaPerimeterLesson as unknown as string },
+  { meta: anglesMeta as FixtureMeta, questions: anglesQuestions as FixtureQuestionsFile, lesson: anglesLesson as unknown as string },
+  { meta: averagesMeta as FixtureMeta, questions: averagesQuestions as FixtureQuestionsFile, lesson: averagesLesson as unknown as string },
 ];
 
 // ─── Public API ───────────────────────────────────────────────────────

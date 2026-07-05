@@ -1,0 +1,90 @@
+{
+  "topicId": "g9.alg.expanding",
+  "questions": [
+    {
+      "id": "g9.alg.expanding.q001",
+      "difficulty": "easy",
+      "stem": "2*(3*x - 5)",
+      "answer": "6*x - 10",
+      "answerLatex": "6x - 10",
+      "solutionSteps": [
+        "Multiply each term inside the bracket by 2.",
+        "2 × 3x = 6x and 2 × (-5) = -10.",
+        "Write 6x - 10."
+      ],
+      "commonMistakes": [
+        "Only multiplying the first term by 2",
+        "Dropping the negative sign on the second term"
+      ],
+      "tags": ["distributive-law"]
+    },
+    {
+      "id": "g9.alg.expanding.q002",
+      "difficulty": "medium",
+      "stem": "(x + 2)*(x + 3)",
+      "answer": "x^2 + 5*x + 6",
+      "answerLatex": "x^2 + 5x + 6",
+      "solutionSteps": [
+        "Multiply each term in the first bracket by each term in the second (FOIL).",
+        "x·x + x·3 + 2·x + 2·3 = x^2 + 3x + 2x + 6.",
+        "Collect like terms: x^2 + 5x + 6."
+      ],
+      "commonMistakes": [
+        "Only multiplying the first terms and the last terms",
+        "Forgetting to add the two middle terms together"
+      ],
+      "tags": ["binomial-product"]
+    },
+    {
+      "id": "g9.alg.expanding.q003",
+      "difficulty": "medium",
+      "stem": "(x - 4)*(x + 4)",
+      "answer": "x^2 - 16",
+      "answerLatex": "x^2 - 16",
+      "solutionSteps": [
+        "This is (a - b)(a + b), which gives a^2 - b^2.",
+        "Here a = x and b = 4.",
+        "So the answer is x^2 - 16 (the middle terms cancel)."
+      ],
+      "commonMistakes": [
+        "Writing x^2 + 16",
+        "Keeping a middle term such as -8x"
+      ],
+      "tags": ["difference-of-squares"]
+    },
+    {
+      "id": "g9.alg.expanding.q004",
+      "difficulty": "hard",
+      "stem": "(x + 5)^2",
+      "answer": "x^2 + 10*x + 25",
+      "answerLatex": "x^2 + 10x + 25",
+      "solutionSteps": [
+        "(x + 5)^2 means (x + 5)(x + 5).",
+        "Use (a + b)^2 = a^2 + 2ab + b^2 with a = x, b = 5.",
+        "x^2 + 2·x·5 + 5^2 = x^2 + 10x + 25."
+      ],
+      "commonMistakes": [
+        "Writing x^2 + 25 and forgetting the middle term 2ab",
+        "Using 5 instead of 25 for b^2"
+      ],
+      "tags": ["perfect-square"]
+    },
+    {
+      "id": "g9.alg.expanding.q005",
+      "difficulty": "hard",
+      "stem": "(2*x + 1)*(x - 3)",
+      "answer": "2*x^2 - 5*x - 3",
+      "answerLatex": "2x^2 - 5x - 3",
+      "solutionSteps": [
+        "Multiply out: 2x·x + 2x·(-3) + 1·x + 1·(-3).",
+        "= 2x^2 - 6x + x - 3.",
+        "Collect like terms: 2x^2 - 5x - 3."
+      ],
+      "commonMistakes": [
+        "Sign error on -6x giving +6x",
+        "Forgetting the coefficient 2 on the first term"
+      ],
+      "tags": ["binomial-product"]
+    }
+  ]
+}

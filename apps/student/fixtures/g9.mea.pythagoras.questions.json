@@ -1,0 +1,87 @@
+{
+  "topicId": "g9.mea.pythagoras",
+  "questions": [
+    {
+      "id": "g9.mea.pythagoras.q001",
+      "difficulty": "easy",
+      "stem": "sqrt(3^2 + 4^2)",
+      "answer": "5",
+      "answerLatex": "5",
+      "solutionSteps": [
+        "The two shorter sides are 3 and 4, so hypotenuse² = 3² + 4².",
+        "3² + 4² = 9 + 16 = 25.",
+        "Hypotenuse = √25 = 5."
+      ],
+      "commonMistakes": [
+        "Adding 3 + 4 = 7 instead of squaring first",
+        "Forgetting to take the square root at the end"
+      ],
+      "tags": ["hypotenuse"]
+    },
+    {
+      "id": "g9.mea.pythagoras.q002",
+      "difficulty": "easy",
+      "stem": "sqrt(6^2 + 8^2)",
+      "answer": "10",
+      "answerLatex": "10",
+      "solutionSteps": [
+        "hypotenuse² = 6² + 8² = 36 + 64 = 100.",
+        "Hypotenuse = √100 = 10."
+      ],
+      "commonMistakes": [
+        "Computing 6 + 8 = 14",
+        "Taking √100 as 50"
+      ],
+      "tags": ["hypotenuse"]
+    },
+    {
+      "id": "g9.mea.pythagoras.q003",
+      "difficulty": "medium",
+      "stem": "sqrt(5^2 + 12^2)",
+      "answer": "13",
+      "answerLatex": "13",
+      "solutionSteps": [
+        "hypotenuse² = 5² + 12² = 25 + 144 = 169.",
+        "Hypotenuse = √169 = 13."
+      ],
+      "commonMistakes": [
+        "Mis-squaring 12 as 24",
+        "Estimating √169 instead of recognising 13² = 169"
+      ],
+      "tags": ["hypotenuse"]
+    },
+    {
+      "id": "g9.mea.pythagoras.q004",
+      "difficulty": "medium",
+      "stem": "sqrt(13^2 - 5^2)",
+      "answer": "12",
+      "answerLatex": "12",
+      "solutionSteps": [
+        "Here 13 is the hypotenuse, so a shorter side² = 13² - 5².",
+        "13² - 5² = 169 - 25 = 144.",
+        "Side = √144 = 12."
+      ],
+      "commonMistakes": [
+        "Adding instead of subtracting because the hypotenuse is given",
+        "Using 13 as a shorter side rather than the hypotenuse"
+      ],
+      "tags": ["shorter-side"]
+    },
+    {
+      "id": "g9.mea.pythagoras.q005",
+      "difficulty": "hard",
+      "stem": "sqrt(8^2 + 15^2)",
+      "answer": "17",
+      "answerLatex": "17",
+      "solutionSteps": [
+        "hypotenuse² = 8² + 15² = 64 + 225 = 289.",
+        "Hypotenuse = √289 = 17."
+      ],
+      "commonMistakes": [
+        "Mis-squaring 15 as 30",
+        "Not recognising that 17² = 289"
+      ],
+      "tags": ["hypotenuse"]
+    }
+  ]
+}

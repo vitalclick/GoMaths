@@ -1,0 +1,90 @@
+{
+  "topicId": "g9.alg.algebraic-fractions",
+  "questions": [
+    {
+      "id": "g9.alg.algebraic-fractions.q001",
+      "difficulty": "easy",
+      "stem": "(2*x + 4)/2",
+      "answer": "x + 2",
+      "answerLatex": "x + 2",
+      "solutionSteps": [
+        "Factorise the numerator: 2x + 4 = 2(x + 2).",
+        "Cancel the common factor 2 with the denominator.",
+        "Left with x + 2."
+      ],
+      "commonMistakes": [
+        "Cancelling only the 4 and not the 2x",
+        "Writing x + 4 by dividing only one term"
+      ],
+      "tags": ["common-factor"]
+    },
+    {
+      "id": "g9.alg.algebraic-fractions.q002",
+      "difficulty": "easy",
+      "stem": "(6*x^2)/(2*x)",
+      "answer": "3*x",
+      "answerLatex": "3x",
+      "solutionSteps": [
+        "Divide the numbers: 6 ÷ 2 = 3.",
+        "Divide the powers of x: x^2 ÷ x = x.",
+        "Answer: 3x."
+      ],
+      "commonMistakes": [
+        "Leaving x^2 in the answer",
+        "Dividing 6 by 2 incorrectly"
+      ],
+      "tags": ["common-factor"]
+    },
+    {
+      "id": "g9.alg.algebraic-fractions.q003",
+      "difficulty": "medium",
+      "stem": "(x^2 - 4)/(x + 2)",
+      "answer": "x - 2",
+      "answerLatex": "x - 2",
+      "solutionSteps": [
+        "Factorise the numerator (difference of squares): x^2 - 4 = (x - 2)(x + 2).",
+        "Cancel the common factor (x + 2).",
+        "Left with x - 2."
+      ],
+      "commonMistakes": [
+        "Cancelling the x terms individually instead of the whole bracket",
+        "Forgetting to factorise before cancelling"
+      ],
+      "tags": ["difference-of-squares"]
+    },
+    {
+      "id": "g9.alg.algebraic-fractions.q004",
+      "difficulty": "medium",
+      "stem": "(x^2 - 9)/(x - 3)",
+      "answer": "x + 3",
+      "answerLatex": "x + 3",
+      "solutionSteps": [
+        "Factorise the numerator: x^2 - 9 = (x - 3)(x + 3).",
+        "Cancel the common factor (x - 3).",
+        "Left with x + 3."
+      ],
+      "commonMistakes": [
+        "Cancelling the 3s or the x's separately",
+        "Stopping before factorising the numerator"
+      ],
+      "tags": ["difference-of-squares"]
+    },
+    {
+      "id": "g9.alg.algebraic-fractions.q005",
+      "difficulty": "hard",
+      "stem": "(x^2 + 5*x + 6)/(x + 2)",
+      "answer": "x + 3",
+      "answerLatex": "x + 3",
+      "solutionSteps": [
+        "Factorise the trinomial: x^2 + 5x + 6 = (x + 2)(x + 3).",
+        "Cancel the common factor (x + 2).",
+        "Left with x + 3."
+      ],
+      "commonMistakes": [
+        "Choosing the wrong factor pair for the trinomial",
+        "Cancelling (x + 3) by mistake"
+      ],
+      "tags": ["trinomial"]
+    }
+  ]
+}

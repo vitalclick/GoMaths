@@ -1,0 +1,70 @@
+{
+  "topicId": "g9.ss.angles",
+  "questions": [
+    {
+      "id": "g9.ss.angles.q001",
+      "difficulty": "easy",
+      "stem": "180 - 130",
+      "answer": "50",
+      "answerLatex": "50",
+      "solutionSteps": [
+        "Angles on a straight line add up to 180°.",
+        "The missing angle is 180 - 130 = 50°."
+      ],
+      "commonMistakes": ["Using 360 instead of 180", "Adding instead of subtracting"],
+      "tags": ["straight-line"]
+    },
+    {
+      "id": "g9.ss.angles.q002",
+      "difficulty": "easy",
+      "stem": "90 - 35",
+      "answer": "55",
+      "answerLatex": "55",
+      "solutionSteps": [
+        "Complementary angles add up to 90°.",
+        "The other angle is 90 - 35 = 55°."
+      ],
+      "commonMistakes": ["Confusing complementary (90°) with supplementary (180°)"],
+      "tags": ["complementary"]
+    },
+    {
+      "id": "g9.ss.angles.q003",
+      "difficulty": "medium",
+      "stem": "180 - 65 - 40",
+      "answer": "75",
+      "answerLatex": "75",
+      "solutionSteps": [
+        "The three angles of a triangle add up to 180°.",
+        "Third angle = 180 - 65 - 40 = 75°."
+      ],
+      "commonMistakes": ["Only subtracting one of the known angles", "Using 360°"],
+      "tags": ["triangle"]
+    },
+    {
+      "id": "g9.ss.angles.q004",
+      "difficulty": "medium",
+      "stem": "180 - 90 - 47",
+      "answer": "43",
+      "answerLatex": "43",
+      "solutionSteps": [
+        "In a right-angled triangle one angle is 90°.",
+        "The remaining angle = 180 - 90 - 47 = 43°."
+      ],
+      "commonMistakes": ["Forgetting the right angle counts toward 180°"],
+      "tags": ["triangle", "right-angle"]
+    },
+    {
+      "id": "g9.ss.angles.q005",
+      "difficulty": "hard",
+      "stem": "360 - 90 - 90 - 100",
+      "answer": "80",
+      "answerLatex": "80",
+      "solutionSteps": [
+        "The four angles of a quadrilateral add up to 360°.",
+        "Fourth angle = 360 - 90 - 90 - 100 = 80°."
+      ],
+      "commonMistakes": ["Using 180° instead of 360° for a quadrilateral"],
+      "tags": ["quadrilateral"]
+    }
+  ]
+}
