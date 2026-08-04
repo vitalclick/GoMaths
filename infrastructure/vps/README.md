@@ -195,6 +195,24 @@ In each Codemagic workflow's `environment.vars`, or in
 
 Tag a build — the iOS app will hit your VPS.
 
+### 8. Wire a browser client (only if you ship the web SPA)
+
+Native builds are done at step 7. Browsers additionally need the API to
+opt their origin in, or every call fails with a CORS error. Set
+`CORS_ORIGINS` in `.env.production` to a comma-separated list:
+
+```bash
+CORS_ORIGINS=https://gomaths.co.za,https://*.gomaths-student.pages.dev
+```
+
+A `*` matches exactly one hostname label, which covers Cloudflare Pages
+preview deployments without opening up every site on `pages.dev`.
+Restart the backend to apply: `docker compose -f docker-compose.prod.yml
+--env-file .env.production up -d backend`.
+
+Leaving it blank in production is a valid choice while the only clients
+are native apps — the backend logs a warning at boot either way.
+
 ---
 
 ## Adding another app to this VPS
@@ -276,6 +294,42 @@ services:
 
 ### Deploy a new GoMaths version
 
+Pushes to `main` that touch `services/`, `packages/`, `curriculum-data/`
+or `docker-compose.prod.yml` deploy automatically via
+`.github/workflows/deploy-vps.yml`. It SSHes in, resets the checkout to
+the pushed commit, rebuilds, waits for the backend healthcheck, and then
+verifies `https://api.gomaths.co.za/api/health` from outside the box.
+
+To enable it, add under **Settings → Secrets and variables → Actions**:
+
+| Secret            | Value                                                       |
+| ----------------- | ----------------------------------------------------------- |
+| `VPS_HOST`        | Public IP or hostname of the VPS                            |
+| `VPS_SSH_KEY`     | Private half of a dedicated deploy keypair (see below)      |
+| `VPS_KNOWN_HOSTS` | Optional but recommended — output of `ssh-keyscan <vps ip>` |
+
+Optional repository **variables**: `VPS_USER` (default `gomaths`),
+`VPS_PORT` (default `22`), `VPS_APP_DIR` (default `~/GoMaths`),
+`VPS_API_URL` (default `https://api.gomaths.co.za`).
+
+Generate the deploy key on your laptop and authorise it on the VPS:
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f deploy_key -N ""
+ssh-copy-id -i deploy_key.pub gomaths@<vps ip>
+cat deploy_key          # paste into the VPS_SSH_KEY secret, then delete the file
+ssh-keyscan <vps ip>    # paste into the VPS_KNOWN_HOSTS secret
+```
+
+Without both secrets the workflow **skips** rather than fails, so an
+unconfigured repo doesn't paint every push red.
+
+App secrets stay on the VPS in `.env.production` — the workflow never
+reads or writes them. Adding a new env var means editing that file on
+the box as well as `docker-compose.prod.yml` here.
+
+Manual deploy (or if Actions is down):
+
 ```bash
 ssh gomaths@<vps ip>
 cd GoMaths
@@ -285,6 +339,10 @@ docker image prune -f
 ```
 
 Backend boots run `prisma migrate deploy` automatically.
+
+> The workflow uses `git reset --hard` rather than `git pull`, so any
+> edits made directly on the VPS to tracked files are discarded on the
+> next deploy. `.env.production` is untracked and survives.
 
 ### Tail logs
 

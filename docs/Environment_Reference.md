@@ -39,6 +39,7 @@ Legend: **Fatal** = backend won't start in production without it.
 | `RESEND_API_KEY`                  | Warn          | log-only mail (no delivery → minors blocked) | Resend dashboard                    |
 | `EMAIL_FROM`                      | Warn          | empty sender                                 | A Resend-verified address           |
 | `PUBLIC_APP_URL`                  | Warn          | consent links may 404                        | Your public app URL                 |
+| `CORS_ORIGINS`                    | Warn          | browsers blocked (native clients unaffected) | Comma-separated browser origins     |
 | `TUTOR_SERVICE_URL`               | Warn          | `http://localhost:8001`                      | Deployed tutor service URL          |
 | `SOLVER_SERVICE_URL`              | Warn          | `http://localhost:8002`                      | Deployed solver service URL         |
 | `VALIDATION_SERVICE_URL`          | Warn          | `http://localhost:8003`                      | Deployed validation service URL     |
