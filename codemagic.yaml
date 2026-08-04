@@ -79,6 +79,7 @@ workflows:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
         APP_STORE_APPLE_ID: "6752224795"
+        EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
@@ -130,6 +131,7 @@ workflows:
       vars:
         APP_NAME: student
         PACKAGE_NAME: com.gomaths.mathai
+        EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
     triggering:
       events: [tag]
       tag_patterns:
