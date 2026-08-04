@@ -63,7 +63,9 @@ Three things to know:
   phone app and a web page as different client types:
   - iOS / Android: `com.gomaths.mathai:/oauthredirect` — derived from the
     bundle/package id. Google rejects an arbitrary Expo scheme here, so
-    `gomaths-v2://` will *not* work.
+    `gomaths-v2://` will *not* work. That's why `app.json` registers
+    `com.gomaths.mathai` as a second URL scheme: without it the redirect
+    has no way back into the app.
   - Web: the page origin (e.g. `http://localhost:8081` in dev), registered
     as an authorised redirect URI on the **web** client.
 - **Native uses the authorization-code grant with PKCE**, because Google

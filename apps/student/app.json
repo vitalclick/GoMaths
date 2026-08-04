@@ -5,7 +5,7 @@
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "gomaths-v2",
+    "scheme": ["gomaths-v2", "com.gomaths.mathai"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "splash": {
