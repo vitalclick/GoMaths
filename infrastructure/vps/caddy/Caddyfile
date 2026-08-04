@@ -17,38 +17,16 @@
 
 # ─── GoMaths ────────────────────────────────────────────────────────────
 
-# Public site: home, privacy notice, terms. Served straight off disk from
-# the repo checkout (see the `site` volume in docker-compose.yml), so it
-# stays up even when the API is down — and a `git pull` on the VPS is a
-# deploy, with no container rebuild.
+# NOTE: the public site (gomaths.co.za — home, privacy notice, terms) is
+# NOT served from this VPS. The apex A record points at the cPanel host,
+# so those pages are uploaded there instead; see web/README.md. Adding a
+# `gomaths.co.za` block here would never receive traffic.
 #
-# Google's OAuth consent screen requires the privacy policy and terms URLs
-# to be publicly reachable on the authorised domain, so this block is what
-# makes social sign-in publishable.
-gomaths.co.za {
-	encode zstd gzip
-	root * /srv/gomaths-site
-	file_server
-	# Serve /privacy and /terms as well as the .html paths.
-	try_files {path} {path}.html {path}/index.html
-	header {
-		X-Content-Type-Options nosniff
-		X-Frame-Options DENY
-		Referrer-Policy strict-origin-when-cross-origin
-	}
-	handle_errors {
-		respond "{err.status_code} {err.status_text}"
-	}
-	log {
-		output stdout
-		format console
-	}
-}
-
-www.gomaths.co.za {
-	redir https://gomaths.co.za{uri} permanent
-}
-
+# If that ever changes, the hostname must be set to "DNS only" (grey
+# cloud) in Cloudflare first: Caddy provisions its own Let's Encrypt
+# certificate, and a proxied record makes Cloudflare terminate TLS, so the
+# ACME challenge fails and the site serves nothing. That's why the
+# api. record below is unproxied.
 api.gomaths.co.za {
 	encode zstd gzip
 	reverse_proxy gomaths-backend:8080 {
