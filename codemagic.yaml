@@ -116,7 +116,7 @@ workflows:
           - Testers
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
@@ -154,7 +154,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
@@ -206,7 +206,7 @@ workflows:
           - Testers
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
@@ -243,7 +243,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
@@ -295,7 +295,7 @@ workflows:
           - Testers
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
@@ -332,7 +332,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - mobile@gomaths.com
+          - dev@gomaths.co.za
         notify:
           success: true
           failure: true
