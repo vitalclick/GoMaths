@@ -1,5 +1,5 @@
 import { Button, Card, Heading, Icon, type IconName, Maxi, Pill, ProgressBar } from "@gomaths/ui";
-import { Link, useRouter } from "expo-router";
+import { Link, useRouter, type Href } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -319,7 +319,7 @@ function ActionCard({
   title,
   subtitle,
 }: {
-  href: string;
+  href: Href;
   icon: IconName;
   title: string;
   subtitle: string;

@@ -1,5 +1,5 @@
 import { Card, Icon, type IconName, Maxi, Pill, ProgressBar } from "@gomaths/ui";
-import { Link, useRouter } from "expo-router";
+import { Link, useRouter, type Href } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -227,7 +227,7 @@ function BadgeTile({ badge }: { badge: Badge }) {
   );
 }
 
-function LinkRow({ href, icon, label }: { href: string; icon: IconName; label: string }) {
+function LinkRow({ href, icon, label }: { href: Href; icon: IconName; label: string }) {
   return (
     <Link href={href} asChild>
       <Pressable accessibilityRole="button" accessibilityLabel={label}>
