@@ -1,0 +1,240 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * GoMaths design system.
+ * Brand green (#0E8A3E) + warm off-white paper (#FBFCF9), expressed in oklch.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-note: var(--note);
+  --color-note-border: var(--note-border);
+  --color-note-foreground: var(--note-foreground);
+}
+
+:root {
+  --radius: 1rem;
+  --background: oklch(0.988 0.005 120);
+  --foreground: oklch(0.23 0.018 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.23 0.018 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.23 0.018 160);
+  --primary: oklch(0.55 0.145 150);
+  --primary-foreground: oklch(0.99 0.005 150);
+  --primary-dark: oklch(0.45 0.13 150);
+  --secondary: oklch(0.96 0.02 150);
+  --secondary-foreground: oklch(0.35 0.09 150);
+  --muted: oklch(0.965 0.008 150);
+  --muted-foreground: oklch(0.52 0.02 160);
+  --accent: oklch(0.94 0.035 150);
+  --accent-foreground: oklch(0.35 0.09 150);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.99 0.005 150);
+  --border: oklch(0.92 0.008 150);
+  --input: oklch(0.92 0.008 150);
+  --ring: oklch(0.55 0.145 150);
+  --surface: oklch(0.975 0.012 150);
+  --ink: oklch(0.22 0.03 160);
+  --ink-foreground: oklch(0.97 0.01 150);
+  --note: oklch(0.975 0.035 90);
+  --note-border: oklch(0.85 0.09 90);
+  --note-foreground: oklch(0.42 0.07 85);
+
+  --gradient-brand: linear-gradient(135deg, oklch(0.62 0.16 150), oklch(0.46 0.13 155));
+  --gradient-glow: radial-gradient(
+    60% 60% at 50% 0%,
+    color-mix(in oklab, var(--primary) 18%, transparent),
+    transparent 70%
+  );
+  --shadow-soft: 0 1px 2px oklch(0.23 0.018 160 / 4%), 0 12px 32px -18px oklch(0.23 0.018 160 / 30%);
+  --shadow-lift: 0 24px 60px -30px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+.dark {
+  --background: oklch(0.19 0.02 160);
+  --foreground: oklch(0.96 0.006 150);
+  --card: oklch(0.24 0.022 160);
+  --card-foreground: oklch(0.96 0.006 150);
+  --popover: oklch(0.24 0.022 160);
+  --popover-foreground: oklch(0.96 0.006 150);
+  --primary: oklch(0.68 0.16 150);
+  --primary-foreground: oklch(0.18 0.03 160);
+  --primary-dark: oklch(0.58 0.15 150);
+  --secondary: oklch(0.28 0.03 160);
+  --secondary-foreground: oklch(0.94 0.01 150);
+  --muted: oklch(0.28 0.03 160);
+  --muted-foreground: oklch(0.72 0.02 155);
+  --accent: oklch(0.3 0.05 155);
+  --accent-foreground: oklch(0.94 0.01 150);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.68 0.16 150);
+  --surface: oklch(0.23 0.025 160);
+  --ink: oklch(0.15 0.02 160);
+  --ink-foreground: oklch(0.96 0.006 150);
+  --note: oklch(0.28 0.04 90);
+  --note-border: oklch(0.5 0.08 90);
+  --note-foreground: oklch(0.9 0.06 90);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@utility brand-gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility hero-glow {
+  background-image: var(--gradient-glow);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-lift {
+  box-shadow: var(--shadow-lift);
+}
+
+@utility grid-paper {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Long-form legal / editorial content */
+@utility prose-doc {
+  & h2 {
+    margin-top: 2.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  & h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  & p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+
+  & ul,
+  & ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  & ul {
+    list-style: disc;
+  }
+
+  & ol {
+    list-style: decimal;
+  }
+
+  & li {
+    line-height: 1.7;
+  }
+
+  & a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  & a:hover {
+    color: var(--primary-dark);
+  }
+
+  & code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.85em;
+  }
+
+  & table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  & th,
+  & td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  & thead th {
+    background: var(--surface);
+    font-weight: 700;
+  }
+}

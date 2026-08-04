@@ -1,0 +1,313 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { SiteLayout, DocHeader, Callout, DocTable } from "@/components/site";
+
+export const Route = createFileRoute("/privacy")({
+  head: () => ({
+    meta: [
+      { title: "Privacy notice — GoMaths" },
+      {
+        name: "description",
+        content:
+          "How GoMaths collects, uses and protects personal information, in line with South Africa's Protection of Personal Information Act (POPIA).",
+      },
+      { property: "og:title", content: "Privacy notice — GoMaths" },
+      {
+        property: "og:description",
+        content: "How GoMaths collects, uses and protects personal information under POPIA.",
+      },
+      { property: "og:type", content: "article" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Privacy,
+});
+
+const collected: [string, string][] = [
+  ["Email address", "Identifies the account and is how we contact you."],
+  ["Display name", "Shown in the app so it can greet you."],
+  ["Grade", "Selects the right curriculum topics."],
+  ["Language preference", "Presents the app in your chosen language."],
+  [
+    "Password",
+    "Stored only as a one-way bcrypt hash — we cannot read your password. Accounts created with Google or Apple have no password at all.",
+  ],
+  [
+    "Google / Apple account link",
+    "If you sign in with Google or Apple we store which provider you used, the permanent account identifier they give us, and the email address they supplied. We never receive your Google or Apple password.",
+  ],
+  [
+    "Sign-in sessions",
+    "Stored as hashes of your session tokens, with expiry dates, so you stay signed in and we can end a session if it is misused.",
+  ],
+  [
+    "Learning activity",
+    "Lessons started and completed, questions attempted and whether they were correct, with timestamps — this is what produces your progress and mastery scores.",
+  ],
+  ["Streaks and XP", "Daily goal, daily count, current and longest streak, last active date."],
+  [
+    "Tutor conversations",
+    "The messages you send to Maya and her replies, so you can revisit them. See section 5 — these are processed by an AI provider outside South Africa.",
+  ],
+  [
+    "Push notification token",
+    "If you allow notifications: a device token, the platform, and optionally the device name, so we can send reminders.",
+  ],
+  [
+    "School and class",
+    "Only where a school has enrolled you: school name and province, class name and grade.",
+  ],
+];
+
+const providers: [string, string][] = [
+  [
+    "AI language-model provider (Anthropic or OpenAI)",
+    "The text of your tutor conversations, in order to generate a reply. Processed outside South Africa.",
+  ],
+  [
+    "AI vision provider (Anthropic or OpenAI)",
+    "The photo you scan, in order to read the maths off it. Processed outside South Africa; not stored by us.",
+  ],
+  ["Expo push notification service", "Your device push token, to deliver reminders."],
+  [
+    "Google / Apple",
+    "Only if you choose to sign in with them. They tell us who you are; we do not send them your learning data.",
+  ],
+  [
+    "Sentry",
+    "Technical error reports. Configured not to send personal information, though a fault message can occasionally contain incidental data.",
+  ],
+];
+
+function Privacy() {
+  return (
+    <SiteLayout>
+      <DocHeader
+        eyebrow="Last updated: to be set on publication"
+        title="Privacy notice"
+        intro="GoMaths is a maths practice app for South African learners. This notice explains what personal information we collect, why, who we share it with, and what you can ask us to do about it. We follow the Protection of Personal Information Act, 2013 (“POPIA”)."
+      />
+
+      <div className="prose-doc mx-auto max-w-3xl px-5 py-14">
+        <Callout variant="todo">
+          <strong>This is an accurate draft, not legal advice.</strong> Its contents were written
+          against what the GoMaths code actually stores and sends, but the highlighted items below
+          need your input, and a South African attorney should review the whole document before it
+          goes live — GoMaths processes children's personal information, which POPIA treats as a
+          special category.
+        </Callout>
+
+        <h2>1. Who we are</h2>
+        <Callout variant="todo">
+          Fill in the responsible party's registered name, company registration number, physical
+          address, and the name and contact details of your registered Information Officer. POPIA
+          requires an Information Officer to be registered with the Information Regulator.
+        </Callout>
+        <p>
+          GoMaths is operated by <em>[registered entity name and registration number]</em>, of{" "}
+          <em>[registered address]</em>. For the purposes of POPIA we are the{" "}
+          <strong>responsible party</strong> for the personal information described here.
+        </p>
+        <p>
+          Information Officer: <em>[name]</em> —{" "}
+          <a href="mailto:privacy@gomaths.co.za">privacy@gomaths.co.za</a>
+        </p>
+
+        <h2>2. What we collect</h2>
+        <p>
+          We collect only what the app needs to work. The table below is the complete list for a
+          learner account.
+        </p>
+        <DocTable>
+          <table>
+            <thead>
+              <tr>
+                <th>Information</th>
+                <th>Why we need it</th>
+              </tr>
+            </thead>
+            <tbody>
+              {collected.map(([k, v]) => (
+                <tr key={k}>
+                  <td className="font-semibold">{k}</td>
+                  <td>{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DocTable>
+
+        <h3>Things we deliberately do not keep</h3>
+        <ul>
+          <li>
+            <strong>Your year of birth.</strong> We ask for it at sign-up so the server can work out
+            whether you are under 18 and therefore need parental consent. The answer is used and
+            discarded — the year itself is never written to our database.
+          </li>
+          <li>
+            <strong>Photos of maths problems.</strong> When you scan a problem, the image is held in
+            memory only for as long as it takes to read the maths off it, and is then discarded. We
+            do not store the picture.
+          </li>
+        </ul>
+
+        <h2>3. Learners under 18 and parental consent</h2>
+        <p>
+          POPIA and the Children's Act require a competent person — a parent or guardian — to
+          consent before a child's personal information may be processed. When someone under 18
+          signs up:
+        </p>
+        <ol>
+          <li>We ask for a parent or guardian's email address.</li>
+          <li>We email them a confirmation link.</li>
+          <li>The account is only created once they click it.</li>
+        </ol>
+        <p>To prove that consent was properly given, we keep a record containing:</p>
+        <ul>
+          <li>the parent or guardian's email address and the learner's email address;</li>
+          <li>when consent was requested and when it was confirmed;</li>
+          <li>
+            the IP address the confirmation came from, and a one-way hash of the browser
+            identification — kept as an audit trail, and the hash means we cannot reconstruct the
+            original browser details.
+          </li>
+        </ul>
+        <p>
+          A parent or guardian may withdraw consent at any time by emailing{" "}
+          <a href="mailto:privacy@gomaths.co.za">privacy@gomaths.co.za</a>. Withdrawing consent
+          means we delete the learner's account and associated data.
+        </p>
+
+        <h2>4. How we use your information</h2>
+        <ul>
+          <li>To create and run your account, and keep you signed in.</li>
+          <li>To choose the right lessons and questions for your grade.</li>
+          <li>To show your progress, mastery, streaks and daily goals.</li>
+          <li>To answer your questions through the AI tutor and the problem scanner.</li>
+          <li>To send you reminders, if you have turned notifications on.</li>
+          <li>To keep the service secure and to diagnose faults.</li>
+        </ul>
+        <p>
+          We do not sell your personal information. We do not use it for advertising, and we do not
+          build advertising profiles.
+        </p>
+        <Callout variant="todo">
+          If GoMaths ever uses learner data to train or fine-tune models, that must be stated here
+          explicitly and consented to separately. As the code stands today it does not, so this
+          notice says nothing about it — keep it that way, or update this section.
+        </Callout>
+
+        <h2>5. Who we share it with</h2>
+        <p>
+          We use a small number of service providers (“operators” under POPIA) to run GoMaths. They
+          may only process personal information on our instructions.
+        </p>
+        <DocTable>
+          <table>
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>What they receive</th>
+              </tr>
+            </thead>
+            <tbody>
+              {providers.map(([k, v]) => (
+                <tr key={k}>
+                  <td className="font-semibold">{k}</td>
+                  <td>{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DocTable>
+        <p>
+          We may also disclose information where the law requires it, or to establish or defend a
+          legal claim.
+        </p>
+
+        <h2>6. Sending information outside South Africa</h2>
+        <p>
+          The AI providers that power the tutor and the problem scanner process data outside South
+          Africa. Section 72 of POPIA permits this where the recipient is subject to laws or binding
+          agreements that provide an adequate level of protection, or where you consent. We rely on
+          our contracts with these providers.
+        </p>
+        <p>
+          You can use the lessons, practice questions and progress tracking without ever sending
+          anything to these providers — they are only involved when you use the AI tutor or scan a
+          photo.
+        </p>
+        <Callout variant="todo">
+          Confirm which provider you actually run in production (the code supports Anthropic and
+          OpenAI, selected by environment variable) and name only that one. Confirm you have a
+          data-processing agreement in place with them, and record where your servers and database
+          are physically hosted — the deployment docs say AWS af-south-1, but the live deployment is
+          a VPS. State the true location.
+        </Callout>
+
+        <h2>7. How long we keep it</h2>
+        <Callout variant="todo">
+          Set real retention periods. POPIA section 14 requires that records not be kept longer than
+          necessary. Suggested starting points to confirm with your attorney: account data for as
+          long as the account is active plus a defined wind-down period; parental-consent records
+          for longer, since they are your evidence of lawful processing; error logs for a short
+          fixed window.
+        </Callout>
+        <p>
+          We keep your personal information for as long as your account is open. When an account is
+          deleted, the learner's profile, progress, conversations and sessions are deleted with it.
+        </p>
+
+        <h2>8. Your rights</h2>
+        <p>Under POPIA you may:</p>
+        <ul>
+          <li>ask what personal information we hold about you, and get a copy (section 23);</li>
+          <li>
+            ask us to correct or delete information that is wrong, misleading or excessive (section
+            24);
+          </li>
+          <li>object to processing, and withdraw consent where processing relies on it;</li>
+          <li>complain to the Information Regulator.</li>
+        </ul>
+        <p>
+          To exercise any of these, email{" "}
+          <a href="mailto:privacy@gomaths.co.za">privacy@gomaths.co.za</a>. For a learner under 18,
+          a parent or guardian may make the request on their behalf. We will confirm your identity
+          before acting, so that nobody else can request your child's data.
+        </p>
+        <p>
+          Information Regulator (South Africa) —{" "}
+          <a href="https://inforegulator.org.za">inforegulator.org.za</a>,{" "}
+          <a href="mailto:complaints.IR@justice.gov.za">complaints.IR@justice.gov.za</a>
+        </p>
+
+        <h2>9. How we protect your information</h2>
+        <ul>
+          <li>All traffic between the app and our servers is encrypted in transit (HTTPS).</li>
+          <li>Passwords are stored only as bcrypt hashes; session tokens only as hashes.</li>
+          <li>
+            Signing in with Google or Apple is verified against those providers' published signing
+            keys, so a forged sign-in cannot be accepted.
+          </li>
+          <li>Access to production systems is restricted to staff who need it.</li>
+        </ul>
+        <p>
+          No system is perfectly secure. If a breach occurs that creates a real risk to you, POPIA
+          requires us to notify you and the Information Regulator, and we will.
+        </p>
+
+        <h2>10. Changes to this notice</h2>
+        <p>
+          If we change how we handle personal information we will update this page and change the
+          date at the top. For significant changes affecting learners under 18, we will also contact
+          the parent or guardian on record.
+        </p>
+
+        <h2>11. Contact</h2>
+        <p>
+          Questions about this notice or about your information:{" "}
+          <a href="mailto:privacy@gomaths.co.za">privacy@gomaths.co.za</a>
+        </p>
+      </div>
+    </SiteLayout>
+  );
+}
