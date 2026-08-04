@@ -29,6 +29,11 @@ services:
       - "443:443/udp" # HTTP/3
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # The public site (gomaths.co.za), served as static files. Path is
+      # relative to this compose file, so it resolves to <repo>/web — the
+      # same checkout the deploy workflow fast-forwards. Updating the site
+      # is therefore a git pull, not a rebuild.
+      - ../../../web:/srv/gomaths-site:ro
       - caddy-data:/data
       - caddy-config:/config
     environment:

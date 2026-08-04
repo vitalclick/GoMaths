@@ -16,6 +16,39 @@
 }
 
 # ─── GoMaths ────────────────────────────────────────────────────────────
+
+# Public site: home, privacy notice, terms. Served straight off disk from
+# the repo checkout (see the `site` volume in docker-compose.yml), so it
+# stays up even when the API is down — and a `git pull` on the VPS is a
+# deploy, with no container rebuild.
+#
+# Google's OAuth consent screen requires the privacy policy and terms URLs
+# to be publicly reachable on the authorised domain, so this block is what
+# makes social sign-in publishable.
+gomaths.co.za {
+	encode zstd gzip
+	root * /srv/gomaths-site
+	file_server
+	# Serve /privacy and /terms as well as the .html paths.
+	try_files {path} {path}.html {path}/index.html
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+	handle_errors {
+		respond "{err.status_code} {err.status_text}"
+	}
+	log {
+		output stdout
+		format console
+	}
+}
+
+www.gomaths.co.za {
+	redir https://gomaths.co.za{uri} permanent
+}
+
 api.gomaths.co.za {
 	encode zstd gzip
 	reverse_proxy gomaths-backend:8080 {
