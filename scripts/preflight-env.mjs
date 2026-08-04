@@ -69,6 +69,15 @@ if (missing(env.RESEND_API_KEY))
 else if (missing(env.EMAIL_FROM)) warnings.push("EMAIL_FROM unset — set a Resend-verified sender");
 if (missing(env.PUBLIC_APP_URL)) warnings.push("PUBLIC_APP_URL unset — consent links may 404");
 
+const corsOrigins = String(env.CORS_ORIGINS ?? "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+if (corsOrigins.length === 0)
+  warnings.push("CORS_ORIGINS unset — browsers blocked (native clients unaffected)");
+else if (corsOrigins.includes("*"))
+  warnings.push("CORS_ORIGINS=* — any website may call the API; prefer an explicit list");
+
 for (const key of ["TUTOR_SERVICE_URL", "SOLVER_SERVICE_URL", "VALIDATION_SERVICE_URL"]) {
   const v = env[key];
   if (missing(v)) warnings.push(`${key} unset — defaults to localhost (wrong in production)`);
