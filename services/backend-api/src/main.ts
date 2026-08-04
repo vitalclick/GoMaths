@@ -9,6 +9,7 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import * as Sentry from "@sentry/node";
 import { AppModule } from "./app.module";
 import { assertConfig } from "./config/config.validation";
+import { resolveCorsOptions } from "./config/cors";
 
 async function bootstrap() {
   // Validate configuration before anything else. In production this aborts
@@ -20,6 +21,14 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.setGlobalPrefix("api");
+
+  // Browser clients (the Student web SPA) live on a different origin to
+  // the API and are blocked without this. Native builds don't preflight,
+  // so `false` here only ever closes the door on browsers.
+  const cors = resolveCorsOptions(process.env);
+  if (cors !== false) {
+    app.enableCors(cors);
+  }
 
   // Wire Nest's exception layer into Sentry. Express's default error
   // handler runs Sentry.setupExpressErrorHandler under the hood when DSN

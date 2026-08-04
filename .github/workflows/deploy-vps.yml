@@ -1,0 +1,199 @@
+name: Deploy to VPS
+
+# Redeploys the docker-compose stack that serves api.gomaths.co.za.
+#
+# The VPS runs the whole backend — NestJS + three FastAPI services +
+# Postgres + Redis — from docker-compose.prod.yml, behind the shared Caddy
+# reverse proxy in infrastructure/vps/caddy/. See infrastructure/vps/README.md
+# for the one-time host setup this workflow assumes is already done.
+#
+# What a deploy does: SSH in, fast-forward the checkout to the commit
+# being deployed, rebuild, and wait for the backend container to report
+# healthy. Migrations run inside the container at boot (`prisma migrate
+# deploy`, see services/backend-api/Dockerfile).
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   VPS_SSH_KEY  — private key whose public half is in the deploy user's
+#                  ~/.ssh/authorized_keys. Generate a dedicated one:
+#                  ssh-keygen -t ed25519 -C "github-actions" -f deploy_key
+#   VPS_HOST     — public IP or hostname of the VPS.
+#
+# Optional secrets:
+#   VPS_KNOWN_HOSTS — output of `ssh-keyscan <host>`, pinning the host key.
+#                     Without it the workflow trusts whatever key answers
+#                     on first contact, which is open to interception.
+#
+# Optional repository variables (Settings → Variables → Actions):
+#   VPS_USER     — deploy user (default: gomaths)
+#   VPS_PORT     — SSH port (default: 22)
+#   VPS_APP_DIR  — checkout path on the VPS (default: ~/GoMaths)
+#
+# Secrets for the app itself (DATABASE_URL, JWT_*, RESEND_API_KEY, …) are
+# NOT managed here. They live in .env.production on the VPS, which is
+# gitignored and never leaves the box.
+#
+# Note: deploy-fly.yml targets the same services on Fly.io. Only one
+# should be live at a time — disable the other in the Actions tab.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/**"
+      - "packages/**"
+      - "curriculum-data/**"
+      - "docker-compose.prod.yml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-vps.yml"
+  workflow_dispatch:
+    inputs:
+      rebuild:
+        description: "Force a rebuild with --no-cache"
+        required: false
+        default: false
+        type: boolean
+
+# Never let two deploys overlap — the second would fight the first for
+# the docker build cache and the compose lock.
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+jobs:
+  # The `secrets` context isn't readable from a job-level `if:`, so
+  # resolve credential presence once and fan it out as an output. This
+  # mirrors deploy-fly.yml: an unconfigured deploy skips rather than
+  # painting every push to main red.
+  preflight:
+    name: Check VPS credentials
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -n "$VPS_SSH_KEY" ] && [ -n "$VPS_HOST" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "VPS credentials present — deploying." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### VPS deploy skipped"
+              echo
+              echo "\`VPS_SSH_KEY\` and/or \`VPS_HOST\` are not set on this"
+              echo "repository, so the deploy job was skipped instead of failing."
+              echo
+              echo "See the header of \`.github/workflows/deploy-vps.yml\` for"
+              echo "what to add under **Settings → Secrets and variables → Actions**."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::VPS_SSH_KEY/VPS_HOST not configured — skipping deploy."
+          fi
+
+  deploy:
+    name: Deploy stack
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: needs.preflight.outputs.configured == 'true'
+    timeout-minutes: 30
+    steps:
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          if [ -n "$VPS_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::VPS_KNOWN_HOSTS not set — trusting the host key on first contact."
+            ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ vars.VPS_USER || 'gomaths' }}
+          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+          APP_DIR: ${{ vars.VPS_APP_DIR || '~/GoMaths' }}
+          NO_CACHE: ${{ inputs.rebuild && '--no-cache' || '' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" \
+            -o BatchMode=yes -o ConnectTimeout=20 \
+            "$VPS_USER@$VPS_HOST" \
+            "APP_DIR='$APP_DIR' SHA='${{ github.sha }}' NO_CACHE='$NO_CACHE' bash -euo pipefail -s" <<'REMOTE'
+            cd "${APP_DIR/#\~/$HOME}"
+
+            echo "::group::Fetch $SHA"
+            git fetch --quiet origin main
+            # Hard reset so the box is exactly the deployed commit. Any
+            # manual edits made on the VPS are discarded by design —
+            # .env.production is untracked and survives.
+            git reset --hard "$SHA"
+            git --no-pager log -1 --oneline
+            echo "::endgroup::"
+
+            echo "::group::Build and start"
+            # $NO_CACHE is deliberately unquoted: empty means "no flag".
+            docker compose -f docker-compose.prod.yml --env-file .env.production \
+              build $NO_CACHE
+            docker compose -f docker-compose.prod.yml --env-file .env.production \
+              up -d --remove-orphans
+            echo "::endgroup::"
+
+            echo "Waiting for the backend container to report healthy..."
+            cid="$(docker compose -f docker-compose.prod.yml --env-file .env.production ps -q backend)"
+            if [ -z "$cid" ]; then
+              echo "::error::No backend container is running after compose up."
+              docker compose -f docker-compose.prod.yml --env-file .env.production ps
+              exit 1
+            fi
+
+            status=unknown
+            for _ in $(seq 1 60); do
+              status="$(docker inspect --format '{{.State.Health.Status}}' "$cid" 2>/dev/null || echo unknown)"
+              if [ "$status" = "healthy" ]; then
+                echo "Backend healthy."
+                docker image prune -f >/dev/null
+                exit 0
+              fi
+              if [ "$status" = "unhealthy" ]; then
+                break
+              fi
+              sleep 5
+            done
+
+            echo "::error::Backend did not become healthy within 5 minutes (last status: ${status:-unknown})."
+            docker compose -f docker-compose.prod.yml --env-file .env.production \
+              logs --tail=120 backend
+            exit 1
+          REMOTE
+
+      - name: Verify the public endpoint
+        env:
+          API_URL: ${{ vars.VPS_API_URL || 'https://api.gomaths.co.za' }}
+        run: |
+          # The container is healthy; confirm Caddy is still routing to it
+          # and the certificate is valid from outside the box.
+          for attempt in 1 2 3; do
+            if curl -fsS --max-time 15 "$API_URL/api/health"; then
+              echo
+              echo "$API_URL is serving." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::$API_URL/api/health did not return 200 after the deploy."
+          exit 1
+
+      - name: Revoke the deploy key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

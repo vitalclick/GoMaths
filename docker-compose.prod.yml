@@ -107,6 +107,9 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY}
       EMAIL_FROM: ${EMAIL_FROM}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL}
+      # Comma-separated browser origins allowed to call the API. Unset in
+      # production means no browser client can reach it — see cors.ts.
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       SENTRY_RELEASE: ${SENTRY_RELEASE:-}

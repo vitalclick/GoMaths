@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { parseCorsOrigins } from "./cors";
 
 /**
  * Boot-time configuration validation.
@@ -130,6 +131,27 @@ export function inspectConfig(env: Env = process.env): CheckResult {
     } else if (/localhost|127\.0\.0\.1/.test(v!)) {
       warnings.push(`${key}=${v} points at localhost — likely wrong for a deployed environment.`);
     }
+  }
+
+  // ── Browser clients (CORS) ──────────────────────────────────────────
+  // Native apps never preflight, so an unset allowlist is invisible until
+  // the first browser client ships — at which point every call fails with
+  // an opaque CORS error. Surface it before that happens.
+  const corsOrigins = parseCorsOrigins(env.CORS_ORIGINS);
+  if (corsOrigins.length === 0) {
+    warnings.push(
+      "CORS_ORIGINS not set — browsers will block every cross-origin call, " +
+        "including the Student web SPA. Native iOS/Android clients are unaffected.",
+    );
+    summary.push("CORS         : OFF (native clients only)");
+  } else if (corsOrigins.includes("*")) {
+    warnings.push(
+      "CORS_ORIGINS=* allows any website to call this API with a user's " +
+        "token. Prefer an explicit origin list.",
+    );
+    summary.push("CORS         : ANY ORIGIN (*)");
+  } else {
+    summary.push(`CORS         : ${corsOrigins.length} allowed origin(s)`);
   }
 
   // ── Observability ───────────────────────────────────────────────────
