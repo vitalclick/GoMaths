@@ -80,6 +80,14 @@ workflows:
         BUNDLE_ID: com.gomaths.mathai
         APP_STORE_APPLE_ID: "6752224795"
         EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
+      # Google client IDs are inlined into the JS bundle at build time, so
+      # they have to exist here — setting them on the server later has no
+      # effect on an already-built app. Values live in the Codemagic group
+      # (they're public identifiers, not secrets). Without the group the
+      # Google button hides itself and sign-in falls back to email.
+      # Apple needs no client ID here: the native flow uses BUNDLE_ID.
+      groups:
+        - google_oauth
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
@@ -132,6 +140,9 @@ workflows:
         APP_NAME: student
         PACKAGE_NAME: com.gomaths.mathai
         EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
+      # See the student-ios workflow — same reason, same group.
+      groups:
+        - google_oauth
     triggering:
       events: [tag]
       tag_patterns:

@@ -53,14 +53,28 @@ Every ID set here must also be listed in the backend's
 `GOOGLE_OAUTH_CLIENT_IDS` — the backend rejects an ID token whose `aud`
 it doesn't recognise. See `docs/Environment_Reference.md`.
 
-Two things to know:
+Three things to know:
 
 - **Apple needs a native build.** It uses `expo-apple-authentication`, so
   it only appears on iOS, and only in a dev-client or EAS build — not in
   Expo Go. Apple's web flow needs a separate Services ID and a server-side
   redirect handler, which this app doesn't ship.
-- **Google's redirect URI** must be registered for the `gomaths-v2` scheme
-  (native) and for the dev server origin (web).
+- **Google's redirect URI differs by platform**, because Google treats a
+  phone app and a web page as different client types:
+  - iOS / Android: `com.gomaths.mathai:/oauthredirect` — derived from the
+    bundle/package id. Google rejects an arbitrary Expo scheme here, so
+    `gomaths-v2://` will *not* work.
+  - Web: the page origin (e.g. `http://localhost:8081` in dev), registered
+    as an authorised redirect URI on the **web** client.
+- **Native uses the authorization-code grant with PKCE**, because Google
+  only issues installed apps a code, never an ID token directly. PKCE is
+  what makes that safe without a client secret — none ships in the bundle.
+  Web uses the implicit ID-token grant.
+
+Client IDs are inlined into the JS bundle at build time, so they must be
+present when the app is *built* — setting them on the server afterwards
+does nothing for an already-shipped binary. In CI they come from the
+`google_oauth` Codemagic group (see `codemagic.yaml`).
 
 First-time social sign-ups land on `/complete-profile`, because neither
 provider can tell us a grade or a birth year — and POPIA still requires
