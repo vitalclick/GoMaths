@@ -129,7 +129,12 @@ export class AuthService {
     return this.issueSession(user);
   }
 
-  private async issueSession(user: PublicUser): Promise<AuthSession> {
+  /**
+   * Mints an access + refresh pair for an already-authenticated user.
+   * Public so OauthService can issue sessions for social sign-ins without
+   * duplicating the refresh-rotation bookkeeping.
+   */
+  async issueSession(user: PublicUser): Promise<AuthSession> {
     const accessToken = await this.jwt.signAsync(
       { sub: user.id, role: user.role, email: user.email },
       { expiresIn: this.accessTtlSeconds },

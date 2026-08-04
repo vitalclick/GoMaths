@@ -4,6 +4,8 @@ import type { Request } from "express";
 import { AuthService } from "./auth.service";
 import {
   LoginDto,
+  OAuthCompleteDto,
+  OAuthSignInDto,
   ParentalConsentConfirmDto,
   ParentalConsentPollDto,
   ParentalConsentRequestDto,
@@ -11,6 +13,7 @@ import {
   RegisterDto,
 } from "./auth.dto";
 import { CurrentUser, JwtAuthGuard, Public, type JwtClaims } from "./auth.guard";
+import { OauthService } from "./oauth.service";
 import { ParentalConsentService } from "./parental-consent.service";
 import { UsersService } from "./users.service";
 
@@ -21,6 +24,7 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly users: UsersService,
     private readonly consent: ParentalConsentService,
+    private readonly oauth: OauthService,
   ) {}
 
   @Public()
@@ -37,6 +41,41 @@ export class AuthController {
   @ApiOperation({ summary: "Exchange credentials for tokens" })
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  @Public()
+  @Get("auth/providers")
+  @ApiOperation({
+    summary: "Which social providers this deployment supports",
+    description:
+      "The app hides a provider button when its client ID is not configured, so a misconfigured environment degrades to email sign-in instead of showing a button that always fails.",
+  })
+  providers() {
+    return { providers: this.oauth.enabledProviders() };
+  }
+
+  @Public()
+  @Post("auth/oauth")
+  @HttpCode(200)
+  @ApiOperation({
+    summary: "Sign in with Google or Apple",
+    description:
+      "Verifies the provider ID token. Returns a session for a known identity (or a verified email that already has an account); otherwise returns a short-lived signupToken to submit to /auth/oauth/complete with the grade and birth year we still need.",
+  })
+  oauthSignIn(@Body() dto: OAuthSignInDto) {
+    return this.oauth.signIn(dto);
+  }
+
+  @Public()
+  @Post("auth/oauth/complete")
+  @HttpCode(201)
+  @ApiOperation({
+    summary: "Finish a social sign-up",
+    description:
+      "Creates the account behind a signupToken once the learner has supplied grade + birth year, applying the same under-18 parental-consent rule as /auth/register.",
+  })
+  oauthComplete(@Body() dto: OAuthCompleteDto) {
+    return this.oauth.complete(dto);
   }
 
   @Public()

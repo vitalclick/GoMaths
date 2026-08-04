@@ -24,6 +24,9 @@ NestJS service — core REST/GraphQL API for GoMaths.
 POST   /api/auth/register
 POST   /api/auth/login
 POST   /api/auth/refresh
+GET    /api/auth/providers        # social providers this deployment has configured
+POST   /api/auth/oauth            # Google / Apple ID token → session or signup ticket
+POST   /api/auth/oauth/complete   # redeem the ticket with grade + birth year
 GET    /api/users/me
 GET    /api/curriculum/grades/:grade
 GET    /api/curriculum/topics/:topicId

@@ -4,9 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PreviewBanner } from "../../components/PreviewBanner";
+import { SocialAuthButtons } from "../../components/SocialAuthButtons";
+import { TextLink } from "../../components/TextLink";
 import { useAuth } from "../../lib/auth";
 import { fetchStats, type LearnerStats } from "../../lib/gamification";
 import { hasCompletedOnboarding, setDebugEnabled, useDebugEnabled } from "../../lib/prefs";
+import { useSocialSignIn } from "../../lib/use-social-signin";
 
 export default function HomeScreen() {
   const { user, loading, logout } = useAuth();
@@ -46,6 +49,8 @@ export default function HomeScreen() {
 }
 
 function SignedOut() {
+  const { start, busy, error } = useSocialSignIn();
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <PreviewBanner />
@@ -58,13 +63,21 @@ function SignedOut() {
         >
           Your maths buddy. Learn a little every day and keep the streak alive.
         </Text>
-        <View className="mt-8 w-full gap-3">
-          <Link href="/login" asChild>
-            <Button label="Sign in" variant="primary" size="lg" fullWidth />
-          </Link>
-          <Link href="/register" asChild>
-            <Button label="Create account" variant="ghost" size="md" fullWidth />
-          </Link>
+
+        {/* One tap to start. Email is the fallback below, not the headline. */}
+        <View className="mt-8 w-full">
+          <SocialAuthButtons mode="up" onPress={start} busy={busy} />
+        </View>
+
+        {error && (
+          <Text className="mt-4 text-center text-sm text-destructive">{error}</Text>
+        )}
+
+        <View className="mt-5">
+          <TextLink href="/register" label="Sign up with email" />
+        </View>
+        <View className="mt-1">
+          <TextLink href="/login" prefix="Already have an account?" label="Sign in" />
         </View>
       </View>
     </SafeAreaView>

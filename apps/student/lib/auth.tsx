@@ -16,6 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import * as storage from "./secure-storage";
+import { signInWithProvider, type SocialProvider } from "./social-auth";
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
@@ -65,11 +66,38 @@ export interface LoginInput {
   password: string;
 }
 
+/**
+ * Outcome of a social sign-in. A returning learner is straight in;
+ * a new one still owes us a grade and birth year (and, if they're under
+ * 18, parental consent), so the backend hands back a short-lived
+ * `signupToken` for the /complete-profile screen to redeem.
+ */
+export type SocialSignInResult =
+  | { status: "authenticated" }
+  | {
+      status: "profile_required";
+      signupToken: string;
+      email?: string;
+      displayName?: string;
+      expiresAt: string;
+    };
+
+export interface CompleteSocialSignupInput {
+  signupToken: string;
+  grade: number;
+  birthYear: number;
+  displayName?: string;
+  email?: string;
+  parentalConsentToken?: string;
+}
+
 interface AuthContextValue {
   user: PublicUser | null;
   loading: boolean;
   register: (input: RegisterInput) => Promise<void>;
   login: (input: LoginInput) => Promise<void>;
+  signInWithSocial: (provider: SocialProvider) => Promise<SocialSignInResult>;
+  completeSocialSignup: (input: CompleteSocialSignupInput) => Promise<void>;
   logout: () => Promise<void>;
   requestParentalConsent: (
     parentEmail: string,
@@ -138,6 +166,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [persistSession],
   );
 
+  const signInWithSocial = useCallback(
+    async (provider: SocialProvider): Promise<SocialSignInResult> => {
+      if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+
+      // Runs the native provider sheet. Throws SocialAuthCancelled if the
+      // learner backs out — callers treat that as a no-op, not an error.
+      const credential = await signInWithProvider(provider);
+
+      const res = await fetch(`${apiUrl}/api/auth/oauth`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          provider: credential.provider,
+          idToken: credential.idToken,
+          nonce: credential.nonce,
+          displayName: credential.displayName,
+        }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+
+      const body = (await res.json()) as
+        | { status: "authenticated"; session: AuthSession }
+        | {
+            status: "profile_required";
+            signupToken: string;
+            email?: string;
+            displayName?: string;
+            expiresAt: string;
+          };
+
+      if (body.status === "profile_required") return body;
+
+      await persistSession(body.session);
+      return { status: "authenticated" };
+    },
+    [persistSession],
+  );
+
+  const completeSocialSignup = useCallback(
+    async (input: CompleteSocialSignupInput) => {
+      if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
+      const res = await fetch(`${apiUrl}/api/auth/oauth/complete`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      const body = (await res.json()) as { status: "authenticated"; session: AuthSession };
+      await persistSession(body.session);
+    },
+    [persistSession],
+  );
+
   const logout = useCallback(async () => {
     await Promise.all([
       storage.removeItem(ACCESS_KEY),
@@ -181,11 +262,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       register,
       login,
+      signInWithSocial,
+      completeSocialSignup,
       logout,
       requestParentalConsent,
       pollParentalConsent,
     }),
-    [user, loading, register, login, logout, requestParentalConsent, pollParentalConsent],
+    [
+      user,
+      loading,
+      register,
+      login,
+      signInWithSocial,
+      completeSocialSignup,
+      logout,
+      requestParentalConsent,
+      pollParentalConsent,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -33,9 +33,10 @@ async function tapByLabel(page: Page, label: string | RegExp): Promise<void> {
 test("happy path: register → topic → lesson → practice → chat with Maya", async ({ page }) => {
   await page.goto("/");
 
-  // Sign-in screen on cold start.
+  // Sign-in screen on cold start. Google/Apple are the primary buttons;
+  // this test drives the email route, which is the text link beneath them.
   await expect(page.getByText("GoMaths").first()).toBeVisible();
-  await tapByLabel(page, "Create account");
+  await tapByLabel(page, "Sign up with email");
 
   // Register: step 1 — details. 4 inputs (name, email, password, birth year).
   // Use a birth year that makes the user an adult so we skip the consent step.

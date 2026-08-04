@@ -136,6 +136,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Social providers this deployment supports
+         * @description A provider only appears once its client IDs are configured. The app
+         *     hides an unlisted provider's button rather than showing one that can
+         *     only fail.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            providers: components["schemas"]["OAuthProvider"][];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/oauth": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in with Google or Apple
+         * @description Verifies the provider's OIDC ID token against that provider's JWKS
+         *     (signature, issuer, audience, expiry, and the nonce the client
+         *     generated).
+         *
+         *     Returns a session when the identity is already linked, or when the
+         *     provider asserts a **verified** email that already has an account —
+         *     in which case the identity is linked to it. An unverified email that
+         *     collides with an existing account is rejected rather than linked.
+         *
+         *     Otherwise no account is created yet: the providers don't give us a
+         *     grade or birth year, and POPIA needs parental consent for under-18s.
+         *     The response carries a short-lived `signupToken` to submit to
+         *     /auth/oauth/complete.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OAuthSignInRequest"];
+                };
+            };
+            responses: {
+                /** @description Signed in, or a profile is still required */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OAuthAuthenticated"] | components["schemas"]["OAuthProfileRequired"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/oauth/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish a social sign-up
+         * @description Redeems a `signupToken` together with the grade and birth year the
+         *     provider couldn't supply, then creates the account. Applies the same
+         *     under-18 parental-consent rule as /auth/register, using the server's
+         *     own age arithmetic rather than the client's word for it.
+         *
+         *     Idempotent: submitting the same ticket twice returns a session for
+         *     the account it already created rather than a conflict.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["OAuthCompleteRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OAuthAuthenticated"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                /** @description Email already registered */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/refresh": {
         parameters: {
             query?: never;
@@ -1388,6 +1548,72 @@ export interface components {
             /** Format: email */
             email: string;
             password: string;
+        };
+        /** @enum {string} */
+        OAuthProvider: "google" | "apple";
+        OAuthSignInRequest: {
+            provider: components["schemas"]["OAuthProvider"];
+            /** @description The OIDC ID token returned by the native provider SDK. */
+            idToken: string;
+            /**
+             * @description The nonce the client generated for this attempt. When present it
+             *     must equal the token's `nonce` claim, which binds the token to
+             *     this sign-in and blocks replay of one captured elsewhere.
+             */
+            nonce?: string;
+            /**
+             * @description Apple returns the learner's name to the client on the first
+             *     authorisation only, and never inside the ID token — so the app
+             *     forwards it. Only ever applied to a brand-new account.
+             */
+            displayName?: string;
+        };
+        OAuthAuthenticated: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "OAuthAuthenticated";
+            session: components["schemas"]["AuthSession"];
+        };
+        OAuthProfileRequired: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "OAuthProfileRequired";
+            /**
+             * @description Short-lived ticket carrying the already-verified provider
+             *     identity. Submit it to /auth/oauth/complete. Signed by this
+             *     server, so a client can't claim an identity we never verified.
+             */
+            signupToken: string;
+            /**
+             * Format: email
+             * @description Absent when the provider withheld it (Apple users may decline).
+             */
+            email?: string;
+            displayName?: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        OAuthCompleteRequest: {
+            signupToken: string;
+            grade: components["schemas"]["Grade"];
+            birthYear: number;
+            displayName?: string;
+            /**
+             * Format: email
+             * @description Only used when the provider withheld the email. Rejected when it
+             *     disagrees with one the provider did assert.
+             */
+            email?: string;
+            language?: components["schemas"]["Language"];
+            /**
+             * @description Receipt token from /auth/parental-consent/confirm. REQUIRED when
+             *     the server-derived age is < 18; ignored otherwise.
+             */
+            parentalConsentToken?: string;
         };
         AuthSession: {
             accessToken: string;
