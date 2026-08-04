@@ -74,17 +74,21 @@ enum ProgressEventType {
 // ─────────────────────────────────────────────────────────────────────────
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
+  id    String @id @default(cuid())
+  email String @unique
+  /// Null for accounts created through a social provider (Google / Apple),
+  /// which never set a password. `verifyCredentials` treats null as "no
+  /// password login possible" and fails closed.
+  passwordHash String?
   role         UserRole
   language     Language @default(EN)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   /// Refresh-token sessions for this user.
-  sessions   Session[]
-  pushTokens PushToken[]
+  sessions       Session[]
+  pushTokens     PushToken[]
+  authIdentities AuthIdentity[]
 
   // Role-specific profile (exactly one of these is non-null based on `role`).
   student Student?
@@ -128,6 +132,34 @@ model Session {
   createdAt        DateTime @default(now())
   revokedAt        DateTime?
 
+  @@index([userId])
+}
+
+enum AuthProvider {
+  GOOGLE
+  APPLE
+}
+
+/// A social identity (Google / Apple) linked to a User.
+///
+/// `providerAccountId` is the provider's immutable `sub` claim — never the
+/// email, which users can change at the provider and which Apple hides
+/// behind private-relay addresses. One row per (provider, account), so a
+/// learner can attach both Google and Apple to the same User.
+///
+/// `email` is a snapshot of what the provider asserted at link time. It is
+/// kept for support/audit only — never for lookup, since it can go stale.
+model AuthIdentity {
+  id                String       @id @default(cuid())
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          AuthProvider
+  providerAccountId String
+  email             String?
+  createdAt         DateTime     @default(now())
+  lastUsedAt        DateTime     @default(now())
+
+  @@unique([provider, providerAccountId])
   @@index([userId])
 }
 

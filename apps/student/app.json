@@ -17,6 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.gomaths.mathai",
       "icon": "./assets/icon.png",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -35,6 +36,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-image-picker",
         {

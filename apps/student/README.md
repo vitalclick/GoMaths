@@ -37,6 +37,35 @@ EXPO_PUBLIC_API_URL=http://localhost:4000 pnpm --filter @gomaths/student dev
 
 Then run `services/backend-api` and `services/ai-services/validation` alongside.
 
+### Google / Apple sign-in
+
+These are the primary sign-in buttons; email is the fallback beneath them.
+A provider whose client ID isn't configured has its button hidden rather
+than shown and failing, so the app runs fine without any of this set up.
+
+```sh
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=...apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=...apps.googleusercontent.com
+```
+
+Every ID set here must also be listed in the backend's
+`GOOGLE_OAUTH_CLIENT_IDS` — the backend rejects an ID token whose `aud`
+it doesn't recognise. See `docs/Environment_Reference.md`.
+
+Two things to know:
+
+- **Apple needs a native build.** It uses `expo-apple-authentication`, so
+  it only appears on iOS, and only in a dev-client or EAS build — not in
+  Expo Go. Apple's web flow needs a separate Services ID and a server-side
+  redirect handler, which this app doesn't ship.
+- **Google's redirect URI** must be registered for the `gomaths-v2` scheme
+  (native) and for the dev server origin (web).
+
+First-time social sign-ups land on `/complete-profile`, because neither
+provider can tell us a grade or a birth year — and POPIA still requires
+parental consent for under-18s.
+
 ## Stack
 
 - Expo SDK 52 + Expo Router + TypeScript
@@ -47,7 +76,6 @@ Then run `services/backend-api` and `services/ai-services/validation` alongside.
 
 ## What's deliberately NOT here yet
 
-- Auth (blocked on ADR-005)
 - Real AI tutor UI (the backend route exists; UI shell is Phase 1)
 - Camera scan solver (Phase 1)
 - Onboarding flow (grade selection, parental consent — Phase 1)

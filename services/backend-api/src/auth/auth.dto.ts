@@ -1,4 +1,15 @@
-import { IsEmail, IsIn, IsInt, IsOptional, IsString, Max, Min, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from "class-validator";
+import type { OAuthProvider } from "./oauth-verifier";
 
 export class RegisterDto {
   @IsEmail()
@@ -53,6 +64,77 @@ export class LoginDto {
 export class RefreshDto {
   @IsString()
   refreshToken!: string;
+}
+
+export class OAuthSignInDto {
+  @IsIn(["google", "apple"])
+  provider!: OAuthProvider;
+
+  /** The OIDC ID token the native provider SDK returned to the app. */
+  @IsString()
+  @MinLength(1)
+  idToken!: string;
+
+  /**
+   * The nonce the client generated for this sign-in attempt. When present
+   * it must match the `nonce` claim in the ID token, which binds the token
+   * to this attempt and blocks replay of a token captured elsewhere.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  nonce?: string;
+
+  /**
+   * Apple returns the learner's name to the *client* on the first
+   * authorisation only, and never in the ID token — so the app forwards
+   * it here. Treated as a suggestion: it only ever becomes a display name
+   * on a brand-new account.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  displayName?: string;
+}
+
+export class OAuthCompleteDto {
+  /** Short-lived ticket from POST /auth/oauth (status: profile_required). */
+  @IsString()
+  signupToken!: string;
+
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  grade!: number;
+
+  /** Same server-side minor check as /auth/register. */
+  @IsInt()
+  @Min(1990)
+  @Max(2100)
+  birthYear!: number;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  displayName?: string;
+
+  /**
+   * Only used when the provider withheld the email (an Apple user can
+   * decline to share one). Rejected when it disagrees with an email the
+   * provider did assert.
+   */
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsIn(["en", "af", "zu", "st", "xh"])
+  language?: "en" | "af" | "zu" | "st" | "xh";
+
+  @IsOptional()
+  @IsString()
+  parentalConsentToken?: string;
 }
 
 export class ParentalConsentRequestDto {

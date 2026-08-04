@@ -97,6 +97,104 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /api/auth/providers:
+    get:
+      tags: [auth]
+      summary: Social providers this deployment supports
+      description: |
+        A provider only appears once its client IDs are configured. The app
+        hides an unlisted provider's button rather than showing one that can
+        only fail.
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [providers]
+                properties:
+                  providers:
+                    type: array
+                    items: { $ref: "#/components/schemas/OAuthProvider" }
+
+  /api/auth/oauth:
+    post:
+      tags: [auth]
+      summary: Sign in with Google or Apple
+      description: |
+        Verifies the provider's OIDC ID token against that provider's JWKS
+        (signature, issuer, audience, expiry, and the nonce the client
+        generated).
+
+        Returns a session when the identity is already linked, or when the
+        provider asserts a **verified** email that already has an account —
+        in which case the identity is linked to it. An unverified email that
+        collides with an existing account is rejected rather than linked.
+
+        Otherwise no account is created yet: the providers don't give us a
+        grade or birth year, and POPIA needs parental consent for under-18s.
+        The response carries a short-lived `signupToken` to submit to
+        /auth/oauth/complete.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OAuthSignInRequest"
+      responses:
+        "200":
+          description: Signed in, or a profile is still required
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/OAuthAuthenticated"
+                  - $ref: "#/components/schemas/OAuthProfileRequired"
+                discriminator:
+                  propertyName: status
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/auth/oauth/complete:
+    post:
+      tags: [auth]
+      summary: Finish a social sign-up
+      description: |
+        Redeems a `signupToken` together with the grade and birth year the
+        provider couldn't supply, then creates the account. Applies the same
+        under-18 parental-consent rule as /auth/register, using the server's
+        own age arithmetic rather than the client's word for it.
+
+        Idempotent: submitting the same ticket twice returns a session for
+        the account it already created rather than a conflict.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OAuthCompleteRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OAuthAuthenticated" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
   /api/auth/refresh:
     post:
       tags: [auth]
@@ -877,6 +975,82 @@ components:
       properties:
         email: { type: string, format: email }
         password: { type: string }
+
+    OAuthProvider:
+      type: string
+      enum: [google, apple]
+
+    OAuthSignInRequest:
+      type: object
+      required: [provider, idToken]
+      properties:
+        provider: { $ref: "#/components/schemas/OAuthProvider" }
+        idToken:
+          type: string
+          description: The OIDC ID token returned by the native provider SDK.
+        nonce:
+          type: string
+          maxLength: 256
+          description: |
+            The nonce the client generated for this attempt. When present it
+            must equal the token's `nonce` claim, which binds the token to
+            this sign-in and blocks replay of one captured elsewhere.
+        displayName:
+          type: string
+          maxLength: 80
+          description: |
+            Apple returns the learner's name to the client on the first
+            authorisation only, and never inside the ID token — so the app
+            forwards it. Only ever applied to a brand-new account.
+
+    OAuthAuthenticated:
+      type: object
+      required: [status, session]
+      properties:
+        status: { type: string, enum: [authenticated] }
+        session: { $ref: "#/components/schemas/AuthSession" }
+
+    OAuthProfileRequired:
+      type: object
+      required: [status, signupToken, expiresAt]
+      properties:
+        status: { type: string, enum: [profile_required] }
+        signupToken:
+          type: string
+          description: |
+            Short-lived ticket carrying the already-verified provider
+            identity. Submit it to /auth/oauth/complete. Signed by this
+            server, so a client can't claim an identity we never verified.
+        email:
+          type: string
+          format: email
+          description: Absent when the provider withheld it (Apple users may decline).
+        displayName: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    OAuthCompleteRequest:
+      type: object
+      required: [signupToken, grade, birthYear]
+      properties:
+        signupToken: { type: string }
+        grade: { $ref: "#/components/schemas/Grade" }
+        birthYear:
+          type: integer
+          minimum: 1990
+          maximum: 2100
+        displayName: { type: string, minLength: 1, maxLength: 80 }
+        email:
+          type: string
+          format: email
+          description: |
+            Only used when the provider withheld the email. Rejected when it
+            disagrees with one the provider did assert.
+        language: { $ref: "#/components/schemas/Language" }
+        parentalConsentToken:
+          type: string
+          description: |
+            Receipt token from /auth/parental-consent/confirm. REQUIRED when
+            the server-derived age is < 18; ignored otherwise.
 
     AuthSession:
       type: object

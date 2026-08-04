@@ -61,6 +61,18 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ title: "Sign in" }} />
         <Stack.Screen name="register" options={{ title: "Create account" }} />
+        {/* Second half of a social sign-up. Back is disabled because the
+            signup ticket is held in memory — leaving and returning would
+            land on a screen with nothing to redeem. "Cancel" is the way
+            out, and it clears the ticket properly. */}
+        <Stack.Screen
+          name="complete-profile"
+          options={{
+            title: "Finish setting up",
+            headerBackVisible: false,
+            gestureEnabled: false,
+          }}
+        />
         <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
         <Stack.Screen name="conversations" options={{ title: "Conversations" }} />

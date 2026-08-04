@@ -34,6 +34,9 @@ Legend: **Fatal** = backend won't start in production without it.
 | `JWT_REFRESH_SECRET`              | **Fatal**     | dev `change-me` secret (insecure)            | `openssl rand -base64 64`           |
 | `PARENTAL_CONSENT_INVITE_SECRET`  | Warn          | inherits `JWT_ACCESS_SECRET`                 | `openssl rand -base64 64`           |
 | `PARENTAL_CONSENT_RECEIPT_SECRET` | Warn          | inherits `JWT_ACCESS_SECRET`                 | `openssl rand -base64 64`           |
+| `GOOGLE_OAUTH_CLIENT_IDS`         | Warn          | Google sign-in off; button hidden in app     | Google Cloud console (all platforms) |
+| `APPLE_OAUTH_CLIENT_IDS`          | Warn          | Apple sign-in off; button hidden in app      | App bundle ID / Apple Services ID   |
+| `OAUTH_SIGNUP_SECRET`             | Warn          | inherits `JWT_ACCESS_SECRET`                 | `openssl rand -base64 64`           |
 | `DATABASE_URL`                    | **Fatal**     | in-memory stores (data lost on restart)      | Postgres provider connection string |
 | `REDIS_URL`                       | **Fatal**     | per-pod throttling; scheduler on every pod   | Redis/ElastiCache URL               |
 | `RESEND_API_KEY`                  | Warn          | log-only mail (no delivery → minors blocked) | Resend dashboard                    |
@@ -81,6 +84,15 @@ No external credentials — pure SymPy. This is the moat and runs offline.
 | `EXPO_PUBLIC_API_URL`        | Points the app at the real backend. **Unset → app uses bundled curriculum fixtures.** |
 | `EXPO_PUBLIC_SENTRY_DSN`     | Mobile Sentry (optional).                                                             |
 | `EXPO_PUBLIC_PREVIEW_BANNER` | `1` shows the pre-release banner.                                                     |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`     | Google client ID used on web (and as the fallback). Unset → Google button hidden. |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`     | Google client ID used on iOS.                                                    |
+| `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` | Google client ID used on Android.                                                |
+
+Every Google client ID configured here must also appear in the backend's
+`GOOGLE_OAUTH_CLIENT_IDS` — the backend rejects an ID token whose `aud` it
+doesn't recognise. Apple needs no client ID in the app: the native flow
+uses the bundle identifier, which the backend lists in
+`APPLE_OAUTH_CLIENT_IDS`.
 
 ---
 

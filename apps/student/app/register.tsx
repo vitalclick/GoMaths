@@ -1,10 +1,13 @@
 import { Button, Card } from "@gomaths/ui";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
+import { SocialAuthButtons } from "../components/SocialAuthButtons";
+import { TextLink } from "../components/TextLink";
 import { useAuth } from "../lib/auth";
+import { useSocialSignIn } from "../lib/use-social-signin";
 
 type Step = "details" | "grade" | "consent";
 
@@ -31,6 +34,7 @@ const currentYear = new Date().getFullYear();
 
 export default function RegisterScreen() {
   const { register, requestParentalConsent, pollParentalConsent } = useAuth();
+  const social = useSocialSignIn();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("details");
@@ -150,8 +154,24 @@ export default function RegisterScreen() {
               Create your account
             </Text>
             <Text className="mt-1 text-sm text-muted-foreground">
-              We just need a few details to set up your profile.
+              Use Google or Apple and you can skip the form.
             </Text>
+
+            <View className="mt-6">
+              <SocialAuthButtons mode="up" onPress={social.start} busy={social.busy} />
+            </View>
+
+            {social.error && (
+              <Text className="mt-4 text-center text-sm text-destructive">{social.error}</Text>
+            )}
+
+            <View className="mt-7 flex-row items-center gap-3">
+              <View className="h-px flex-1 bg-border" />
+              <Text className="text-xs uppercase tracking-wider text-muted-foreground">
+                or use your email
+              </Text>
+              <View className="h-px flex-1 bg-border" />
+            </View>
 
             <View className="mt-6 gap-4">
               <Field
@@ -181,11 +201,11 @@ export default function RegisterScreen() {
 
             {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
 
-            <View className="mt-8 gap-3">
+            <View className="mt-6">
               <Button
                 label="Next: pick a grade"
-                variant="primary"
-                size="lg"
+                variant="secondary"
+                size="md"
                 fullWidth
                 onPress={() => {
                   const v = validateDetails();
@@ -197,9 +217,10 @@ export default function RegisterScreen() {
                   setStep("grade");
                 }}
               />
-              <Link href="/login" asChild>
-                <Button label="I already have an account" variant="ghost" size="md" fullWidth />
-              </Link>
+            </View>
+
+            <View className="mt-8">
+              <TextLink href="/login" prefix="Already have an account?" label="Sign in" />
             </View>
           </View>
         )}
