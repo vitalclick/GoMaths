@@ -156,6 +156,20 @@ export async function fetchRoster(classId: string): Promise<RosterStudent[]> {
   return (await res.json()) as RosterStudent[];
 }
 
+export interface ClassProgressEntry {
+  studentId: string;
+  displayName: string;
+  grade: number;
+  topicsAttempted: number;
+  averageMastery: number;
+}
+
+export async function fetchClassProgress(classId: string): Promise<ClassProgressEntry[]> {
+  const res = await authFetch(`/api/teachers/me/classes/${encodeURIComponent(classId)}/progress`);
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as ClassProgressEntry[];
+}
+
 async function readError(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { message?: string | string[] };

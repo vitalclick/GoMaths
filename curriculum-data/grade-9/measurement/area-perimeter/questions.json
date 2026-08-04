@@ -1,0 +1,67 @@
+{
+  "topicId": "g9.mea.area-perimeter",
+  "questions": [
+    {
+      "id": "g9.mea.area-perimeter.q001",
+      "difficulty": "easy",
+      "stem": "8*6",
+      "answer": "48",
+      "answerLatex": "48",
+      "solutionSteps": [
+        "Area of a rectangle = length × breadth.",
+        "8 × 6 = 48 (square units)."
+      ],
+      "commonMistakes": ["Adding the sides instead of multiplying (that gives perimeter)"],
+      "tags": ["rectangle", "area"]
+    },
+    {
+      "id": "g9.mea.area-perimeter.q002",
+      "difficulty": "easy",
+      "stem": "2*(7+3)",
+      "answer": "20",
+      "answerLatex": "20",
+      "solutionSteps": [
+        "Perimeter of a rectangle = 2 × (length + breadth).",
+        "2 × (7 + 3) = 2 × 10 = 20 units."
+      ],
+      "commonMistakes": ["Multiplying length × breadth (that is area)", "Forgetting to double"],
+      "tags": ["rectangle", "perimeter"]
+    },
+    {
+      "id": "g9.mea.area-perimeter.q003",
+      "difficulty": "medium",
+      "stem": "9^2",
+      "answer": "81",
+      "answerLatex": "81",
+      "solutionSteps": ["Area of a square = side². ", "9² = 81 (square units)."],
+      "commonMistakes": ["Computing 9 × 2 = 18 instead of squaring"],
+      "tags": ["square", "area"]
+    },
+    {
+      "id": "g9.mea.area-perimeter.q004",
+      "difficulty": "medium",
+      "stem": "0.5*10*4",
+      "answer": "20",
+      "answerLatex": "20",
+      "solutionSteps": [
+        "Area of a triangle = ½ × base × height.",
+        "½ × 10 × 4 = 20 (square units)."
+      ],
+      "commonMistakes": ["Forgetting the ½", "Using a slant side instead of the perpendicular height"],
+      "tags": ["triangle", "area"]
+    },
+    {
+      "id": "g9.mea.area-perimeter.q005",
+      "difficulty": "hard",
+      "stem": "pi*5^2",
+      "answer": "25*pi",
+      "answerLatex": "25\\pi",
+      "solutionSteps": [
+        "Area of a circle = π × r².",
+        "π × 5² = 25π (square units)."
+      ],
+      "commonMistakes": ["Using diameter instead of radius", "Writing 2πr (that is circumference)"],
+      "tags": ["circle", "area"]
+    }
+  ]
+}

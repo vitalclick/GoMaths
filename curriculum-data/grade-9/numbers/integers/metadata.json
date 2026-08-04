@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.num.integers",
+  "title": "Operations with Integers",
+  "grade": 9,
+  "contentArea": "numbers",
+  "capsReference": "Term 1, Topic 1.1",
+  "prerequisites": [],
+  "learningOutcomes": [
+    "Add and subtract positive and negative integers",
+    "Multiply and divide integers using the sign rules",
+    "Apply the order of operations with integers"
+  ],
+  "estimatedMinutes": 25
+}

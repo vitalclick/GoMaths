@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.alg.algebraic-fractions",
+  "title": "Simplifying Algebraic Fractions",
+  "grade": 9,
+  "contentArea": "patterns_functions_algebra",
+  "capsReference": "Term 1, Topic 1.6",
+  "prerequisites": ["g9.alg.factorisation"],
+  "learningOutcomes": [
+    "Simplify algebraic fractions by dividing common factors",
+    "Factorise numerator and denominator before cancelling",
+    "Recognise when a factor cancels to leave a simpler expression"
+  ],
+  "estimatedMinutes": 25
+}

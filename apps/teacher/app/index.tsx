@@ -1,4 +1,4 @@
-import { Button, Card } from "@gomaths/ui";
+import { Button, Card, Icon } from "@gomaths/ui";
 import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
@@ -138,13 +138,18 @@ function SignedIn({
 function ClassCard({ cls }: { cls: TeacherClass }) {
   return (
     <Link href={{ pathname: "/class/[id]", params: { id: cls.id, name: cls.name } }} asChild>
-      <Card>
-        <Text className="font-display text-base font-semibold text-foreground">{cls.name}</Text>
-        <View className="mt-2 flex-row gap-3">
-          <Pill label={`Grade ${cls.grade}`} />
-          <Pill label={`${cls.studentCount} learner${cls.studentCount === 1 ? "" : "s"}`} />
+      <Card className="flex-row items-center gap-3">
+        <View className="h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft">
+          <Icon name="book" size={22} color="#008a3e" />
         </View>
-        <Text className="mt-3 text-xs font-semibold text-primary">View roster →</Text>
+        <View className="flex-1">
+          <Text className="font-display text-base font-extrabold text-foreground">{cls.name}</Text>
+          <View className="mt-2 flex-row gap-2">
+            <Pill label={`Grade ${cls.grade}`} />
+            <Pill label={`${cls.studentCount} learner${cls.studentCount === 1 ? "" : "s"}`} />
+          </View>
+        </View>
+        <Icon name="arrow-right" size={16} color="#8B9590" />
       </Card>
     </Link>
   );

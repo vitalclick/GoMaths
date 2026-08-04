@@ -3,7 +3,7 @@ import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { listTopics, type TopicSummary } from "../lib/curriculum";
+import { listTopics, type TopicSummary } from "../../lib/curriculum";
 
 export default function TopicsScreen() {
   const [topics, setTopics] = useState<TopicSummary[] | null>(null);
@@ -34,7 +34,7 @@ export default function TopicsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
       <FlatList
-        contentContainerStyle={{ padding: 18, gap: 10, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 18, gap: 10, paddingBottom: 110 }}
         data={topics}
         keyExtractor={(t) => t.topicId}
         ListHeaderComponent={

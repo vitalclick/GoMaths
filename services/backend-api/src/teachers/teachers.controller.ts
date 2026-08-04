@@ -20,4 +20,10 @@ export class TeachersController {
   roster(@CurrentUser() user: JwtClaims, @Param("classId") classId: string) {
     return this.service.getRoster(user.sub, classId);
   }
+
+  @Get("me/classes/:classId/progress")
+  @ApiOperation({ summary: "Per-student progress for one of the teacher's classes" })
+  progress(@CurrentUser() user: JwtClaims, @Param("classId") classId: string) {
+    return this.service.getClassProgress(user.sub, classId);
+  }
 }

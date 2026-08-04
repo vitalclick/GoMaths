@@ -1,0 +1,14 @@
+{
+  "topicId": "g9.ss.angles",
+  "title": "Angle Relationships",
+  "grade": 9,
+  "contentArea": "space_and_shape",
+  "capsReference": "Term 2, Topic 2.1",
+  "prerequisites": [],
+  "learningOutcomes": [
+    "Use angles on a straight line summing to 180°",
+    "Use angles in a triangle summing to 180°",
+    "Use angles in a quadrilateral summing to 360°"
+  ],
+  "estimatedMinutes": 25
+}

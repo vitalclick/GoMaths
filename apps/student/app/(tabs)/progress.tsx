@@ -1,13 +1,29 @@
 import { Card, Icon, ProgressBar } from "@gomaths/ui";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { masteryByTopic, subscribe, type TopicMastery } from "../lib/progress-store";
+import { isHydrated, masteryByTopic, subscribe, type TopicMastery } from "../../lib/progress-store";
 
 export default function ProgressScreen() {
   const [rows, setRows] = useState<TopicMastery[]>(() => [...masteryByTopic().values()]);
+  const [ready, setReady] = useState(isHydrated);
 
-  useEffect(() => subscribe(() => setRows([...masteryByTopic().values()])), []);
+  useEffect(
+    () =>
+      subscribe(() => {
+        setReady(isHydrated());
+        setRows([...masteryByTopic().values()]);
+      }),
+    [],
+  );
+
+  if (!ready) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
 
   if (rows.length === 0) {
     return (
@@ -29,7 +45,7 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
-      <ScrollView contentContainerStyle={{ padding: 18, gap: 10, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: 18, gap: 10, paddingBottom: 110 }}>
         <View className="mb-2">
           <Text className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             Mastery

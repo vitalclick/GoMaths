@@ -22,7 +22,7 @@ export function PreviewBanner() {
       accessibilityRole="alert"
     >
       <Text style={{ fontSize: 12, color: "#3a2a00", textAlign: "center" }}>
-        Pre-release · curriculum limited to 2 Grade 9 topics · do not use real personal data
+        Pre-release preview · Grade 9 · AI features require a live backend
       </Text>
     </View>
   );

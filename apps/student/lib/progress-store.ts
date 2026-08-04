@@ -1,15 +1,16 @@
 /**
- * In-memory progress store for the demo.
+ * Per-topic mastery store with SecureStore persistence.
  *
- * Phase 1 swaps this for:
- *   - SQLite persistence on device (Expo)
- *   - POST /api/progress/events to the backend on connectivity
- *   - Conflict resolution via last-write-wins on `occurredAt`
+ * Progress survives app restarts. The store hydrates from SecureStore
+ * asynchronously on module load; subscribers are notified once loaded.
  *
- * For the prototype it's enough to track per-topic attempts/correct and
- * notify subscribers when something changes (so the progress screen
- * re-renders without prop drilling).
+ * Phase 2 will also POST events to /api/progress/events for cross-device
+ * sync. For now, device-local SecureStore is the source of truth.
  */
+
+import * as storage from "./secure-storage";
+
+const STORE_KEY = "gomaths.progress.v1";
 
 export type ProgressEventType =
   | "lesson_started"
@@ -35,11 +36,56 @@ export interface TopicMastery {
 
 type Listener = () => void;
 
-const events: ProgressEvent[] = [];
+const mastery = new Map<string, TopicMastery>();
 const listeners = new Set<Listener>();
+let hydrated = false;
+
+async function hydrate(): Promise<void> {
+  try {
+    const raw = await storage.getItem(STORE_KEY);
+    if (raw) {
+      const saved: TopicMastery[] = JSON.parse(raw);
+      for (const m of saved) mastery.set(m.topicId, { ...m });
+    }
+  } catch {
+    // corrupted store — start fresh
+  } finally {
+    hydrated = true;
+    for (const l of listeners) l();
+  }
+}
+
+void hydrate();
+
+async function persist(): Promise<void> {
+  try {
+    await storage.setItem(STORE_KEY, JSON.stringify([...mastery.values()]));
+  } catch {
+    // non-critical; in-memory state is still correct for this session
+  }
+}
 
 export function record(event: Omit<ProgressEvent, "occurredAt">): void {
-  events.push({ ...event, occurredAt: Date.now() });
+  const now = Date.now();
+  const m: TopicMastery = mastery.get(event.topicId) ?? {
+    topicId: event.topicId,
+    attempts: 0,
+    correct: 0,
+    masteryScore: 0,
+    lastInteractionAt: now,
+  };
+
+  if (event.type === "question_attempted") m.attempts++;
+  if (event.type === "question_correct") {
+    m.attempts++;
+    m.correct++;
+  }
+  if (event.type === "question_incorrect") m.attempts++;
+  m.lastInteractionAt = now;
+  m.masteryScore = m.attempts > 0 ? m.correct / m.attempts : 0;
+
+  mastery.set(event.topicId, m);
+  void persist();
   for (const l of listeners) l();
 }
 
@@ -49,29 +95,16 @@ export function subscribe(l: Listener): () => void {
 }
 
 export function masteryByTopic(): Map<string, TopicMastery> {
-  const map = new Map<string, TopicMastery>();
-  for (const e of events) {
-    const m = map.get(e.topicId) ?? {
-      topicId: e.topicId,
-      attempts: 0,
-      correct: 0,
-      masteryScore: 0,
-      lastInteractionAt: e.occurredAt,
-    };
-    if (e.type === "question_attempted") m.attempts++;
-    if (e.type === "question_correct") {
-      m.attempts++;
-      m.correct++;
-    }
-    if (e.type === "question_incorrect") m.attempts++;
-    m.lastInteractionAt = e.occurredAt;
-    m.masteryScore = m.attempts > 0 ? m.correct / m.attempts : 0;
-    map.set(e.topicId, m);
-  }
-  return map;
+  return mastery;
+}
+
+/** True once the initial load from SecureStore has completed. */
+export function isHydrated(): boolean {
+  return hydrated;
 }
 
 export function _resetForTest(): void {
-  events.length = 0;
+  mastery.clear();
+  hydrated = false;
   listeners.clear();
 }

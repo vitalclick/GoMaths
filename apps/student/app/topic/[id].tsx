@@ -1,4 +1,4 @@
-import { Button } from "@gomaths/ui";
+import { Button, Card, Icon } from "@gomaths/ui";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
@@ -40,23 +40,34 @@ export default function TopicScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 32 }}>
-        <Text className="text-xs uppercase tracking-wider text-muted-foreground">
-          {topic.capsReference}
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        <Text className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          {formatContentArea(topic.contentArea)} · {topic.capsReference}
         </Text>
-        <Text className="mt-1 font-display text-3xl font-bold text-foreground">{topic.title}</Text>
+        <Text className="mt-1 font-display text-3xl font-extrabold tracking-tight text-foreground">
+          {topic.title}
+        </Text>
+        <View className="mt-2 flex-row items-center gap-1.5">
+          <Icon name="clock" size={13} color="#8B9590" />
+          <Text className="text-xs text-muted-foreground">~{topic.estimatedMinutes} min</Text>
+        </View>
 
         {topic.learningOutcomes.length > 0 && (
-          <View className="mt-4 rounded-2xl border border-border bg-card p-4">
-            <Text className="text-xs uppercase tracking-wider text-muted-foreground">
+          <Card className="mt-5">
+            <Text className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
               You'll be able to
             </Text>
-            {topic.learningOutcomes.map((o, i) => (
-              <Text key={i} className="mt-1 text-sm text-foreground">
-                • {o}
-              </Text>
-            ))}
-          </View>
+            <View className="mt-2 gap-2">
+              {topic.learningOutcomes.map((o, i) => (
+                <View key={i} className="flex-row gap-2">
+                  <View className="mt-0.5">
+                    <Icon name="check" size={15} color="#05ab58" strokeWidth={2.5} />
+                  </View>
+                  <Text className="flex-1 text-sm text-foreground">{o}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
         )}
 
         <View className="mt-6">
@@ -68,10 +79,14 @@ export default function TopicScreen() {
             <Button label="Practice this topic" variant="primary" size="lg" fullWidth />
           </Link>
           <Link href={{ pathname: "/tutor", params: { topicId: topic.topicId } }} asChild>
-            <Button label="Ask Maya about this" variant="accent" size="md" fullWidth />
+            <Button label="Ask Maya about this" variant="ai" size="md" fullWidth />
           </Link>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+function formatContentArea(area: string): string {
+  return area.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

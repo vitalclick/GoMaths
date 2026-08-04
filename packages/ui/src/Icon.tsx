@@ -28,7 +28,8 @@ export type IconName =
   | "graph"
   | "lock"
   | "trophy"
-  | "clock";
+  | "clock"
+  | "x";
 
 export interface IconProps {
   name: IconName;
@@ -107,6 +108,8 @@ function renderGlyph(name: IconName, color: string, s: StrokeProps) {
       return <Path {...s} d="M12 3l2.6 5.3 5.9.9-4.3 4.2 1 5.9L12 16.5l-5.2 2.8 1-5.9L3.5 9.2l5.9-.9L12 3z" />;
     case "check":
       return <Path {...s} d="M5 12l4 4 10-10" />;
+    case "x":
+      return <Path {...s} d="M6 6l12 12M18 6L6 18" />;
     case "play":
       return <Path d="M8 5v14l11-7L8 5z" fill={color} />;
     case "arrow-right":
