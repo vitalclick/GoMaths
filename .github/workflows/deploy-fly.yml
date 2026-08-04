@@ -16,6 +16,11 @@ name: Deploy to Fly.io
 #     scoped to the four apps (gomaths-backend, gomaths-ai-tutor,
 #     gomaths-ai-solver, gomaths-ai-validation).
 #
+# Until that secret exists the deploy jobs are skipped rather than failed:
+# flyctl exits 1 on an empty token ("no access token available"), which
+# used to paint every push to main red for a deploy that was never
+# actually configured. The preflight job below reports what's missing.
+#
 # App-level secrets (DATABASE_URL, ANTHROPIC_API_KEY, JWT_* etc.) are
 # set on each Fly app via `fly secrets set` — see the comments at the
 # top of each fly.*.toml. The workflow does not manage those.
@@ -47,13 +52,46 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The `secrets` context isn't readable from a job-level `if:`, so the
+  # presence of FLY_API_TOKEN is resolved once here and fanned out to the
+  # deploy jobs as an output.
+  preflight:
+    name: Check Fly credentials
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.token.outputs.configured }}
+    steps:
+      - id: token
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -n "$FLY_API_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "FLY_API_TOKEN is set — deploying." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Fly deploy skipped"
+              echo
+              echo "\`FLY_API_TOKEN\` is not set on this repository, so the four"
+              echo "deploy jobs were skipped instead of failing."
+              echo
+              echo "To enable deploys, create a token with"
+              echo "\`fly tokens create deploy\` and add it under"
+              echo "**Settings → Secrets and variables → Actions**."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::FLY_API_TOKEN is not configured — skipping all Fly deploys."
+          fi
+
   backend:
     name: Deploy backend (NestJS)
     runs-on: ubuntu-latest
+    needs: preflight
     if: >-
+      needs.preflight.outputs.configured == 'true' && (
       github.event_name == 'push' ||
       github.event.inputs.service == 'all' ||
-      github.event.inputs.service == 'backend'
+      github.event.inputs.service == 'backend' )
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
@@ -65,10 +103,12 @@ jobs:
   tutor:
     name: Deploy tutor (FastAPI)
     runs-on: ubuntu-latest
+    needs: preflight
     if: >-
+      needs.preflight.outputs.configured == 'true' && (
       github.event_name == 'push' ||
       github.event.inputs.service == 'all' ||
-      github.event.inputs.service == 'tutor'
+      github.event.inputs.service == 'tutor' )
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
@@ -80,10 +120,12 @@ jobs:
   solver:
     name: Deploy solver (FastAPI)
     runs-on: ubuntu-latest
+    needs: preflight
     if: >-
+      needs.preflight.outputs.configured == 'true' && (
       github.event_name == 'push' ||
       github.event.inputs.service == 'all' ||
-      github.event.inputs.service == 'solver'
+      github.event.inputs.service == 'solver' )
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
@@ -95,10 +137,12 @@ jobs:
   validation:
     name: Deploy validation (FastAPI + SymPy)
     runs-on: ubuntu-latest
+    needs: preflight
     if: >-
+      needs.preflight.outputs.configured == 'true' && (
       github.event_name == 'push' ||
       github.event.inputs.service == 'all' ||
-      github.event.inputs.service == 'validation'
+      github.event.inputs.service == 'validation' )
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master

@@ -46,7 +46,10 @@ export class ParentsService {
       include: { student: true },
     });
 
-    type UserWithStudent = { email: string; student: { displayName: string; grade: number | null } | null };
+    type UserWithStudent = {
+      email: string;
+      student: { displayName: string; grade: number | null } | null;
+    };
     const byEmail = new Map((users as UserWithStudent[]).map((u) => [u.email, u]));
     const out: LinkedChild[] = [];
     for (const c of consents) {
