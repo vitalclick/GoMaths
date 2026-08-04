@@ -32,8 +32,10 @@ name: Deploy to VPS
 # NOT managed here. They live in .env.production on the VPS, which is
 # gitignored and never leaves the box.
 #
-# Note: deploy-fly.yml targets the same services on Fly.io. Only one
-# should be live at a time — disable the other in the Actions tab.
+# This is the only deploy workflow. The fly.*.toml files at the repo root
+# still describe the same four services on Fly.io and remain the migration
+# path off single-host hosting, but they are driven by `fly deploy -c
+# fly.<service>.toml` by hand — nothing deploys them automatically.
 
 on:
   push:
@@ -61,9 +63,8 @@ concurrency:
 
 jobs:
   # The `secrets` context isn't readable from a job-level `if:`, so
-  # resolve credential presence once and fan it out as an output. This
-  # mirrors deploy-fly.yml: an unconfigured deploy skips rather than
-  # painting every push to main red.
+  # resolve credential presence once and fan it out as an output, so an
+  # unconfigured deploy skips rather than painting every push to main red.
   preflight:
     name: Check VPS credentials
     runs-on: ubuntu-latest
