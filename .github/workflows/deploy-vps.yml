@@ -78,7 +78,7 @@ jobs:
 
       - name: Health check
         env:
-          API_URL: ${{ vars.VPS_API_URL || format('https://{0}', secrets.VPS_HOST) }}
+          API_URL: ${{ secrets.VPS_API_URL || vars.VPS_API_URL || format('https://{0}', secrets.VPS_HOST) }}
         run: |
           sleep 10
           curl -sf "$API_URL/api/health" | python3 -c \
