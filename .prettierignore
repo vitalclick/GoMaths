@@ -13,6 +13,9 @@ package-lock.json
 yarn.lock
 packages/api-client/src/generated.ts
 **/.expo/types/**
+# Rewritten verbatim by the Expo CLI ("should not be edited"), so any
+# formatting we apply here gets clobbered on the next expo run.
+**/expo-env.d.ts
 
 # Designer mockups (visual reference only — see UI/README.md)
 UI/
