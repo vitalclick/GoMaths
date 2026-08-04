@@ -127,7 +127,18 @@ services:
       validation:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      # Probed with node itself: the runner stage is node:*-slim, which
+      # ships neither wget nor curl (the base image installs them to build
+      # node, then purges them). An earlier wget-based check therefore
+      # failed on every attempt and marked a perfectly healthy container
+      # unhealthy. Mirrors the `python -c` checks on the AI services below.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
