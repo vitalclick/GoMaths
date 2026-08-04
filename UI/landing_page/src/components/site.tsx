@@ -1,13 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import logo from "@/assets/gomaths-logo.png.asset.json";
+// Bundled from src/assets, not fetched from Lovable's asset CDN. The
+// generated .asset.json this replaced pointed at an R2 URL that only
+// resolves on Lovable's own hosting, so every self-hosted build 404'd the
+// logo. Vite rewrites this import to a hashed, cacheable asset URL.
+import logoUrl from "@/assets/gomaths-logo.png";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
         <Link to="/" className="flex items-center">
-          <img src={logo.url} alt="GoMaths" className="h-7 w-auto" />
+          <img src={logoUrl} alt="GoMaths" className="h-7 w-auto" />
         </Link>
         <nav className="ml-auto flex items-center gap-1 text-sm font-semibold">
           <Link

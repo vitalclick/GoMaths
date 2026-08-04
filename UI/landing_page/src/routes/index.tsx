@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site";
-import logo from "@/assets/gomaths-logo.png.asset.json";
+// Bundled asset, not Lovable's CDN — see src/assets/README.md.
+import logoUrl from "@/assets/gomaths-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -64,7 +65,7 @@ function Index() {
         <div className="grid-paper absolute inset-0 opacity-70" aria-hidden="true" />
         <div className="hero-glow absolute inset-0" aria-hidden="true" />
         <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-20 text-center sm:pt-28">
-          <img src={logo.url} alt="GoMaths" className="mx-auto h-12 w-auto sm:h-14" />
+          <img src={logoUrl} alt="GoMaths" className="mx-auto h-12 w-auto sm:h-14" />
           <h1 className="mx-auto mt-8 max-w-3xl text-5xl font-extrabold leading-[1.05] sm:text-7xl">
             Your <span className="brand-gradient-text">maths buddy</span>
           </h1>
