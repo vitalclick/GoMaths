@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { SiteLayout, DocHeader } from "@/components/site";
-import { submitContactMessage } from "@/lib/contact.functions";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -27,8 +25,15 @@ export const Route = createFileRoute("/contact")({
 
 type Status = "idle" | "sending" | "sent" | "error";
 
+/**
+ * Posts to public/contact.php rather than a TanStack server function.
+ * The site is prerendered to static HTML on cPanel, where no server
+ * function exists — PHP is what that host actually runs. The endpoint
+ * re-validates everything; the checks here are only for fast feedback.
+ */
+const CONTACT_ENDPOINT = "/contact.php";
+
 function ContactPage() {
-  const submit = useServerFn(submitContactMessage);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -40,14 +45,28 @@ function ContactPage() {
     setError(null);
 
     try {
-      await submit({
-        data: {
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
           name: String(formData.get("name") ?? ""),
           email: String(formData.get("email") ?? ""),
           subject: String(formData.get("subject") ?? ""),
           message: String(formData.get("message") ?? ""),
-        },
+          // Honeypot — hidden from people, filled in by naive bots.
+          company: String(formData.get("company") ?? ""),
+        }),
       });
+
+      const body = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        message?: string;
+      } | null;
+
+      if (!response.ok || !body?.ok) {
+        throw new Error(body?.message ?? "Something went wrong. Please try again.");
+      }
+
       form.reset();
       setStatus("sent");
     } catch (err) {
@@ -71,7 +90,7 @@ function ContactPage() {
       <div className="mx-auto grid max-w-3xl gap-8 px-5 py-12">
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
+          className="relative rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8"
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Your name" htmlFor="name">
@@ -124,6 +143,16 @@ function ContactPage() {
                 placeholder="Tell us what you need help with…"
               />
             </Field>
+          </div>
+
+          {/*
+            Honeypot. Hidden from people and from screen readers, but a bot
+            filling every input will complete it — contact.php then returns
+            200 without sending, so the bot cannot tell it was caught.
+          */}
+          <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+            <label htmlFor="company">Company (leave blank)</label>
+            <input id="company" name="company" type="text" tabIndex={-1} autoComplete="off" />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-4">

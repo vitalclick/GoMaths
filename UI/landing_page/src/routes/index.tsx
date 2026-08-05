@@ -84,7 +84,10 @@ function Index() {
           <dl className="mx-auto mt-16 grid max-w-2xl grid-cols-3 gap-4">
             {[
               ["CAPS", "aligned content"],
-              ["Grades 4–12", "coverage"],
+              // Only curriculum-data/grade-9 exists today. Widen this the
+              // day more grades ship, not before — it is an advertising
+              // claim, and app-store review reads the landing page.
+              ["Grade 9", "live now, more coming"],
               ["POPIA", "aware by design"],
             ].map(([k, v]) => (
               <div

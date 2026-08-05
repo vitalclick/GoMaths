@@ -19,7 +19,7 @@
 
 # NOTE: the public site (gomaths.co.za — home, privacy notice, terms) is
 # NOT served from this VPS. The apex A record points at the cPanel host,
-# so those pages are uploaded there instead; see web/README.md. Adding a
+# so those pages are uploaded there instead; see UI/landing_page. Adding a
 # `gomaths.co.za` block here would never receive traffic.
 #
 # If that ever changes, the hostname must be set to "DNS only" (grey
