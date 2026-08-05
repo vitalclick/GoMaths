@@ -69,9 +69,7 @@ function SignedOut() {
           <SocialAuthButtons mode="up" onPress={start} busy={busy} />
         </View>
 
-        {error && (
-          <Text className="mt-4 text-center text-sm text-destructive">{error}</Text>
-        )}
+        {error && <Text className="mt-4 text-center text-sm text-destructive">{error}</Text>}
 
         <View className="mt-5">
           <TextLink href="/register" label="Sign up with email" />
