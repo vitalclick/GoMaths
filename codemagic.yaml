@@ -78,7 +78,7 @@ workflows:
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: "6752224795"
+        APP_STORE_APPLE_ID: "6743315031"
         EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
       # Google client IDs are inlined into the JS bundle at build time, so
       # they have to exist here — setting them on the server later has no
@@ -182,6 +182,11 @@ workflows:
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
+        # UNVERIFIED. This was copied from the student workflow, where the
+        # ID turned out to be wrong. A separate bundle ID is a separate App
+        # Store record with its own numeric ID, so this cannot be the same
+        # value as student's. Confirm in App Store Connect before tagging
+        # parent-v* — a wrong ID uploads the build to the wrong app.
         APP_STORE_APPLE_ID: "6752224795"
       ios_signing:
         distribution_type: app_store
@@ -271,6 +276,8 @@ workflows:
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
+        # UNVERIFIED — same problem as the parent workflow above. Confirm
+        # in App Store Connect before tagging teacher-v*.
         APP_STORE_APPLE_ID: "6752224795"
       ios_signing:
         distribution_type: app_store
