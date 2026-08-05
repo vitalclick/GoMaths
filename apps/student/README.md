@@ -66,8 +66,18 @@ Three things to know:
     `gomaths-v2://` will _not_ work. That's why `app.json` registers
     `com.gomaths.mathai` as a second URL scheme: without it the redirect
     has no way back into the app.
+
+    That redirect also needs a **route**, not just a scheme. It arrives as
+    a real deep link, and expo-router tries to navigate to `/oauthredirect`
+    off the back of it — so `app/oauthredirect.tsx` exists to absorb that
+    and bounce back to the screen that started sign-in. Delete it and
+    consent lands the learner on "Unmatched Route". Apple needs no
+    equivalent: its native sheet returns the credential in-process, so no
+    URL ever re-enters the app.
+
   - Web: the page origin (e.g. `http://localhost:8081` in dev), registered
     as an authorised redirect URI on the **web** client.
+
 - **Native uses the authorization-code grant with PKCE**, because Google
   only issues installed apps a code, never an ID token directly. PKCE is
   what makes that safe without a client secret — none ships in the bundle.
