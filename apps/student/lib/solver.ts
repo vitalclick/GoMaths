@@ -8,10 +8,14 @@
  *    when the user types the equation.
  */
 
-import * as storage from "./secure-storage";
+import { authFetch } from "./auth";
 
-const ACCESS_KEY = "gomaths.access";
-const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+/**
+ * A scan is an upload plus OCR plus a solve, so it needs a longer leash than
+ * the default request timeout — but still a finite one, otherwise a stalled
+ * upload hangs the screen on "Working…" forever.
+ */
+const SCAN_TIMEOUT_MS = 60_000;
 
 export interface SolverStep {
   explanation: string;
@@ -38,9 +42,6 @@ export interface ScanAsset {
 }
 
 export async function scanImage(asset: ScanAsset): Promise<SolverResponse> {
-  if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
-  const accessToken = await storage.getItem(ACCESS_KEY);
-
   const form = new FormData();
   // FormData on RN accepts the { uri, name, type } trio directly.
   form.append("image", {
@@ -49,25 +50,22 @@ export async function scanImage(asset: ScanAsset): Promise<SolverResponse> {
     type: asset.mimeType ?? "image/jpeg",
   } as unknown as Blob);
 
-  const res = await fetch(`${apiUrl}/api/solver/scan`, {
+  // Via authFetch, not a bare fetch: the access token expires after 15
+  // minutes and this is the one screen a learner is most likely to open
+  // long after signing in.
+  const res = await authFetch("/api/solver/scan", {
     method: "POST",
     body: form,
-    headers: accessToken ? { authorization: `Bearer ${accessToken}` } : undefined,
+    timeoutMs: SCAN_TIMEOUT_MS,
   });
   if (!res.ok) throw new Error(await readError(res));
   return (await res.json()) as SolverResponse;
 }
 
 export async function solveLatex(latex: string): Promise<SolverResponse> {
-  if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
-  const accessToken = await storage.getItem(ACCESS_KEY);
-
-  const res = await fetch(`${apiUrl}/api/solver/solve`, {
+  const res = await authFetch("/api/solver/solve", {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
-    },
+    headers: { "content-type": "application/json" },
     body: JSON.stringify({ latex }),
   });
   if (!res.ok) throw new Error(await readError(res));
@@ -75,6 +73,12 @@ export async function solveLatex(latex: string): Promise<SolverResponse> {
 }
 
 async function readError(res: Response): Promise<string> {
+  // authFetch already refreshed and replayed, so a 401 here means the
+  // session is genuinely done — say that rather than echoing the API's
+  // "Invalid or expired token", which reads like a bug to a learner.
+  if (res.status === 401) return "Your session has expired. Please sign in again.";
+  if (res.status === 413) return "That image is too large. Try a closer, smaller photo.";
+  if (res.status === 429) return "Too many scans in a row. Wait a minute and try again.";
   try {
     const body = (await res.json()) as { message?: string | string[] };
     if (Array.isArray(body.message)) return body.message.join(", ");

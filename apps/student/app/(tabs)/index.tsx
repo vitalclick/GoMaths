@@ -1,7 +1,15 @@
 import { Button, Card, Heading, Icon, type IconName, Maxi, Pill, ProgressBar } from "@gomaths/ui";
 import { Link, useRouter, type Href } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PreviewBanner } from "../../components/PreviewBanner";
 import { SocialAuthButtons } from "../../components/SocialAuthButtons";
@@ -9,12 +17,12 @@ import { TextLink } from "../../components/TextLink";
 import { useAuth } from "../../lib/auth";
 import { fetchStats, type LearnerStats } from "../../lib/gamification";
 import { hasCompletedOnboarding, setDebugEnabled, useDebugEnabled } from "../../lib/prefs";
+import { useSecretTap } from "../../lib/use-secret-tap";
 import { useSocialSignIn } from "../../lib/use-social-signin";
 
 export default function HomeScreen() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const debug = useDebugEnabled();
   const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   useEffect(() => {
@@ -38,8 +46,6 @@ export default function HomeScreen() {
     <SignedIn
       name={user.displayName}
       subtitle={`Grade ${user.grade}`}
-      debug={debug}
-      onToggleDebug={() => setDebugEnabled(!debug)}
       onLogout={async () => {
         await logout();
         router.replace("/");
@@ -98,18 +104,23 @@ const ZERO_STATS: LearnerStats = {
 function SignedIn({
   name,
   subtitle,
-  debug,
-  onToggleDebug,
   onLogout,
 }: {
   name: string;
   subtitle: string;
-  debug: boolean;
-  onToggleDebug: () => void;
   onLogout: () => void;
 }) {
+  const debug = useDebugEnabled();
   const [stats, setStats] = useState<LearnerStats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Tap the mascot 5 times to flip developer mode — deliberately not a
+  // visible toggle, since it's only useful to us, not to learners.
+  const onSecretTap = useSecretTap(() => {
+    const next = !debug;
+    setDebugEnabled(next);
+    Alert.alert("Developer mode", next ? "Enabled" : "Disabled");
+  });
 
   const load = useCallback(async () => {
     try {
@@ -144,7 +155,9 @@ function SignedIn({
       >
         {/* Header: mascot + greeting + stat pills */}
         <View className="flex-row items-center gap-3">
-          <Maxi size={48} />
+          <Pressable onPress={onSecretTap}>
+            <Maxi size={48} />
+          </Pressable>
           <View className="flex-1">
             <Text className="text-sm font-semibold text-muted-foreground">Howzit, {name} 👋</Text>
             <Text className="font-display text-xl font-extrabold text-foreground">
@@ -295,16 +308,10 @@ function SignedIn({
 
         <View className="mt-10">
           <Button label="Sign out" variant="ghost" size="sm" fullWidth onPress={onLogout} />
-          <Pressable
-            onPress={onToggleDebug}
-            className="mt-2 self-center rounded-full px-3 py-1 active:opacity-60"
-            accessibilityRole="switch"
-            accessibilityState={{ checked: debug }}
-          >
-            <Text className="text-[11px] text-muted-foreground">
-              {subtitle} · Developer mode: {debug ? "ON" : "off"}
-            </Text>
-          </Pressable>
+          <Text className="mt-2 self-center text-[11px] text-muted-foreground">
+            {subtitle}
+            {debug ? " · Developer mode ON" : ""}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>

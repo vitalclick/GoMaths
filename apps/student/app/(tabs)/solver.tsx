@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Math as MathView } from "../../components/Math";
+import { TextLink } from "../../components/TextLink";
 import { useAuth } from "../../lib/auth";
 import { prepareImageForOcr } from "../../lib/image-prep";
 import { scanImage, solveLatex, type SolverResponse } from "../../lib/solver";
@@ -33,6 +34,11 @@ export default function SolverScreen() {
         <Text className="text-center text-base text-muted-foreground">
           Sign in to use the solver.
         </Text>
+        {/* Also the landing spot when a session expires mid-scan, so give it
+            a way out instead of a dead end. */}
+        <View className="mt-2">
+          <TextLink href="/login" label="Sign in" />
+        </View>
       </SafeAreaView>
     );
   }

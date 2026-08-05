@@ -1,11 +1,12 @@
 import { Card, Icon, type IconName, Maxi, Pill, ProgressBar } from "@gomaths/ui";
 import { Link, useRouter, type Href } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../lib/auth";
 import { fetchStats, type LearnerStats } from "../../lib/gamification";
 import { setDebugEnabled, useDebugEnabled } from "../../lib/prefs";
+import { useSecretTap } from "../../lib/use-secret-tap";
 
 const ZERO: LearnerStats = {
   xp: 0,
@@ -77,6 +78,14 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState<LearnerStats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Tap the mascot 5 times to flip developer mode — deliberately not a
+  // visible toggle, since it's only useful to us, not to learners.
+  const onSecretTap = useSecretTap(() => {
+    const next = !debug;
+    setDebugEnabled(next);
+    Alert.alert("Developer mode", next ? "Enabled" : "Disabled");
+  });
+
   const load = useCallback(async () => {
     try {
       setStats(await fetchStats());
@@ -110,12 +119,15 @@ export default function ProfileScreen() {
       >
         {/* Identity header */}
         <View className="items-center pt-2">
-          <Maxi size={84} />
+          <Pressable onPress={onSecretTap}>
+            <Maxi size={84} />
+          </Pressable>
           <Text className="mt-3 font-display text-2xl font-extrabold text-foreground">
             {user?.displayName ?? "Learner"}
           </Text>
           <Text className="mt-0.5 text-sm text-muted-foreground">
             {user ? `Grade ${user.grade}` : ""}
+            {debug ? " · Developer mode ON" : ""}
           </Text>
         </View>
 
@@ -185,16 +197,6 @@ export default function ProfileScreen() {
             className="rounded-full px-4 py-2 active:opacity-60"
           >
             <Text className="text-sm font-extrabold text-destructive">Sign out</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setDebugEnabled(!debug)}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: debug }}
-            className="rounded-full px-3 py-1 active:opacity-60"
-          >
-            <Text className="text-[11px] text-muted-foreground">
-              Developer mode: {debug ? "ON" : "off"}
-            </Text>
           </Pressable>
         </View>
       </ScrollView>
