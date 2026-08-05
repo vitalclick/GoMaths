@@ -2,7 +2,7 @@
   "expo": {
     "name": "GoMaths",
     "slug": "gomaths-v2-student",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": ["gomaths-v2", "com.gomaths.mathai"],
@@ -24,7 +24,7 @@
     },
     "android": {
       "package": "com.gomaths.mathai",
-      "versionCode": 1022,
+      "versionCode": 1023,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0E8A3E"
