@@ -42,6 +42,11 @@ cat >> "$GRADLE_FILE" <<'GRADLE'
 
 // --- Codemagic release signing (appended by scripts/codemagic/prebuild-android.sh) ---
 android {
+    defaultConfig {
+        if (project.hasProperty("VERSION_CODE")) {
+            versionCode VERSION_CODE.toInteger()
+        }
+    }
     signingConfigs {
         release {
             if (System.getenv("CM_KEYSTORE_PATH")) {
