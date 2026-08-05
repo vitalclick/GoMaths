@@ -188,24 +188,25 @@ export default function RegisterScreen() {
                 label="Your name"
                 value={form.displayName}
                 onChange={(v) => patch({ displayName: v })}
+                purpose="name"
               />
               <Field
                 label="Email"
                 value={form.email}
                 onChange={(v) => patch({ email: v })}
-                keyboard="email-address"
+                purpose="email"
               />
               <Field
                 label="Password (min 8 characters)"
                 value={form.password}
                 onChange={(v) => patch({ password: v })}
-                secure
+                purpose="new-password"
               />
               <Field
                 label="Year of birth"
                 value={form.birthYear}
                 onChange={(v) => patch({ birthYear: v.replace(/[^0-9]/g, "").slice(0, 4) })}
-                keyboard="numeric"
+                purpose="birth-year"
               />
             </View>
 
@@ -290,12 +291,13 @@ export default function RegisterScreen() {
                 label="Parent / guardian name"
                 value={form.parentName}
                 onChange={(v) => patch({ parentName: v })}
+                purpose="other-name"
               />
               <Field
                 label="Parent / guardian email"
                 value={form.parentEmail}
                 onChange={(v) => patch({ parentEmail: v })}
-                keyboard="email-address"
+                purpose="other-email"
               />
             </View>
 

@@ -161,15 +161,20 @@ export default function CompleteProfileScreen() {
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field label="Your name" value={displayName} onChange={setDisplayName} />
+              <Field
+                label="Your name"
+                value={displayName}
+                onChange={setDisplayName}
+                purpose="name"
+              />
               {!providerEmail && (
-                <Field label="Email" value={email} onChange={setEmail} keyboard="email-address" />
+                <Field label="Email" value={email} onChange={setEmail} purpose="email" />
               )}
               <Field
                 label="Year of birth"
                 value={birthYear}
                 onChange={(v) => setBirthYear(v.replace(/[^0-9]/g, "").slice(0, 4))}
-                keyboard="numeric"
+                purpose="birth-year"
               />
             </View>
 
@@ -228,12 +233,17 @@ export default function CompleteProfileScreen() {
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field label="Parent / guardian name" value={parentName} onChange={setParentName} />
+              <Field
+                label="Parent / guardian name"
+                value={parentName}
+                onChange={setParentName}
+                purpose="other-name"
+              />
               <Field
                 label="Parent / guardian email"
                 value={parentEmail}
                 onChange={setParentEmail}
-                keyboard="email-address"
+                purpose="other-email"
               />
             </View>
 
