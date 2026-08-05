@@ -109,7 +109,10 @@ export class ParentalConsentService {
       await this.insertPending({ id, parentEmail, studentEmail, tokenHash, expiresAt });
     }
 
-    const inviteUrl = `${this.publicAppUrl}/parental-consent/confirm?token=${encodeURIComponent(token)}`;
+    // GET /auth/parental-consent/confirm — a server-rendered landing page,
+    // since there's no separate public web app deployed yet to host one
+    // (PUBLIC_APP_URL currently just points at this API's own origin).
+    const inviteUrl = `${this.publicAppUrl}/api/auth/parental-consent/confirm?token=${encodeURIComponent(token)}`;
 
     this.logger.log(
       `Parental-consent invite: parent=${parentEmail} student=${studentEmail} id=${id}`,

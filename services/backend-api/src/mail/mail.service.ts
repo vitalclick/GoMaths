@@ -45,8 +45,9 @@ export class MailService {
 
   /**
    * Mails the parent the invite link they need to click to confirm
-   * consent. URL points at the public app's /parental-consent/confirm
-   * page which calls /auth/parental-consent/confirm with the token.
+   * consent. URL points at GET /auth/parental-consent/confirm, a
+   * server-rendered landing page (see auth.controller.ts) — there's no
+   * separate public web app deployed yet to host this.
    */
   async sendParentalConsentInvite(input: {
     parentEmail: string;
