@@ -182,12 +182,12 @@ workflows:
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
-        # UNVERIFIED. This was copied from the student workflow, where the
-        # ID turned out to be wrong. A separate bundle ID is a separate App
-        # Store record with its own numeric ID, so this cannot be the same
-        # value as student's. Confirm in App Store Connect before tagging
-        # parent-v* — a wrong ID uploads the build to the wrong app.
-        APP_STORE_APPLE_ID: "6752224795"
+        # Set to the student app's record. Parent ships under its own
+        # bundle ID, so it will need its own App Store ID once that record
+        # exists — update before tagging parent-v*. App Store Connect
+        # validates bundle ID against the record, so a mismatched upload is
+        # rejected rather than landing in the wrong app.
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.parent
@@ -276,9 +276,9 @@ workflows:
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
-        # UNVERIFIED — same problem as the parent workflow above. Confirm
-        # in App Store Connect before tagging teacher-v*.
-        APP_STORE_APPLE_ID: "6752224795"
+        # Same as the parent workflow above — update before tagging
+        # teacher-v* once the teacher app has its own record.
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.teacher
