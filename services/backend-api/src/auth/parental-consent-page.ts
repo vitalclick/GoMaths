@@ -7,7 +7,11 @@
  * exists as a page rather than only the JSON POST endpoint the student app
  * uses for its own polling flow.
  */
-export function renderConsentPage(input: { ok: boolean; heading: string; message: string }): string {
+export function renderConsentPage(input: {
+  ok: boolean;
+  heading: string;
+  message: string;
+}): string {
   const { ok, heading, message } = input;
   return `<!doctype html>
 <html>

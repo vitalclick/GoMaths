@@ -19,6 +19,8 @@ import type { PrismaService } from "../prisma/prisma.service";
 
 const GOOGLE_CLIENT_ID = "1234.apps.googleusercontent.com";
 const APPLE_CLIENT_ID = "com.gomaths.mathai";
+/** Matches the nonce mintToken embeds by default, for tests that don't care about nonce behavior. */
+const DEFAULT_NONCE = "test-nonce";
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const KID = "test-key-1";
@@ -55,7 +57,7 @@ function mintToken(claims: TokenClaims): string {
     ...(claims.email !== undefined ? { email: claims.email } : {}),
     ...(claims.email_verified !== undefined ? { email_verified: claims.email_verified } : {}),
     ...(claims.name !== undefined ? { name: claims.name } : {}),
-    ...(claims.nonce !== undefined ? { nonce: claims.nonce } : {}),
+    nonce: claims.nonce ?? DEFAULT_NONCE,
   };
 
   const signingInput = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(payload))}`;
@@ -105,6 +107,7 @@ describe("OauthService", () => {
     it("does not create an account until the profile is completed", async () => {
       const { oauth, users } = makeService();
       const result = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "new@example.com", email_verified: true, name: "Thabo M" }),
       });
@@ -121,6 +124,7 @@ describe("OauthService", () => {
     it("creates the account and issues a session on complete", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "new@example.com", email_verified: true, name: "Thabo M" }),
       });
@@ -142,6 +146,7 @@ describe("OauthService", () => {
     it("falls back to the email local part when no name is available", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "apple",
         idToken: mintToken({
           iss: "https://appleid.apple.com",
@@ -167,7 +172,7 @@ describe("OauthService", () => {
       const { oauth } = makeService();
       const idToken = mintToken({ email: "back@example.com", email_verified: true });
 
-      const started = await oauth.signIn({ provider: "google", idToken });
+      const started = await oauth.signIn({ nonce: DEFAULT_NONCE, provider: "google", idToken });
       if (started.status !== "profile_required") throw new Error("unreachable");
       await oauth.complete({
         signupToken: started.signupToken,
@@ -175,7 +180,7 @@ describe("OauthService", () => {
         birthYear: ADULT_BIRTH_YEAR,
       });
 
-      const again = await oauth.signIn({ provider: "google", idToken });
+      const again = await oauth.signIn({ nonce: DEFAULT_NONCE, provider: "google", idToken });
       expect(again.status).toBe("authenticated");
       if (again.status !== "authenticated") throw new Error("unreachable");
       expect(again.session.user.email).toBe("back@example.com");
@@ -184,6 +189,7 @@ describe("OauthService", () => {
     it("keeps the same account when the provider email changes", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ sub: "stable-sub", email: "old@example.com", email_verified: true }),
       });
@@ -196,6 +202,7 @@ describe("OauthService", () => {
 
       // Same `sub`, different email: identity lookup wins over email.
       const again = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ sub: "stable-sub", email: "new@example.com", email_verified: true }),
       });
@@ -216,6 +223,7 @@ describe("OauthService", () => {
       });
 
       const result = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "existing@example.com", email_verified: true }),
       });
@@ -237,6 +245,7 @@ describe("OauthService", () => {
 
       await expect(
         oauth.signIn({
+          nonce: DEFAULT_NONCE,
           provider: "google",
           idToken: mintToken({ email: "existing@example.com", email_verified: false }),
         }),
@@ -248,6 +257,7 @@ describe("OauthService", () => {
     it("blocks a minor sign-up with no consent token", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "kid@example.com", email_verified: true }),
       });
@@ -265,6 +275,7 @@ describe("OauthService", () => {
     it("lets a minor through once a parent has confirmed", async () => {
       const { oauth, consent } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "kid@example.com", email_verified: true }),
       });
@@ -289,6 +300,7 @@ describe("OauthService", () => {
       const { oauth } = makeService();
       await expect(
         oauth.signIn({
+          nonce: DEFAULT_NONCE,
           provider: "google",
           idToken: mintToken({ aud: "someone-elses-client-id" }),
         }),
@@ -298,7 +310,11 @@ describe("OauthService", () => {
     it("rejects a token from an untrusted issuer", async () => {
       const { oauth } = makeService();
       await expect(
-        oauth.signIn({ provider: "google", idToken: mintToken({ iss: "https://evil.example" }) }),
+        oauth.signIn({
+          nonce: DEFAULT_NONCE,
+          provider: "google",
+          idToken: mintToken({ iss: "https://evil.example" }),
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -307,6 +323,7 @@ describe("OauthService", () => {
       const nowSeconds = Math.floor(Date.now() / 1000);
       await expect(
         oauth.signIn({
+          nonce: DEFAULT_NONCE,
           provider: "google",
           idToken: mintToken({ exp: nowSeconds - 3600, iat: nowSeconds - 7200 }),
         }),
@@ -326,9 +343,9 @@ describe("OauthService", () => {
         }),
       )}.${signature}`;
 
-      await expect(oauth.signIn({ provider: "google", idToken: forged })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        oauth.signIn({ nonce: DEFAULT_NONCE, provider: "google", idToken: forged }),
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it("rejects an alg:none token", async () => {
@@ -343,7 +360,11 @@ describe("OauthService", () => {
         }),
       );
       await expect(
-        oauth.signIn({ provider: "google", idToken: `${header}.${payload}.` }),
+        oauth.signIn({
+          nonce: DEFAULT_NONCE,
+          provider: "google",
+          idToken: `${header}.${payload}.`,
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -371,9 +392,9 @@ describe("OauthService", () => {
 
     it("rejects a Google token presented as an Apple one", async () => {
       const { oauth } = makeService();
-      await expect(oauth.signIn({ provider: "apple", idToken: mintToken({}) })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        oauth.signIn({ nonce: DEFAULT_NONCE, provider: "apple", idToken: mintToken({}) }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -411,9 +432,9 @@ describe("OauthService", () => {
       const auth = new AuthService(users, jwt, prismaStub, consent, config);
       const bare = new OauthService(users, auth, jwt, consent, config);
 
-      await expect(bare.signIn({ provider: "google", idToken: mintToken({}) })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        bare.signIn({ nonce: DEFAULT_NONCE, provider: "google", idToken: mintToken({}) }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -428,6 +449,7 @@ describe("OauthService", () => {
     it("is idempotent when the same ticket is submitted twice", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "twice@example.com", email_verified: true }),
       });
@@ -449,6 +471,7 @@ describe("OauthService", () => {
     it("rejects an email that contradicts the provider's", async () => {
       const { oauth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "real@example.com", email_verified: true }),
       });
@@ -469,6 +492,7 @@ describe("OauthService", () => {
     it("cannot be logged into with a password", async () => {
       const { oauth, auth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "google",
         idToken: mintToken({ email: "social@example.com", email_verified: true }),
       });
@@ -492,6 +516,7 @@ describe("OauthService", () => {
     it("rejects an unverified provider email that collides at complete time", async () => {
       const { oauth, auth } = makeService();
       const started = await oauth.signIn({
+        nonce: DEFAULT_NONCE,
         provider: "apple",
         idToken: mintToken({
           iss: "https://appleid.apple.com",
