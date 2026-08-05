@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { OAuthCompleteDto, OAuthSignInDto } from "./auth.dto";
@@ -133,16 +139,16 @@ export class OauthService {
    * if they're a minor, their parent has confirmed). Creates the User +
    * Student + AuthIdentity rows and issues the session.
    */
-  async complete(dto: OAuthCompleteDto): Promise<{ status: "authenticated"; session: AuthSession }> {
+  async complete(
+    dto: OAuthCompleteDto,
+  ): Promise<{ status: "authenticated"; session: AuthSession }> {
     const ticket = await this.verifySignupToken(dto.signupToken);
 
     // The provider may not have given us an email (Apple users can decline
     // to share one). We can't run the consent flow or dedupe without it.
     const email = ticket.email ?? dto.email?.trim().toLowerCase();
     if (!email) {
-      throw new BadRequestException(
-        "We need an email address to finish setting up your account.",
-      );
+      throw new BadRequestException("We need an email address to finish setting up your account.");
     }
     if (ticket.email && dto.email && ticket.email !== dto.email.trim().toLowerCase()) {
       throw new BadRequestException("Email does not match the one from your sign-in provider");

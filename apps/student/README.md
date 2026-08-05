@@ -63,7 +63,7 @@ Three things to know:
   phone app and a web page as different client types:
   - iOS / Android: `com.gomaths.mathai:/oauthredirect` — derived from the
     bundle/package id. Google rejects an arbitrary Expo scheme here, so
-    `gomaths-v2://` will *not* work. That's why `app.json` registers
+    `gomaths-v2://` will _not_ work. That's why `app.json` registers
     `com.gomaths.mathai` as a second URL scheme: without it the redirect
     has no way back into the app.
   - Web: the page origin (e.g. `http://localhost:8081` in dev), registered
@@ -74,7 +74,7 @@ Three things to know:
   Web uses the implicit ID-token grant.
 
 Client IDs are inlined into the JS bundle at build time, so they must be
-present when the app is *built* — setting them on the server afterwards
+present when the app is _built_ — setting them on the server afterwards
 does nothing for an already-shipped binary. In CI they come from the
 `google_oauth` Codemagic group (see `codemagic.yaml`).
 

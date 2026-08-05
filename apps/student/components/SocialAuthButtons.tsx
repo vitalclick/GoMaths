@@ -15,11 +15,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import {
-  isAppleAvailable,
-  isGoogleConfigured,
-  type SocialProvider,
-} from "../lib/social-auth";
+import { isAppleAvailable, isGoogleConfigured, type SocialProvider } from "../lib/social-auth";
 
 export interface SocialAuthButtonsProps {
   /** "in" on the sign-in screen, "up" on the create-account screen. */

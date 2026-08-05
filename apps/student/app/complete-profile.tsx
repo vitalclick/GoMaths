@@ -136,9 +136,7 @@ export default function CompleteProfileScreen() {
       <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
         {step === "profile" && (
           <View>
-            <Text className="font-display text-2xl font-bold text-foreground">
-              Almost there
-            </Text>
+            <Text className="font-display text-2xl font-bold text-foreground">Almost there</Text>
             <Text className="mt-1 text-sm text-muted-foreground">
               {providerEmail
                 ? `We've got you as ${providerEmail}. We just need a couple more things to pick the right lessons.`
@@ -148,12 +146,7 @@ export default function CompleteProfileScreen() {
             <View className="mt-6 gap-4">
               <Field label="Your name" value={displayName} onChange={setDisplayName} />
               {!providerEmail && (
-                <Field
-                  label="Email"
-                  value={email}
-                  onChange={setEmail}
-                  keyboard="email-address"
-                />
+                <Field label="Email" value={email} onChange={setEmail} keyboard="email-address" />
               )}
               <Field
                 label="Year of birth"
@@ -218,11 +211,7 @@ export default function CompleteProfileScreen() {
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field
-                label="Parent / guardian name"
-                value={parentName}
-                onChange={setParentName}
-              />
+              <Field label="Parent / guardian name" value={parentName} onChange={setParentName} />
               <Field
                 label="Parent / guardian email"
                 value={parentEmail}

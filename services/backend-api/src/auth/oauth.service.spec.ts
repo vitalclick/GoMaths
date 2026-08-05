@@ -371,9 +371,9 @@ describe("OauthService", () => {
 
     it("rejects a Google token presented as an Apple one", async () => {
       const { oauth } = makeService();
-      await expect(
-        oauth.signIn({ provider: "apple", idToken: mintToken({}) }),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(oauth.signIn({ provider: "apple", idToken: mintToken({}) })).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -401,7 +401,9 @@ describe("OauthService", () => {
       const prismaStub = { enabled: false } as unknown as PrismaService;
       const users = new UsersService(prismaStub);
       const jwt = new JwtService({ secret: "s" });
-      const config = { get: (_k: string, fallback: string) => fallback } as unknown as ConfigService;
+      const config = {
+        get: (_k: string, fallback: string) => fallback,
+      } as unknown as ConfigService;
       const mailStub = {
         sendParentalConsentInvite: async () => undefined,
       } as unknown as MailService;
@@ -477,9 +479,9 @@ describe("OauthService", () => {
         birthYear: ADULT_BIRTH_YEAR,
       });
 
-      await expect(
-        auth.login({ email: "social@example.com", password: "" }),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(auth.login({ email: "social@example.com", password: "" })).rejects.toThrow(
+        UnauthorizedException,
+      );
       await expect(
         auth.login({ email: "social@example.com", password: "anything" }),
       ).rejects.toThrow(UnauthorizedException);

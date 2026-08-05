@@ -128,12 +128,7 @@ export async function verifyIdToken(
     throw new UnauthorizedException("Provider signing key could not be read");
   }
 
-  const signatureOk = cryptoVerify(
-    "RSA-SHA256",
-    Buffer.from(signingInput),
-    publicKey,
-    signature,
-  );
+  const signatureOk = cryptoVerify("RSA-SHA256", Buffer.from(signingInput), publicKey, signature);
   if (!signatureOk) throw new UnauthorizedException("ID token signature is invalid");
 
   // --- claims -------------------------------------------------------------
@@ -144,7 +139,8 @@ export async function verifyIdToken(
 
   const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
   const audienceOk = audiences.some(
-    (aud) => typeof aud === "string" && options.audiences.some((ours) => constantTimeEquals(aud, ours)),
+    (aud) =>
+      typeof aud === "string" && options.audiences.some((ours) => constantTimeEquals(aud, ours)),
   );
   if (!audienceOk) throw new UnauthorizedException("ID token was not issued for this app");
 
