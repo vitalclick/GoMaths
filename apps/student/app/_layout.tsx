@@ -73,6 +73,10 @@ export default function RootLayout() {
             gestureEnabled: false,
           }}
         />
+        {/* Absorbs Google's consent deep link. Headerless and instantly
+            dismissed, so it reads as part of the sign-in flow rather than
+            as a screen the learner arrived at. */}
+        <Stack.Screen name="oauthredirect" options={{ headerShown: false }} />
         <Stack.Screen name="topic/[id]" options={{ title: "Lesson" }} />
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
         <Stack.Screen name="conversations" options={{ title: "Conversations" }} />

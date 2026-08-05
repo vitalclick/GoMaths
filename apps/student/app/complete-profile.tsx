@@ -14,8 +14,9 @@
 import { Button, Card } from "@gomaths/ui";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Field } from "../components/Field";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
 import { PrivacyNoticeLink } from "../components/PrivacyNoticeLink";
 import { useAuth } from "../lib/auth";
@@ -30,7 +31,13 @@ export default function CompleteProfileScreen() {
   const { completeSocialSignup, requestParentalConsent, pollParentalConsent } = useAuth();
   const router = useRouter();
 
-  const pending = getPendingSignup();
+  // Captured once, on mount. Re-reading this every render meant it
+  // evaporated the moment the ticket aged out — mid-form, mid-consent — and
+  // the effect below then bounced the learner home, silently binning
+  // everything they'd entered, including the consent they'd just chased
+  // their parent for. Holding it makes expiry surface where it should: as a
+  // visible error from the server when they submit.
+  const [pending] = useState(getPendingSignup);
 
   const [step, setStep] = useState<Step>("profile");
   const [grade, setGrade] = useState<GradeValue | null>(null);
@@ -51,8 +58,10 @@ export default function CompleteProfileScreen() {
   const isMinor = age !== null && age < 18;
   const providerEmail = pending?.email;
 
-  // Reachable only via a social sign-in. A direct hit (deep link, reload
-  // on web, ticket expired) has nothing to redeem, so send them back.
+  // Reachable only via a social sign-in. A direct hit (deep link, reload on
+  // web) never had a ticket to redeem, so send them back. An expired ticket
+  // is no longer lumped in with that: it belongs to someone mid-signup, and
+  // they get told rather than teleported.
   useEffect(() => {
     if (!pending) router.replace("/");
   }, [pending, router]);
@@ -111,12 +120,20 @@ export default function CompleteProfileScreen() {
   };
 
   const submit = async () => {
+    // Can't happen via the UI (validateProfile gates the only path here),
+    // but narrowing it explicitly beats defaulting a real learner into the
+    // wrong grade if a future edit opens another route to submit.
+    if (grade === null) {
+      setError("Pick your grade.");
+      setStep("profile");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
       await completeSocialSignup({
         signupToken: pending.signupToken,
-        grade: typeof grade === "number" ? grade : 1,
+        grade,
         birthYear: Number(birthYear),
         displayName: displayName.trim(),
         email: providerEmail ? undefined : email.trim(),
@@ -144,15 +161,20 @@ export default function CompleteProfileScreen() {
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field label="Your name" value={displayName} onChange={setDisplayName} />
+              <Field
+                label="Your name"
+                value={displayName}
+                onChange={setDisplayName}
+                purpose="name"
+              />
               {!providerEmail && (
-                <Field label="Email" value={email} onChange={setEmail} keyboard="email-address" />
+                <Field label="Email" value={email} onChange={setEmail} purpose="email" />
               )}
               <Field
                 label="Year of birth"
                 value={birthYear}
                 onChange={(v) => setBirthYear(v.replace(/[^0-9]/g, "").slice(0, 4))}
-                keyboard="numeric"
+                purpose="birth-year"
               />
             </View>
 
@@ -211,12 +233,17 @@ export default function CompleteProfileScreen() {
             </Text>
 
             <View className="mt-6 gap-4">
-              <Field label="Parent / guardian name" value={parentName} onChange={setParentName} />
+              <Field
+                label="Parent / guardian name"
+                value={parentName}
+                onChange={setParentName}
+                purpose="other-name"
+              />
               <Field
                 label="Parent / guardian email"
                 value={parentEmail}
                 onChange={setParentEmail}
-                keyboard="email-address"
+                purpose="other-email"
               />
             </View>
 
@@ -342,31 +369,5 @@ export default function CompleteProfileScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  keyboard,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  keyboard?: "default" | "email-address" | "numeric";
-}) {
-  return (
-    <View>
-      <Text className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        keyboardType={keyboard ?? "default"}
-        autoCapitalize="none"
-        autoCorrect={false}
-        className="mt-1 rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground"
-      />
-    </View>
   );
 }

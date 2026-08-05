@@ -1,8 +1,9 @@
 import { Button, Card } from "@gomaths/ui";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Field } from "../components/Field";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
 import { PrivacyNoticeLink } from "../components/PrivacyNoticeLink";
 import { SocialAuthButtons } from "../components/SocialAuthButtons";
@@ -124,6 +125,14 @@ export default function RegisterScreen() {
   };
 
   const submit = async () => {
+    // The grade step gates the only path here, but narrowing it explicitly
+    // beats defaulting a real learner into the wrong grade if a future edit
+    // opens another route to submit.
+    if (form.grade === null) {
+      setError("Pick your grade.");
+      setStep("grade");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -132,7 +141,7 @@ export default function RegisterScreen() {
         email: form.email.trim(),
         password: form.password,
         displayName: form.displayName.trim(),
-        grade: typeof form.grade === "number" ? form.grade : 1,
+        grade: form.grade,
         birthYear: yr,
         parentalConsentToken: isMinor ? consent.receiptToken : undefined,
       });
@@ -179,24 +188,25 @@ export default function RegisterScreen() {
                 label="Your name"
                 value={form.displayName}
                 onChange={(v) => patch({ displayName: v })}
+                purpose="name"
               />
               <Field
                 label="Email"
                 value={form.email}
                 onChange={(v) => patch({ email: v })}
-                keyboard="email-address"
+                purpose="email"
               />
               <Field
                 label="Password (min 8 characters)"
                 value={form.password}
                 onChange={(v) => patch({ password: v })}
-                secure
+                purpose="new-password"
               />
               <Field
                 label="Year of birth"
                 value={form.birthYear}
                 onChange={(v) => patch({ birthYear: v.replace(/[^0-9]/g, "").slice(0, 4) })}
-                keyboard="numeric"
+                purpose="birth-year"
               />
             </View>
 
@@ -281,12 +291,13 @@ export default function RegisterScreen() {
                 label="Parent / guardian name"
                 value={form.parentName}
                 onChange={(v) => patch({ parentName: v })}
+                purpose="other-name"
               />
               <Field
                 label="Parent / guardian email"
                 value={form.parentEmail}
                 onChange={(v) => patch({ parentEmail: v })}
-                keyboard="email-address"
+                purpose="other-email"
               />
             </View>
 
@@ -431,35 +442,6 @@ function StepIndicator({ current, isMinor }: { current: Step; isMinor: boolean }
           className={`h-1.5 flex-1 rounded-full ${current === s.id ? "bg-primary" : "bg-muted"}`}
         />
       ))}
-    </View>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  secure,
-  keyboard,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  secure?: boolean;
-  keyboard?: "default" | "email-address" | "numeric";
-}) {
-  return (
-    <View>
-      <Text className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        secureTextEntry={secure}
-        keyboardType={keyboard ?? "default"}
-        autoCapitalize="none"
-        autoCorrect={false}
-        className="mt-1 rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground"
-      />
     </View>
   );
 }

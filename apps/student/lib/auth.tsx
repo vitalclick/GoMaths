@@ -123,6 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
+  // `authFetch` lives outside the tree, so it can't drop the session itself
+  // when a refresh fails. Without this the app sits on a signed-in dashboard
+  // whose every request 401s, because `user` is still hydrated from storage.
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
+
   const persistSession = useCallback(async (session: AuthSession) => {
     await Promise.all([
       storage.setItem(ACCESS_KEY, session.accessToken),
@@ -220,11 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await Promise.all([
-      storage.removeItem(ACCESS_KEY),
-      storage.removeItem(REFRESH_KEY),
-      storage.removeItem(USER_KEY),
-    ]);
+    await clearStoredSession();
     setUser(null);
   }, []);
 
@@ -306,11 +307,41 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
 
   // Try to refresh once.
   const refreshed = await tryRefresh();
-  if (!refreshed) return res;
+  if (!refreshed) {
+    // The refresh token is gone, expired or revoked, so there is no way
+    // back without signing in again. Drop the stored session and tell the
+    // provider, rather than leaving a signed-in-looking app that can't load
+    // anything. Callers still get the 401 to handle as they were.
+    await clearStoredSession();
+    sessionExpiredHandler?.();
+    return res;
+  }
 
   headers.set("authorization", `Bearer ${refreshed}`);
   res = await fetch(`${apiUrl}${input}`, { ...init, headers });
   return res;
+}
+
+/**
+ * Lets `AuthProvider` hear about a session dying inside `authFetch`, which
+ * is a plain module function with no access to React state. One slot, not a
+ * list — there is exactly one provider.
+ */
+let sessionExpiredHandler: (() => void) | null = null;
+
+function onSessionExpired(handler: () => void): () => void {
+  sessionExpiredHandler = handler;
+  return () => {
+    if (sessionExpiredHandler === handler) sessionExpiredHandler = null;
+  };
+}
+
+async function clearStoredSession(): Promise<void> {
+  await Promise.all([
+    storage.removeItem(ACCESS_KEY),
+    storage.removeItem(REFRESH_KEY),
+    storage.removeItem(USER_KEY),
+  ]);
 }
 
 async function tryRefresh(): Promise<string | null> {

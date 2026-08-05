@@ -76,14 +76,20 @@ export class OAuthSignInDto {
   idToken!: string;
 
   /**
-   * The nonce the client generated for this sign-in attempt. When present
-   * it must match the `nonce` claim in the ID token, which binds the token
-   * to this attempt and blocks replay of a token captured elsewhere.
+   * The nonce the client generated for this sign-in attempt. It must match
+   * the `nonce` claim in the ID token, which binds the token to this
+   * attempt and blocks replay of a token captured elsewhere.
+   *
+   * Required, and that is the whole point: the verifier only checks a nonce
+   * it is given, so leaving this optional let a replayer skip the check by
+   * simply omitting the field. Every shipped client has always sent one
+   * (Google web implicit, Google native PKCE, Apple), so requiring it costs
+   * no compatibility.
    */
-  @IsOptional()
   @IsString()
+  @MinLength(1)
   @MaxLength(256)
-  nonce?: string;
+  nonce!: string;
 
   /**
    * Apple returns the learner's name to the *client* on the first

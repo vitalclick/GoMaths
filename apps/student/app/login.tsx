@@ -1,8 +1,9 @@
 import { Button } from "@gomaths/ui";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Field } from "../components/Field";
 import { SocialAuthButtons } from "../components/SocialAuthButtons";
 import { TextLink } from "../components/TextLink";
 import { useAuth } from "../lib/auth";
@@ -56,8 +57,13 @@ export default function LoginScreen() {
         </View>
 
         <View className="mt-6 gap-4">
-          <Field label="Email" value={email} onChange={setEmail} keyboard="email-address" />
-          <Field label="Password" value={password} onChange={setPassword} secure />
+          <Field label="Email" value={email} onChange={setEmail} purpose="email" />
+          <Field
+            label="Password"
+            value={password}
+            onChange={setPassword}
+            purpose="current-password"
+          />
         </View>
 
         {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
@@ -78,34 +84,5 @@ export default function LoginScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  secure,
-  keyboard,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  secure?: boolean;
-  keyboard?: "default" | "email-address" | "numeric";
-}) {
-  return (
-    <View>
-      <Text className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChange}
-        secureTextEntry={secure}
-        keyboardType={keyboard ?? "default"}
-        autoCapitalize="none"
-        autoCorrect={false}
-        className="mt-1 rounded-2xl border border-border bg-card px-4 py-3 text-base text-foreground"
-      />
-    </View>
   );
 }
