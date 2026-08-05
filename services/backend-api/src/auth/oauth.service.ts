@@ -43,7 +43,21 @@ import { UsersService } from "./users.service";
  */
 @Injectable()
 export class OauthService {
-  private static readonly SIGNUP_TTL_MS = 20 * 60 * 1000;
+  /**
+   * The ticket has to outlive a *parent reading their email*, not just a
+   * form fill: an under-18 sign-up can't complete until someone else clicks
+   * a link, and at 20 minutes that flow simply could not finish. A day
+   * covers "my mom will do it tonight" without becoming a long-lived
+   * credential.
+   *
+   * Sized for that wait rather than the 7-day consent invite deliberately —
+   * the invite is the parent's window, this is the learner's sitting, and
+   * re-running the provider sheet to get a fresh ticket is one tap. The
+   * ticket is also weak on its own: it names an already-verified provider
+   * identity and still can't create an account without a grade, a birth
+   * year and (for a minor) a consumed consent receipt.
+   */
+  private static readonly SIGNUP_TTL_MS = 24 * 60 * 60 * 1000;
   private static readonly SIGNUP_PURPOSE = "oauth.signup";
 
   private readonly logger = new Logger(OauthService.name);

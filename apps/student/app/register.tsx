@@ -124,6 +124,14 @@ export default function RegisterScreen() {
   };
 
   const submit = async () => {
+    // The grade step gates the only path here, but narrowing it explicitly
+    // beats defaulting a real learner into the wrong grade if a future edit
+    // opens another route to submit.
+    if (form.grade === null) {
+      setError("Pick your grade.");
+      setStep("grade");
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -132,7 +140,7 @@ export default function RegisterScreen() {
         email: form.email.trim(),
         password: form.password,
         displayName: form.displayName.trim(),
-        grade: typeof form.grade === "number" ? form.grade : 1,
+        grade: form.grade,
         birthYear: yr,
         parentalConsentToken: isMinor ? consent.receiptToken : undefined,
       });

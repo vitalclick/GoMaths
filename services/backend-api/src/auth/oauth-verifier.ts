@@ -84,7 +84,12 @@ interface JwksCacheEntry {
 export interface VerifyOptions {
   /** Client IDs we accept in `aud`. Empty means the provider is not configured. */
   audiences: string[];
-  /** Expected `nonce`, when the client supplied one. */
+  /**
+   * Expected `nonce`. Optional here only because this stays a general OIDC
+   * helper — but a caller that omits it gets no replay protection at all.
+   * For sign-in that is non-negotiable, so `OAuthSignInDto` makes the field
+   * required at the HTTP boundary rather than trusting each call site.
+   */
   nonce?: string;
   /** Seam for tests — defaults to global fetch. */
   fetchImpl?: typeof fetch;

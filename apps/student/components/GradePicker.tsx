@@ -1,7 +1,14 @@
 import { Pressable, Text, View } from "react-native";
 
+/**
+ * Grades the backend can actually store: `grade` is an int, 1–12
+ * (`RegisterDto`/`OAuthCompleteDto`). Grade R has no representation on the
+ * wire, so it is deliberately absent — offering it here silently filed
+ * those learners under Grade 1. Adding it back means giving it a wire
+ * format (and curriculum) first, and `GradeValue` staying all-numeric is
+ * what makes the submit sites type-check.
+ */
 const GRADES = [
-  { value: "R", label: "Grade R", sub: "Ages 5–6" },
   { value: 1, label: "Grade 1", sub: "Foundation" },
   { value: 2, label: "Grade 2", sub: "Foundation" },
   { value: 3, label: "Grade 3", sub: "Foundation" },
