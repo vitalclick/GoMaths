@@ -20,6 +20,7 @@
  *             to surface the button only where it works.
  */
 
+import * as Application from "expo-application";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
@@ -82,24 +83,41 @@ export async function isAppleAvailable(): Promise<boolean> {
   }
 }
 
+const isWeb = Platform.OS === "web";
+
+/**
+ * Google rejects an arbitrary Expo scheme for an installed app: an
+ * iOS/Android OAuth client only accepts a redirect derived from the app's
+ * own bundle/package id. On web the redirect is the page origin, which has
+ * to be registered as an authorised redirect URI on the web client.
+ */
+function googleRedirectUri(): string {
+  return AuthSession.makeRedirectUri({
+    native: `${Application.applicationId}:/oauthredirect`,
+  });
+}
+
 export async function signInWithGoogle(): Promise<SocialCredential> {
   const clientId = googleClientId();
   if (!clientId) {
     throw new Error("Google sign-in isn't set up in this build.");
   }
 
-  const nonce = randomNonce();
-  const hashedNonce = await sha256Hex(nonce);
+  const hashedNonce = await sha256Hex(randomNonce());
+  const redirectUri = googleRedirectUri();
 
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: "gomaths-v2" });
+  // Two different grants, because Google treats the platforms differently:
+  //   web    — can take the ID token straight off the redirect (implicit).
+  //   native — an "installed app" only ever gets an authorization code,
+  //            which we exchange with PKCE. PKCE is what makes that safe
+  //            without a client secret, so none ships in the bundle.
   const request = new AuthSession.AuthRequest({
     clientId,
     redirectUri,
     scopes: ["openid", "profile", "email"],
-    // `id_token` keeps the whole exchange on-device: Google returns the
-    // signed identity assertion directly, so there's no code to swap for
-    // tokens and therefore no client secret to ship.
-    responseType: AuthSession.ResponseType.IdToken,
+    responseType: isWeb ? AuthSession.ResponseType.IdToken : AuthSession.ResponseType.Code,
+    usePKCE: !isWeb,
+    // Carried into the ID token under either grant.
     extraParams: { nonce: hashedNonce },
   });
 
@@ -110,7 +128,22 @@ export async function signInWithGoogle(): Promise<SocialCredential> {
     throw new Error(result.type === "error" ? describeAuthError(result) : "Google sign-in failed.");
   }
 
-  const idToken = result.params.id_token;
+  let idToken: string | undefined;
+  if (isWeb) {
+    idToken = result.params.id_token;
+  } else {
+    const tokens = await AuthSession.exchangeCodeAsync(
+      {
+        clientId,
+        code: result.params.code,
+        redirectUri,
+        extraParams: request.codeVerifier ? { code_verifier: request.codeVerifier } : undefined,
+      },
+      GOOGLE_DISCOVERY,
+    );
+    idToken = tokens.idToken;
+  }
+
   if (!idToken) throw new Error("Google didn't return an identity token.");
 
   return { provider: "google", idToken, nonce: hashedNonce };

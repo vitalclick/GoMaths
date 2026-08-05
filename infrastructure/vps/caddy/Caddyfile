@@ -16,6 +16,17 @@
 }
 
 # ─── GoMaths ────────────────────────────────────────────────────────────
+
+# NOTE: the public site (gomaths.co.za — home, privacy notice, terms) is
+# NOT served from this VPS. The apex A record points at the cPanel host,
+# so those pages are uploaded there instead; see UI/landing_page. Adding a
+# `gomaths.co.za` block here would never receive traffic.
+#
+# If that ever changes, the hostname must be set to "DNS only" (grey
+# cloud) in Cloudflare first: Caddy provisions its own Let's Encrypt
+# certificate, and a proxied record makes Cloudflare terminate TLS, so the
+# ACME challenge fails and the site serves nothing. That's why the
+# api. record below is unproxied.
 api.gomaths.co.za {
 	encode zstd gzip
 	reverse_proxy gomaths-backend:8080 {

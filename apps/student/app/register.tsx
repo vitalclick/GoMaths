@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
+import { PrivacyNoticeLink } from "../components/PrivacyNoticeLink";
 import { SocialAuthButtons } from "../components/SocialAuthButtons";
 import { TextLink } from "../components/TextLink";
 import { useAuth } from "../lib/auth";
@@ -305,10 +306,11 @@ export default function RegisterScreen() {
                 )}
               </View>
               <Text className="flex-1 text-sm text-foreground">
-                My parent or guardian has agreed I can use GoMaths and has read our{" "}
-                <Text className="underline">privacy notice</Text>.
+                My parent or guardian has agreed I can use GoMaths and has read our privacy notice.
               </Text>
             </Pressable>
+
+            <PrivacyNoticeLink className="ml-8" />
 
             <Card className="mt-5">
               <Text className="text-xs text-muted-foreground">

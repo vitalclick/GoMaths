@@ -78,8 +78,16 @@ workflows:
       vars:
         APP_NAME: student
         BUNDLE_ID: com.gomaths.mathai
-        APP_STORE_APPLE_ID: "6752224795"
+        APP_STORE_APPLE_ID: "6743315031"
         EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
+      # Google client IDs are inlined into the JS bundle at build time, so
+      # they have to exist here — setting them on the server later has no
+      # effect on an already-built app. Values live in the Codemagic group
+      # (they're public identifiers, not secrets). Without the group the
+      # Google button hides itself and sign-in falls back to email.
+      # Apple needs no client ID here: the native flow uses BUNDLE_ID.
+      groups:
+        - google_oauth
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai
@@ -132,6 +140,9 @@ workflows:
         APP_NAME: student
         PACKAGE_NAME: com.gomaths.mathai
         EXPO_PUBLIC_API_URL: https://api.gomaths.co.za
+      # See the student-ios workflow — same reason, same group.
+      groups:
+        - google_oauth
     triggering:
       events: [tag]
       tag_patterns:
@@ -171,7 +182,12 @@ workflows:
       vars:
         APP_NAME: parent
         BUNDLE_ID: com.gomaths.mathai.parent
-        APP_STORE_APPLE_ID: "6752224795"
+        # Set to the student app's record. Parent ships under its own
+        # bundle ID, so it will need its own App Store ID once that record
+        # exists — update before tagging parent-v*. App Store Connect
+        # validates bundle ID against the record, so a mismatched upload is
+        # rejected rather than landing in the wrong app.
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.parent
@@ -260,7 +276,9 @@ workflows:
       vars:
         APP_NAME: teacher
         BUNDLE_ID: com.gomaths.mathai.teacher
-        APP_STORE_APPLE_ID: "6752224795"
+        # Same as the parent workflow above — update before tagging
+        # teacher-v* once the teacher app has its own record.
+        APP_STORE_APPLE_ID: "6743315031"
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.gomaths.mathai.teacher

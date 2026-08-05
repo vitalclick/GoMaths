@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
+import { PrivacyNoticeLink } from "../components/PrivacyNoticeLink";
 import { useAuth } from "../lib/auth";
 import { clearPendingSignup, getPendingSignup } from "../lib/pending-signup";
 
@@ -246,10 +247,11 @@ export default function CompleteProfileScreen() {
                 )}
               </View>
               <Text className="flex-1 text-sm text-foreground">
-                My parent or guardian has agreed I can use GoMaths and has read our{" "}
-                <Text className="underline">privacy notice</Text>.
+                My parent or guardian has agreed I can use GoMaths and has read our privacy notice.
               </Text>
             </Pressable>
+
+            <PrivacyNoticeLink className="ml-8" />
 
             {error && <Text className="mt-4 text-sm text-destructive">{error}</Text>}
 

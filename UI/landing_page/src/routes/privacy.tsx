@@ -67,6 +67,10 @@ const providers: [string, string][] = [
     "AI vision provider (Anthropic or OpenAI)",
     "The photo you scan, in order to read the maths off it. Processed outside South Africa; not stored by us.",
   ],
+  [
+    "Resend",
+    "Email addresses, to deliver parental-consent invitations and account email.",
+  ],
   ["Expo push notification service", "Your device push token, to deliver reminders."],
   [
     "Google / Apple",

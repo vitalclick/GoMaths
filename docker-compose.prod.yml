@@ -107,6 +107,13 @@ services:
       RESEND_API_KEY: ${RESEND_API_KEY}
       EMAIL_FROM: ${EMAIL_FROM}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL}
+      # Social sign-in. Comma-separated OAuth client IDs accepted in an ID
+      # token's `aud`. Unset means that provider is off and the app hides
+      # its button, so leaving these blank degrades to email sign-in rather
+      # than breaking the app.
+      GOOGLE_OAUTH_CLIENT_IDS: ${GOOGLE_OAUTH_CLIENT_IDS:-}
+      APPLE_OAUTH_CLIENT_IDS: ${APPLE_OAUTH_CLIENT_IDS:-}
+      OAUTH_SIGNUP_SECRET: ${OAUTH_SIGNUP_SECRET:-}
       # Comma-separated browser origins allowed to call the API. Unset in
       # production means no browser client can reach it — see cors.ts.
       CORS_ORIGINS: ${CORS_ORIGINS:-}

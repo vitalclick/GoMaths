@@ -8,12 +8,11 @@
  * e2e helpers match on.
  */
 
-import { Link } from "expo-router";
-import type { ComponentProps } from "react";
+import { Link, type Href } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 export interface TextLinkProps {
-  href: ComponentProps<typeof Link>["href"];
+  href: Href;
   label: string;
   /** Plain text shown before the link, e.g. "Already have an account?". */
   prefix?: string;
