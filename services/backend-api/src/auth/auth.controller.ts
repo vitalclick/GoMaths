@@ -1,6 +1,17 @@
-import { Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import {
   LoginDto,
@@ -14,6 +25,7 @@ import {
 } from "./auth.dto";
 import { CurrentUser, JwtAuthGuard, Public, type JwtClaims } from "./auth.guard";
 import { OauthService } from "./oauth.service";
+import { renderConsentPage } from "./parental-consent-page";
 import { ParentalConsentService } from "./parental-consent.service";
 import { UsersService } from "./users.service";
 
@@ -114,6 +126,66 @@ export class AuthController {
   }
 
   @Public()
+  @Get("auth/parental-consent/confirm")
+  @ApiOperation({
+    summary: "Parent-facing consent confirmation landing page",
+    description:
+      "The link mailed to the parent is a plain GET click from an email client. There's no " +
+      "separate public web app deployed yet to host that landing page, so this renders it " +
+      "directly and confirms the invite JWT server-side, the same way the POST endpoint does.",
+  })
+  async confirmConsentPage(
+    @Query("token") token: string | undefined,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    if (!token) {
+      res
+        .status(400)
+        .type("html")
+        .send(
+          renderConsentPage({
+            ok: false,
+            heading: "Missing confirmation link",
+            message:
+              "This link is missing its confirmation token. Please open the link from the email exactly as sent.",
+          }),
+        );
+      return;
+    }
+
+    try {
+      const result = await this.consent.confirm(token, {
+        ip: extractIp(req),
+        userAgent: req.headers["user-agent"],
+      });
+      res
+        .status(200)
+        .type("html")
+        .send(
+          renderConsentPage({
+            ok: true,
+            heading: "Thanks — you're all set",
+            message: `You've confirmed GoMaths for ${result.studentEmail}. They can now finish creating their account in the app.`,
+          }),
+        );
+    } catch (err) {
+      const status = err instanceof HttpException ? err.getStatus() : 500;
+      const message = consentErrorMessage(err);
+      res
+        .status(status)
+        .type("html")
+        .send(
+          renderConsentPage({
+            ok: false,
+            heading: "We couldn't confirm this link",
+            message,
+          }),
+        );
+    }
+  }
+
+  @Public()
   @Post("auth/parental-consent/poll")
   @HttpCode(200)
   @ApiOperation({
@@ -139,4 +211,14 @@ function extractIp(req: Request): string | undefined {
   const fwd = req.headers["x-forwarded-for"];
   if (typeof fwd === "string" && fwd.length > 0) return fwd.split(",")[0].trim();
   return req.ip;
+}
+
+/** Nest's exception `message` can be a string or a validation-error array; the page only shows text. */
+function consentErrorMessage(err: unknown): string {
+  if (err instanceof HttpException) {
+    const body = err.getResponse();
+    const message = typeof body === "string" ? body : (body as { message?: unknown }).message;
+    if (typeof message === "string") return message;
+  }
+  return "This confirmation link is invalid or has expired.";
 }
