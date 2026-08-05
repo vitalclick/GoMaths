@@ -26,6 +26,15 @@ interface UpstreamResponse {
   detail: string;
 }
 
+/**
+ * Upstream budgets. Without them a wedged or cold-starting solver holds the
+ * mobile request open until the phone's socket dies, which the app can only
+ * report as a bare "Network request failed". Timing out here means the
+ * learner gets the "solver offline" body instead.
+ */
+const SCAN_TIMEOUT_MS = 45_000;
+const SOLVE_TIMEOUT_MS = 20_000;
+
 @Injectable()
 export class SolverService {
   private readonly logger = new Logger(SolverService.name);
@@ -51,6 +60,7 @@ export class SolverService {
       const res = await fetch(`${this.solverUrl}/scan`, {
         method: "POST",
         body: form,
+        signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`upstream ${res.status}`);
       return this.fromUpstream((await res.json()) as UpstreamResponse);
@@ -67,6 +77,7 @@ export class SolverService {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ latex }),
+        signal: AbortSignal.timeout(SOLVE_TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`upstream ${res.status}`);
       return this.fromUpstream((await res.json()) as UpstreamResponse);

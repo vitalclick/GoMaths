@@ -9,9 +9,7 @@
  */
 
 import { createClient, type GoMathsClient } from "@gomaths/api-client";
-import * as storage from "./secure-storage";
-
-const ACCESS_KEY = "gomaths.access";
+import { getValidAccessToken } from "./auth";
 
 let cached: GoMathsClient | null = null;
 
@@ -21,7 +19,9 @@ export function getClient(): GoMathsClient | null {
   if (cached) return cached;
   cached = createClient({
     baseUrl: apiUrl,
-    getAccessToken: () => storage.getItem(ACCESS_KEY),
+    // Refreshes first when the stored token has aged out — the typed client
+    // has no 401 retry of its own yet (see the note above).
+    getAccessToken: () => getValidAccessToken(),
   });
   return cached;
 }

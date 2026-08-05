@@ -3,7 +3,7 @@
  * authFetch — 401s are automatically refreshed.
  */
 
-import { authFetch } from "./auth";
+import { authFetch, getValidAccessToken } from "./auth";
 
 export interface TutorReplyBody {
   conversationId: string;
@@ -95,8 +95,11 @@ export function streamTutorMessage(
       if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
 
       const { default: EventSource } = await import("react-native-sse");
-      const { getItem } = await import("./secure-storage");
-      const accessToken = await getItem("gomaths.access");
+      // EventSource sets its own headers, so it can't go through authFetch —
+      // but it must still start from a non-expired token, otherwise the
+      // stream opens and immediately errors once the 15-minute access token
+      // has aged out.
+      const accessToken = await getValidAccessToken();
 
       type StreamEvent = "meta" | "delta" | "claim" | "done";
       const es = new EventSource<StreamEvent>(`${apiUrl}/api/tutor/messages/stream`, {

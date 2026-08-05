@@ -4,6 +4,11 @@
  * Stores tokens via the secure-storage wrapper. Exposes a small auth
  * context + hook so screens read the current session without prop drilling.
  * Refreshes the access token transparently on 401s in `authFetch`.
+ *
+ * Access tokens live 15 minutes, so anything that talks to the API must go
+ * through `authFetch` (or `getValidAccessToken` when it needs the raw token,
+ * e.g. SSE). Reading the stored token directly means the request starts
+ * failing with "Invalid or expired token" a quarter of an hour after sign-in.
  */
 
 import {
@@ -23,6 +28,14 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 const ACCESS_KEY = "gomaths.access";
 const REFRESH_KEY = "gomaths.refresh";
 const USER_KEY = "gomaths.user";
+/** ISO expiry of the stored access token, so we can refresh before using it. */
+const EXPIRES_KEY = "gomaths.access.expires";
+
+/** Refresh this far ahead of the printed expiry to absorb clock skew. */
+const REFRESH_SKEW_MS = 60_000;
+
+/** Requests that get no response by then are reported as a timeout. */
+const DEFAULT_TIMEOUT_MS = 30_000;
 
 export interface PublicUser {
   id: string;
@@ -123,12 +136,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
+  // The refresh token can be rejected mid-session (expired, rotated away,
+  // revoked). `authFetch` clears storage when that happens; without this the
+  // UI would keep rendering a signed-in shell whose every request 401s.
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
+
   const persistSession = useCallback(async (session: AuthSession) => {
-    await Promise.all([
-      storage.setItem(ACCESS_KEY, session.accessToken),
-      storage.setItem(REFRESH_KEY, session.refreshToken),
-      storage.setItem(USER_KEY, JSON.stringify(session.user)),
-    ]);
+    await storeSession(session);
     setUser(session.user);
 
     // Best-effort push registration. Skipped on simulator / web; never blocks
@@ -220,11 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await Promise.all([
-      storage.removeItem(ACCESS_KEY),
-      storage.removeItem(REFRESH_KEY),
-      storage.removeItem(USER_KEY),
-    ]);
+    await clearStoredSession();
     setUser(null);
   }, []);
 
@@ -291,46 +301,191 @@ export function useAuth(): AuthContextValue {
 }
 
 /**
- * Authenticated fetch. Attaches the current access token and transparently
- * refreshes on a single 401.
+ * A request that never reached the API — no connection, DNS failure, TLS
+ * error, or a timeout. React Native surfaces all of these as a bare
+ * `TypeError: Network request failed`, which is meaningless to a learner on
+ * a patchy mobile connection, so screens get this instead.
  */
-export async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NetworkError";
+  }
+}
+
+export interface AuthFetchInit extends RequestInit {
+  /**
+   * Give up after this many ms. Defaults to 30s; the scan upload passes a
+   * longer one because OCR + solve runs before the API answers.
+   */
+  timeoutMs?: number;
+}
+
+/**
+ * Authenticated fetch. Refreshes the access token when the stored one is
+ * expired (or about to be), retries once on a 401, and clears the session
+ * when the refresh token itself is rejected.
+ */
+export async function authFetch(input: string, init: AuthFetchInit = {}): Promise<Response> {
   if (!apiUrl) throw new Error("EXPO_PUBLIC_API_URL is not set");
 
-  const accessToken = await storage.getItem(ACCESS_KEY);
   const headers = new Headers(init.headers ?? {});
+  const accessToken = await getValidAccessToken();
   if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
 
-  let res = await fetch(`${apiUrl}${input}`, { ...init, headers });
+  let res = await fetchWithTimeout(`${apiUrl}${input}`, { ...init, headers });
   if (res.status !== 401) return res;
 
-  // Try to refresh once.
+  // The token was accepted by our own expiry check but rejected by the API
+  // (clock skew, a secret rotation, a token minted before a redeploy).
+  // Refresh once and replay.
   const refreshed = await tryRefresh();
-  if (!refreshed) return res;
+  if (refreshed.status !== "ok") {
+    if (refreshed.status === "rejected") await expireSession();
+    return res;
+  }
 
-  headers.set("authorization", `Bearer ${refreshed}`);
-  res = await fetch(`${apiUrl}${input}`, { ...init, headers });
+  headers.set("authorization", `Bearer ${refreshed.accessToken}`);
+  res = await fetchWithTimeout(`${apiUrl}${input}`, { ...init, headers });
+  // A fresh token that still 401s means this session is done.
+  if (res.status === 401) await expireSession();
   return res;
 }
 
-async function tryRefresh(): Promise<string | null> {
-  if (!apiUrl) return null;
-  const refreshToken = await storage.getItem(REFRESH_KEY);
-  if (!refreshToken) return null;
+/**
+ * The current access token, refreshed first when it has expired or is within
+ * `REFRESH_SKEW_MS` of expiring. Use this for the few call sites that can't
+ * go through `authFetch` (the SSE tutor stream sets its own headers).
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+  const [accessToken, expiresAt] = await Promise.all([
+    storage.getItem(ACCESS_KEY),
+    storage.getItem(EXPIRES_KEY),
+  ]);
+  if (!accessToken) return null;
 
-  const res = await fetch(`${apiUrl}/api/auth/refresh`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
-  });
-  if (!res.ok) return null;
+  // Sessions stored by an older build have no expiry recorded — fall back to
+  // the reactive 401-then-refresh path rather than refreshing on every call.
+  if (!expiresAt) return accessToken;
+
+  const expiresAtMs = Date.parse(expiresAt);
+  if (Number.isNaN(expiresAtMs) || expiresAtMs - Date.now() > REFRESH_SKEW_MS) {
+    return accessToken;
+  }
+
+  const refreshed = await tryRefresh();
+  if (refreshed.status === "ok") return refreshed.accessToken;
+  if (refreshed.status === "rejected") {
+    await expireSession();
+    return null;
+  }
+  // Refresh endpoint unreachable — send the stale token and let the API
+  // decide, so a flaky network doesn't look like a sign-out.
+  return accessToken;
+}
+
+type RefreshOutcome =
+  | { status: "ok"; accessToken: string }
+  /** The API said no: the refresh token is expired, rotated, or revoked. */
+  | { status: "rejected" }
+  /** Couldn't ask (offline, 5xx). The session may well still be valid. */
+  | { status: "unavailable" };
+
+/**
+ * The refresh currently in flight, if any.
+ *
+ * Refresh tokens rotate, and the API treats a second use of an already-spent
+ * token as theft: it revokes every session the learner has. Two screens
+ * refreshing at once (the home tab loads progress and gamification in
+ * parallel) would do exactly that, so concurrent callers share one request.
+ */
+let inFlightRefresh: Promise<RefreshOutcome> | null = null;
+
+function tryRefresh(): Promise<RefreshOutcome> {
+  if (!inFlightRefresh) {
+    inFlightRefresh = requestRefresh().finally(() => {
+      inFlightRefresh = null;
+    });
+  }
+  return inFlightRefresh;
+}
+
+async function requestRefresh(): Promise<RefreshOutcome> {
+  if (!apiUrl) return { status: "unavailable" };
+  const refreshToken = await storage.getItem(REFRESH_KEY);
+  if (!refreshToken) return { status: "rejected" };
+
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(`${apiUrl}/api/auth/refresh`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+  } catch {
+    return { status: "unavailable" };
+  }
+
+  if (!res.ok) {
+    // Only a 4xx is the server rejecting the token; a 5xx is the server
+    // having a bad day and must not sign the learner out.
+    return res.status >= 400 && res.status < 500
+      ? { status: "rejected" }
+      : { status: "unavailable" };
+  }
+
   const session = (await res.json()) as AuthSession;
+  await storeSession(session);
+  return { status: "ok", accessToken: session.accessToken };
+}
+
+async function fetchWithTimeout(url: string, init: AuthFetchInit): Promise<Response> {
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...rest } = init;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...rest, signal: controller.signal });
+  } catch (err) {
+    if ((err as Error).name === "AbortError") {
+      throw new NetworkError("That took too long. Check your connection and try again.");
+    }
+    throw new NetworkError("Couldn't reach GoMaths. Check your connection and try again.");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function storeSession(session: AuthSession): Promise<void> {
   await Promise.all([
     storage.setItem(ACCESS_KEY, session.accessToken),
     storage.setItem(REFRESH_KEY, session.refreshToken),
     storage.setItem(USER_KEY, JSON.stringify(session.user)),
+    storage.setItem(EXPIRES_KEY, session.expiresAt),
   ]);
-  return session.accessToken;
+}
+
+async function clearStoredSession(): Promise<void> {
+  await Promise.all([
+    storage.removeItem(ACCESS_KEY),
+    storage.removeItem(REFRESH_KEY),
+    storage.removeItem(USER_KEY),
+    storage.removeItem(EXPIRES_KEY),
+  ]);
+}
+
+type SessionExpiredListener = () => void;
+const sessionExpiredListeners = new Set<SessionExpiredListener>();
+
+/** Subscribe to "this session is no longer usable". Returns an unsubscribe. */
+export function onSessionExpired(listener: SessionExpiredListener): () => void {
+  sessionExpiredListeners.add(listener);
+  return () => sessionExpiredListeners.delete(listener);
+}
+
+/** Drop the stored session and tell the UI, so screens fall back to sign-in. */
+async function expireSession(): Promise<void> {
+  await clearStoredSession();
+  for (const listener of sessionExpiredListeners) listener();
 }
 
 async function readError(res: Response): Promise<string> {
