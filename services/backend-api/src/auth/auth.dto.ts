@@ -143,6 +143,24 @@ export class OAuthCompleteDto {
   parentalConsentToken?: string;
 }
 
+/**
+ * PATCH /users/me. Both fields optional so a caller can update just one —
+ * the grade bump a returning learner needs at the start of a school year,
+ * without forcing them to retype their name.
+ */
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  displayName?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  grade?: number;
+}
+
 export class ParentalConsentRequestDto {
   @IsEmail()
   parentEmail!: string;

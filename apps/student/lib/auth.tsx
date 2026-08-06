@@ -104,6 +104,11 @@ export interface CompleteSocialSignupInput {
   parentalConsentToken?: string;
 }
 
+export interface UpdateProfileInput {
+  displayName?: string;
+  grade?: number;
+}
+
 interface AuthContextValue {
   user: PublicUser | null;
   loading: boolean;
@@ -117,6 +122,7 @@ interface AuthContextValue {
     studentEmail: string,
   ) => Promise<ParentalConsentRequestResult>;
   pollParentalConsent: (id: string, studentEmail: string) => Promise<ParentalConsentPollResult>;
+  updateProfile: (input: UpdateProfileInput) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -266,6 +272,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const updateProfile = useCallback(async (input: UpdateProfileInput): Promise<void> => {
+    const res = await authFetch("/api/users/me", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) throw new Error(await readError(res));
+    const updated = (await res.json()) as PublicUser;
+    await storage.setItem(USER_KEY, JSON.stringify(updated));
+    setUser(updated);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -277,6 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       requestParentalConsent,
       pollParentalConsent,
+      updateProfile,
     }),
     [
       user,
@@ -288,6 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       requestParentalConsent,
       pollParentalConsent,
+      updateProfile,
     ],
   );
 

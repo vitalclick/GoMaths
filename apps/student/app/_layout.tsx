@@ -81,6 +81,7 @@ export default function RootLayout() {
         <Stack.Screen name="practice/[id]" options={{ title: "Practice" }} />
         <Stack.Screen name="conversations" options={{ title: "Conversations" }} />
         <Stack.Screen name="graphing" options={{ title: "Function Grapher" }} />
+        <Stack.Screen name="edit-profile" options={{ title: "Edit profile" }} />
       </Stack>
     </AuthProvider>
   );

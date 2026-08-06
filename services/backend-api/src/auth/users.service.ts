@@ -1,4 +1,10 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { randomUUID } from "node:crypto";
 import type { RegisterDto } from "./auth.dto";
@@ -259,6 +265,51 @@ export class UsersService {
     this.byId.set(id, user);
     this.byEmail.set(email, id);
     this.byIdentity.set(identityKey(input.identity.provider, input.identity.subject), id);
+    return toPublic(user);
+  }
+
+  /**
+   * Updates the profile fields a learner can change themselves — display
+   * name and grade. Both live on the `Student` sub-record, so this is
+   * student-only for now; the parent and teacher apps have no editable
+   * profile fields of their own yet (see the scoping note in the PR).
+   */
+  async updateProfile(
+    userId: string,
+    dto: { displayName?: string; grade?: number },
+  ): Promise<PublicUser> {
+    if (this.prisma.enabled) {
+      const existing = await this.prisma.user.findUnique({
+        where: { id: userId },
+        include: { student: true },
+      });
+      if (!existing) throw new NotFoundException("User not found");
+      if (!existing.student) {
+        throw new BadRequestException("Profile editing is only available for student accounts");
+      }
+      const user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          student: {
+            update: {
+              ...(dto.displayName !== undefined ? { displayName: dto.displayName.trim() } : {}),
+              ...(dto.grade !== undefined ? { grade: dto.grade } : {}),
+            },
+          },
+        },
+        include: { student: true },
+      });
+      return prismaUserToPublic(user);
+    }
+
+    const user = this.byId.get(userId);
+    if (!user) throw new NotFoundException("User not found");
+    if (user.role !== "student") {
+      throw new BadRequestException("Profile editing is only available for student accounts");
+    }
+    if (dto.displayName !== undefined) user.displayName = dto.displayName.trim();
+    if (dto.grade !== undefined) user.grade = dto.grade;
+    user.updatedAt = new Date().toISOString();
     return toPublic(user);
   }
 

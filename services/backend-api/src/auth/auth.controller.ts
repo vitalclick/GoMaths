@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpException,
+  Patch,
   Post,
   Query,
   Req,
@@ -22,6 +23,7 @@ import {
   ParentalConsentRequestDto,
   RefreshDto,
   RegisterDto,
+  UpdateProfileDto,
 } from "./auth.dto";
 import { CurrentUser, JwtAuthGuard, Public, type JwtClaims } from "./auth.guard";
 import { OauthService } from "./oauth.service";
@@ -204,6 +206,13 @@ export class AuthController {
     const user = await this.users.getById(claims.sub);
     if (!user) throw new Error("User not found"); // should never happen if token is valid
     return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch("users/me")
+  @ApiOperation({ summary: "Update the current user's profile (student accounts only)" })
+  updateMe(@CurrentUser() claims: JwtClaims, @Body() dto: UpdateProfileDto) {
+    return this.users.updateProfile(claims.sub, dto);
   }
 }
 

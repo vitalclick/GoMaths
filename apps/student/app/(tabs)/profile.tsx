@@ -129,6 +129,13 @@ export default function ProfileScreen() {
             {user ? `Grade ${user.grade}` : ""}
             {debug ? " · Developer mode ON" : ""}
           </Text>
+          {user && (
+            <Link href="/edit-profile" asChild>
+              <Pressable accessibilityRole="button" accessibilityLabel="Edit profile">
+                <Text className="mt-2 text-sm font-bold text-primary">Edit profile</Text>
+              </Pressable>
+            </Link>
+          )}
         </View>
 
         {/* Level + XP */}
