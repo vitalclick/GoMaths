@@ -42,7 +42,10 @@ definitions:
     node: 20.10.0
 
   env_xcode: &env_xcode
-    xcode: 16.0
+    # App Store Connect rejects binaries built with an SDK older than iOS 26
+    # (i.e. anything built with Xcode < 26) — keep this at 26.0+ or uploads
+    # fail publishing with a 409 "SDK version issue" even after a clean archive.
+    xcode: 26.0
     cocoapods: default
 
   ## Shared script blocks.
