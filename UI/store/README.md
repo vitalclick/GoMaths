@@ -12,7 +12,7 @@ also requires a feature graphic (a store-listing banner, not a screenshot), gene
 | `google-play/tablet-10in/` | Google Play, 10" tablet | 1280x2276 (9:16) | full-bleed crop, zero margin |
 | `google-play/feature-graphic.png` | Google Play, store listing banner | 1024x500 | drawn from scratch (see below) |
 | `apple/iphone-6.5in/` | App Store Connect, iPhone 6.5" Display | 1284x2778 | full-bleed crop, zero margin |
-| `apple/ipad-13in/` | App Store Connect, iPad 13" Display | 2064x2752 | letterboxed, no crop |
+| `apple/ipad-13in/` | App Store Connect, iPad 13" Display | 2064x2752 | full-bleed crop, zero margin |
 
 All files are 24-bit PNG (no alpha channel), well under each store's size limit.
 
@@ -35,21 +35,22 @@ banner in sync.
 ## How they were made
 
 The source screenshots are small (~320x700 px) and shot on a taller-than-16:9 phone (roughly
-19.5:9). Each target is handled one of two ways, set per-target in `convert_screenshots.py`:
+19.5:9). Every target is upscaled to completely fill its canvas (no side margins), then the
+vertical overflow is cropped away. The crop is biased toward the top of the shot (status
+bar/header space, which is the most disposable) rather than the bottom, since these designs
+run edge-to-edge at the bottom with nav bars/CTA buttons that have almost no safe margin.
+`TOP_CROP_BIAS` in `convert_screenshots.py` holds a per-screenshot, per-target value tuned by
+eye so no heading, button, or nav bar is clipped.
 
-- **`cover`** (Google Play sizes, iPhone 6.5"): the image is upscaled to completely fill the
-  target canvas, then the overflow is cropped away - no side margins. The crop is biased
-  toward the top (status bar/header space, which is disposable) rather than the bottom, since
-  these designs run edge-to-edge at the bottom with nav bars/CTA buttons that have almost no
-  safe margin. `TOP_CROP_BIAS` holds a per-screenshot value tuned by eye so no heading, button,
-  or nav bar is clipped. The iPhone 6.5" target (1284x2778, ratio 0.462) is a near-exact match
-  for the source screenshots' own ratio (~0.45-0.49), so its crop is negligible (0-3% of the
-  height) - effectively no content is lost.
-- **`contain`** (iPad 13"): the iPad target ratio (0.75, i.e. ~3:4) is dramatically different
-  from these phone screenshots (~0.46) - cropping to fill it would cut away roughly 40% of
-  every screenshot's content, which isn't an acceptable trade. Instead the image is scaled to
-  fit entirely within the canvas and letterboxed with a color sampled from the screenshot's own
-  background, so nothing is cropped.
+The amount of cropping varies a lot by target:
+- The iPhone 6.5" target (1284x2778, ratio 0.462) is a near-exact match for the source
+  screenshots' own ratio (~0.45-0.49), so its crop is negligible (0-3% of the height) -
+  effectively no content is lost.
+- The iPad 13" target's ratio (0.75, i.e. ~3:4) is far more square than a phone screenshot,
+  so filling it edge-to-edge means cropping away roughly 35-40% of each screenshot's height.
+  Nothing gets clipped mid-heading/button/nav-bar (checked by eye across all 8), but each
+  image shows noticeably less of the original screen - it reads as "scrolled a bit," which is
+  the cost of forcing a phone screenshot into an iPad-shaped, zero-margin frame.
 
 Every upscale gets a light unsharp-mask pass to offset the softness introduced by scaling up
 such small originals.
@@ -60,5 +61,6 @@ sharp as a fresh capture straight from a device. For best results:
   `convert_screenshots.py` rather than relying on this upscaled/cropped set for production
   store listings.
 - For the iPad slot specifically, a screenshot captured on an actual iPad (showing the app's
-  real tablet layout, if it has one) will look far better than a letterboxed phone screenshot -
-  treat `apple/ipad-13in/` as a placeholder until one is available.
+  real tablet layout, if it has one) will look far better and lose far less content than
+  cropping a phone screenshot into that shape - treat `apple/ipad-13in/` as a placeholder
+  until one is available.
