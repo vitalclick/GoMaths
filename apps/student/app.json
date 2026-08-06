@@ -42,7 +42,8 @@
         "expo-image-picker",
         {
           "photosPermission": "GoMaths needs access to your photos so you can pick a maths problem to solve.",
-          "cameraPermission": "GoMaths needs camera access so you can snap a photo of a maths problem to solve."
+          "cameraPermission": "GoMaths needs camera access so you can snap a photo of a maths problem to solve.",
+          "microphonePermission": false
         }
       ],
       [
