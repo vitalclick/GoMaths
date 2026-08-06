@@ -24,27 +24,39 @@ TARGETS = [
 SRC_FILES = [f"Screenshots ({i}).jpeg" for i in range(1, 9)]
 
 
-def process(src_path, target_w, target_h):
+# Per-screenshot override for how the vertical crop is split, as the
+# fraction taken from the top (status bar side) vs. the bottom (nav/button
+# side). Higher = more taken from the top. Tuned by eye per screenshot so
+# no header text or button/nav content gets clipped.
+TOP_CROP_BIAS = {
+    1: 1.0,
+    2: 0.9,
+    3: 1.0,
+    4: 1.0,
+    5: 1.0,
+    6: 1.0,
+    7: 1.0,
+    8: 1.0,
+}
+
+
+def process(src_path, target_w, target_h, top_bias):
     im = Image.open(src_path).convert("RGB")
 
-    # sample the screenshot's own background color (top-left corner, just
-    # inside the status bar) so the pillarbox bars blend in seamlessly
-    fill = im.getpixel((2, 2))
-
-    canvas = Image.new("RGB", (target_w, target_h), fill)
-
-    # Image.thumbnail() never enlarges, only shrinks - these source shots are
-    # much smaller than the target canvas, so scale up explicitly to fill it.
-    scale = min(target_w / im.width, target_h / im.height)
+    # Cover-fill: scale up so the image completely fills the target canvas
+    # (no side margins), then crop the overflow off the top/bottom.
+    scale = max(target_w / im.width, target_h / im.height)
     new_size = (round(im.width * scale), round(im.height * scale))
     fg = im.resize(new_size, Image.LANCZOS)
     # counteract the softness introduced by upscaling small source screenshots
     fg = fg.filter(ImageFilter.UnsharpMask(radius=1.5, percent=60, threshold=2))
 
-    paste_x = (target_w - fg.width) // 2
-    paste_y = (target_h - fg.height) // 2
-    canvas.paste(fg, (paste_x, paste_y))
-    return canvas
+    overflow_h = fg.height - target_h
+    crop_top = round(overflow_h * top_bias)
+    overflow_w = fg.width - target_w
+    crop_left = overflow_w // 2
+
+    return fg.crop((crop_left, crop_top, crop_left + target_w, crop_top + target_h))
 
 
 def main():
@@ -54,7 +66,7 @@ def main():
             out_dir = os.path.join(OUT_ROOT, folder)
             os.makedirs(out_dir, exist_ok=True)
             out_path = os.path.join(out_dir, f"screenshot_{idx}.png")
-            result = process(src_path, w, h)
+            result = process(src_path, w, h, TOP_CROP_BIAS[idx])
             result.save(out_path, format="PNG")
             print(f"{fname} -> {out_path} ({result.size[0]}x{result.size[1]})")
 
