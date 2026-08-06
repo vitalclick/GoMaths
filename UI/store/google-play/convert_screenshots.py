@@ -33,8 +33,11 @@ def process(src_path, target_w, target_h):
 
     canvas = Image.new("RGB", (target_w, target_h), fill)
 
-    fg = im.copy()
-    fg.thumbnail((target_w, target_h), Image.LANCZOS)
+    # Image.thumbnail() never enlarges, only shrinks - these source shots are
+    # much smaller than the target canvas, so scale up explicitly to fill it.
+    scale = min(target_w / im.width, target_h / im.height)
+    new_size = (round(im.width * scale), round(im.height * scale))
+    fg = im.resize(new_size, Image.LANCZOS)
     # counteract the softness introduced by upscaling small source screenshots
     fg = fg.filter(ImageFilter.UnsharpMask(radius=1.5, percent=60, threshold=2))
 
