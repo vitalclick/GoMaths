@@ -45,11 +45,6 @@ export default function SolverScreen() {
 
   const pickFromLibrary = async () => {
     setError(null);
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      setError("Photo library permission denied.");
-      return;
-    }
     const r = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       quality: 0.7,
