@@ -13,15 +13,15 @@
 
 import { Button } from "@gomaths/ui";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Field } from "../components/Field";
 import { GradePicker, type GradeValue } from "../components/GradePicker";
 import { useAuth } from "../lib/auth";
 
 export default function EditProfileScreen() {
-  const { user, updateProfile } = useAuth();
+  const { user, loading, updateProfile } = useAuth();
   const router = useRouter();
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
@@ -30,6 +30,25 @@ export default function EditProfileScreen() {
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // `user` hydrates asynchronously from storage — on a direct nav to this
+  // route (a reload, a deep link) it's still null on first render, and the
+  // useState initializers above only run once. Sync once it arrives so the
+  // form doesn't open with an empty name and no grade selected.
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName);
+      setGrade((user.grade as GradeValue | undefined) ?? null);
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  }
 
   if (!user) return null;
 
