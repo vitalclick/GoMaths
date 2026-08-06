@@ -75,6 +75,13 @@ interface MailProvider {
   send(input: { to: string; subject: string; html: string; text: string }): Promise<void>;
 }
 
+/**
+ * `sendParentalConsentInvite` awaits this synchronously inside the request
+ * handler, so a hung Resend call would otherwise stall that HTTP response
+ * indefinitely — bound it the same way the AI service calls are bounded.
+ */
+const RESEND_TIMEOUT_MS = 10_000;
+
 class ResendProvider implements MailProvider {
   constructor(
     private readonly apiKey: string,
@@ -96,6 +103,7 @@ class ResendProvider implements MailProvider {
         html: input.html,
         text: input.text,
       }),
+      signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "<unreadable>");

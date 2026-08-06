@@ -33,6 +33,7 @@ export interface ExpoPushTicket {
 
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const MAX_BATCH = 100;
+const PUSH_TIMEOUT_MS = 10_000;
 
 export class ExpoPushClient {
   async send(messages: ExpoPushMessage[]): Promise<ExpoPushTicket[]> {
@@ -47,6 +48,7 @@ export class ExpoPushClient {
           "content-type": "application/json",
         },
         body: JSON.stringify(batch),
+        signal: AbortSignal.timeout(PUSH_TIMEOUT_MS),
       });
       if (!res.ok) {
         throw new Error(`Expo push API: HTTP ${res.status}`);

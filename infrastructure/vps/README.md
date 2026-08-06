@@ -135,7 +135,11 @@ Fill in the rest of `.env.production`:
 
 - `RESEND_API_KEY=re_...`
 - `EMAIL_FROM="GoMaths <consent@gomaths.co.za>"` — domain must be verified in Resend
-- `PUBLIC_APP_URL=https://gomaths.co.za`
+- `PUBLIC_APP_URL=https://api.gomaths.co.za` — this API's own public origin
+  (set by Caddy, see `infrastructure/vps/caddy/Caddyfile`), used to build the
+  parental-consent confirmation link mailed to parents. `gomaths.co.za`
+  itself is the separate marketing site hosted on cPanel and has no `/api`
+  routes — pointing this there 404s the mailed link.
 - (Optional) `SENTRY_DSN`, `ANTHROPIC_API_KEY`, `MATHPIX_*`
 
 `API_DOMAIN` and `ACME_EMAIL` are no longer here — they live in

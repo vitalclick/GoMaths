@@ -15,6 +15,17 @@ interface ValidationUpstreamResponse {
   ok: boolean;
 }
 
+/**
+ * Upstream budgets. Without them a wedged or cold-starting ai-services
+ * instance holds the request (or the whole SSE stream) open until the
+ * client's own socket gives up — see solver.service.ts for the same fix.
+ * The stream gets a longer budget since a full reply legitimately takes
+ * longer than one non-streaming turn to finish sending.
+ */
+const CHAT_TIMEOUT_MS = 30_000;
+const STREAM_TIMEOUT_MS = 60_000;
+const VALIDATE_TIMEOUT_MS = 15_000;
+
 @Injectable()
 export class TutorService {
   private readonly logger = new Logger(TutorService.name);
@@ -80,6 +91,7 @@ export class TutorService {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`upstream ${res.status}`);
       const body = (await res.json()) as TutorUpstreamResponse;
@@ -151,6 +163,7 @@ export class TutorService {
           topic_id: input.topicId ?? conv.topicId,
           history,
         }),
+        signal: AbortSignal.timeout(STREAM_TIMEOUT_MS),
       });
       if (!upstream.ok || !upstream.body) {
         throw new Error(`upstream ${upstream.status}`);
@@ -247,6 +260,7 @@ export class TutorService {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ stem: question.stem, answer: studentAnswer }),
+        signal: AbortSignal.timeout(VALIDATE_TIMEOUT_MS),
       });
       if (!res.ok) throw new Error(`upstream ${res.status}`);
       const body = (await res.json()) as ValidationUpstreamResponse;

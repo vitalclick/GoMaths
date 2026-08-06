@@ -13,7 +13,7 @@
 #     JWT_REFRESH_SECRET="$(openssl rand -base64 64)" \
 #     PARENTAL_CONSENT_INVITE_SECRET="$(openssl rand -base64 64)" \
 #     PARENTAL_CONSENT_RECEIPT_SECRET="$(openssl rand -base64 64)" \
-#     PUBLIC_APP_URL="https://gomaths-student.pages.dev" \
+#     PUBLIC_APP_URL="https://gomaths-backend.fly.dev" \
 #     CORS_ORIGINS="https://gomaths-student.pages.dev" \
 #     RESEND_API_KEY="re_..." \
 #     EMAIL_FROM="GoMaths <consent@<your-verified-domain>>" \

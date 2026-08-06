@@ -5,9 +5,9 @@
  */
 
 import { Platform } from "react-native";
+import { authFetch } from "./auth";
 
 const APP_SLUG = "parent";
-const ACCESS_KEY = "gomaths.parent.access";
 
 export async function registerForPush(): Promise<void> {
   try {
@@ -30,18 +30,12 @@ export async function registerForPush(): Promise<void> {
       ? await Notifications.getExpoPushTokenAsync({ projectId })
       : await Notifications.getExpoPushTokenAsync();
 
-    const { getItem } = await import("./secure-storage");
-    const accessToken = await getItem(ACCESS_KEY);
-
     const platform: "ios" | "android" | "web" =
       Platform.OS === "ios" ? "ios" : Platform.OS === "android" ? "android" : "web";
 
-    await fetch(`${apiUrl}/api/notifications/tokens`, {
+    await authFetch("/api/notifications/tokens", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
-      },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
         token: tokenResp.data,
         platform,

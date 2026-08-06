@@ -65,7 +65,10 @@ export class ParentalConsentService {
     const fallback = config.get<string>("JWT_ACCESS_SECRET", "dev-access-secret-change-me");
     this.inviteSecret = config.get<string>("PARENTAL_CONSENT_INVITE_SECRET", fallback);
     this.receiptSecret = config.get<string>("PARENTAL_CONSENT_RECEIPT_SECRET", fallback);
-    this.publicAppUrl = config.get<string>("PUBLIC_APP_URL", "https://app.gomaths.co.za");
+    // Confirmation is a GET the API renders itself (see auth.controller.ts),
+    // not a page hosted by a separate frontend, so this must be the API's
+    // own origin — not the marketing site or a web-app build.
+    this.publicAppUrl = config.get<string>("PUBLIC_APP_URL", "https://api.gomaths.co.za");
   }
 
   /**
