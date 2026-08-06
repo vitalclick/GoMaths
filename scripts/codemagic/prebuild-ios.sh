@@ -29,7 +29,17 @@ if [ -z "$WORKSPACE" ]; then
   echo "Error: no .xcworkspace found after prebuild" >&2
   exit 1
 fi
-SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list -json | python3 -c "import json,sys; print(json.load(sys.stdin)['workspace']['schemes'][0])")
+
+# Derive the scheme from the app's own .xcodeproj (not the workspace's full
+# scheme list). The workspace also carries CocoaPods' shared schemes (e.g.
+# "boost"), and picking schemes[0] from `-list -json` can silently select
+# one of those instead of the app, producing an archive with no app in it.
+PROJECT=$(find . -maxdepth 1 -name "*.xcodeproj" -type d ! -name "Pods.xcodeproj" | head -1)
+if [ -z "$PROJECT" ]; then
+  echo "Error: no app .xcodeproj found after prebuild" >&2
+  exit 1
+fi
+SCHEME=$(basename "$PROJECT" .xcodeproj)
 
 echo "Workspace: $APP_DIR/ios/$WORKSPACE"
 echo "Scheme:    $SCHEME"
